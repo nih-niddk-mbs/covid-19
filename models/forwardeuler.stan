@@ -14,7 +14,8 @@ functions {
             real t;
 
             real y_temp[N_states];
-
+            real tf  = initial_time;
+            real t0;
             for (state in 1:N_states){
                 // first timepoint is the intial value
                 y[1, state] = initial_state[state];
@@ -22,8 +23,8 @@ functions {
             }
 
             for (timestep in 2:N_T){
-                real t0 = times[timestep - 1];
-                real tf = times[timestep];
+                real t0 = tf;
+                real tf = times[timestep - 1];
                 real dt = (tf-t0)/inner_steps;
                 for (inner_step in 1:inner_steps){
                     t = t0 + dt*(inner_step-1);
