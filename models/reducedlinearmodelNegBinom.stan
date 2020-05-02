@@ -1,45 +1,47 @@
+#include forwardeuler.stan
 // Latent variable SIR model, Negative Binomial likelihood
+
 
 functions { // time transition functions for beta and sigmac
                 real transition(real base,real location,real t) {
                    return base + (1-base)/(1 + exp(.2*(t - location)));
                 }
 
-            real[] SIR(
-            real t,             // time
-            real[] u,           // system state {infected,cases,susceptible}
-            real[] theta,       // parameters
-            real[] x_r,
-            int[] x_i
-            )
-            {
-            real du_dt[5];
-            real f1 = theta[1];
-            real f2 = theta[2];
-            real sigmar = theta[3];
-            real sigmad =  theta[4];
-            real sigmau = theta[5];
-            real q = theta[6];
-            real mbase = theta[7];
-            real mlocation = theta[8];
+            real[] ode_rhs(
+                    real t,             // time
+                    real[] u,           // system state {infected,cases,susceptible}
+                    real[] theta,       // parameters
+                    real[] x_r,
+                    int[] x_i
+                )
+                {
+                real du_dt[5];
+                real f1 = theta[1];
+                real f2 = theta[2];
+                real sigmar = theta[3];
+                real sigmad =  theta[4];
+                real sigmau = theta[5];
+                real q = theta[6];
+                real mbase = theta[7];
+                real mlocation = theta[8];
 
-            real sigmac = f2/(1+f1);
-            real beta = f2 + sigmau;
-            real sigma = sigmar + sigmad;
+                real sigmac = f2/(1+f1);
+                real beta = f2 + sigmau;
+                real sigma = sigmar + sigmad;
 
-            real I = u[1];  // infected, latent
-            real C = u[2];  // cases, observed
+                real I = u[1];  // infected, latent
+                real C = u[2];  // cases, observed
 
-            beta *= mbase + (1-mbase)/(1 + exp(.2*(t - mlocation)));  // mitigation
+                beta *= mbase + (1-mbase)/(1 + exp(.2*(t - mlocation)));  // mitigation
 
-            du_dt[1] = beta*(I+q*C) - sigmac*I - sigmau*I; //I
-            du_dt[2] = sigmac*I - sigma*C;       //C
-            du_dt[3] = beta*(I+q*C);                       //N_I
-            du_dt[4] = sigmac*I; // N_C case appearance rate
-            du_dt[5] = C; // integrated C
+                du_dt[1] = beta*(I+q*C) - sigmac*I - sigmau*I; //I
+                du_dt[2] = sigmac*I - sigma*C;       //C
+                du_dt[3] = beta*(I+q*C);                       //N_I
+                du_dt[4] = sigmac*I; // N_C case appearance rate
+                du_dt[5] = C; // integrated C
 
-            return du_dt;
-          }
+                return du_dt;
+            }
         }
 
         data {
@@ -106,7 +108,7 @@ functions { // time transition functions for beta and sigmac
             //print(theta)
             //print(u_init)
 
-             u = integrate_ode_rk45(SIR, u_init, t0, ts, theta, x_r, x_i,1e-3,1e-3,2000);
+             u = integrate_ode_euler(u_init, t0, ts, theta, x_r, x_i;
 
              car[1] = u[1,4]/u[1,3];
              ifr[1] = sigmad*u[1,5]/u[1,3];

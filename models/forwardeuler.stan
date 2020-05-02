@@ -1,0 +1,41 @@
+functions {
+    real[ , ] integrate_ode_euler(
+        real[] initial_state, real initial_time,
+        real[] times, real[] theta, real[] x_r, int[] x_i, inner_steps=20)
+        {   
+            // simple and stupid forward euler
+            // assumes that ode_rhs is defined as a function with signature real[]
+            /*
+            
+            */
+            int N_T = size(times) + 1;
+            int N_states = size(initial_state);
+            real y_inner[inner_steps + 1];
+            real y[N_T, N_states];
+
+            for (state in 1:N_states){
+                // first timepoint is the intial value
+                y[1, state] = initial_state[state];
+            }
+
+            for (timestep in 2:N_T){
+                real t0 = times[timestep - 1];
+                real tf = times[timestep];
+                real dt = (tf-t0)/inner_steps;
+                real[] ydot = ode_rhs(t, y, theta, x_r, x_i);
+                for (state in 1:N_states){
+                    y_inner[1, state] = y[timestep-1, state];
+                }
+                for (inner_step in 1:inner_steps){
+                    for (state in 1:N_states){
+                        y_inner[inner_step + 1, state] = y_inner[1, state] + dt*ydot[state];
+                        
+                    }
+                }
+                for (state in 1:N_states){
+                    y[timestep, state] = y_inner[inner_steps + 1, state];
+                }
+            }
+            return y;
+        }
+}

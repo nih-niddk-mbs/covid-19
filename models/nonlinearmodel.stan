@@ -1,6 +1,7 @@
 // Latent variable SIR model with q=0 (i.e. perfect quarantine of cases)
 // include time dependence in sigmac to model change in case criteria or differences in testing
 
+#include forwardeuler.stan
 
 functions { // time transition functions for beta and sigmac
                 real transition(real base,real location,real t) {
@@ -8,13 +9,13 @@ functions { // time transition functions for beta and sigmac
                 }
 
             // SIR model
-            real[] SIR(
-            real t,             // time
-            real[] u,           // system state {infected,cases,susceptible}
-            real[] theta,       // parameters
-            real[] x_r,
-            int[] x_i
-            )
+            real[] ode_rhs(
+                real t,             // time
+                real[] u,           // system state {infected,cases,susceptible}
+                real[] theta,       // parameters
+                real[] x_r,
+                int[] x_i
+                )
             {
             real du_dt[5];
             real f1 = theta[1];          // beta - sigmau - sigmac
@@ -116,7 +117,7 @@ functions { // time transition functions for beta and sigmac
             //print(theta)
             //print(u_init)
 
-             u = integrate_ode_rk45(SIR, u_init, t0, ts, theta, x_r, x_i,1e-3,1e-3,2000);
+             u = integrate_ode_euler(u_init, t0, ts, theta, x_r, x_i);
 
              car[1] = u[1,4]/u[1,3];
              ifr[1] = sigmad*u[1,5]/u[1,3];
