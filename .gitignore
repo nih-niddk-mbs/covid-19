@@ -2,7 +2,6 @@
 *.pyc
 *.stanc
 Stan/fits/*
-Results
 Stan/stanrunmodel.pkl
 .DS_store
 results/vis-notebooks/*.ipynb
