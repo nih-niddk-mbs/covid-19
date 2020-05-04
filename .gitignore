@@ -10,6 +10,5 @@ results/vis-notebooks/*.ipynb
 data/*.csv
 build
 dist
-*.png
 Untitled*.ipynb
 
