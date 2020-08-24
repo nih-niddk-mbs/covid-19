@@ -40,7 +40,7 @@ parser.add_argument('-ql', '--quantiles',
                     help='Which quantiles to include in the table ([0-1])')
 parser.add_argument('-pc', '--percentiles',
                     default=None, nargs='*',
-                    help='Which quantiles to include in the table ([0-1])')
+                    help='Adds percentiles [0-0.99] to table')
 parser.add_argument('-r', '--rois', default=[], nargs='+',
                     help=('Which rois to include in the table '
                           '(default is all of them)'))
