@@ -38,9 +38,6 @@ parser.add_argument('-d', '--dates', default=None, nargs='+',
 parser.add_argument('-ql', '--quantiles',
                     default=[0.025, 0.25, 0.5, 0.75, 0.975], nargs='+',
                     help='Which quantiles to include in the table ([0-1])')
-parser.add_argument('-pc', '--percentiles',
-                    default=None, nargs='*',
-                    help='Adds percentiles [0-0.99] to table')
 parser.add_argument('-r', '--rois', default=[], nargs='+',
                     help=('Which rois to include in the table '
                           '(default is all of them)'))
@@ -56,11 +53,9 @@ parser.add_argument('-ao', '--average-only', type=int, default=0,
                           'the concatenated (raw) and reweighted tables'))
 args = parser.parse_args()
 
-# If percentiles is required, change quantiles to percentiles 0 to 100
-# TODO: This conditional is not triggering. Trying to get it to trigger if it
-# exists, i.e. if user adds "--percentiles" to the command-line.
-if args.percentiles:
-    parser.set_defaults(quantiles=np.arange(0.01, 1.00, 0.01))
+# If percentiles are required, change quantiles to percentiles
+if args.quantiles == ['percentiles']:
+    args.quantiles=np.arange(0.01, 1.00, 0.01)
 
 # If no model_names are provided, use all of them
 if not args.model_names:
