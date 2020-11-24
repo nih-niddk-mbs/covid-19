@@ -81,7 +81,7 @@ if not args.average_only:
     assert len(combos), "No combinations of models and ROIs found"
     print("There are %d combinations of models and ROIs" % len(combos))
 
-    
+
 def roi_df(args, model_name, roi):
     if args.fixed_t:
         args.roi = roi  # Temporary
