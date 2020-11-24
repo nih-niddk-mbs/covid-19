@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This is a test for GitHub Desktop
 
 import argparse
 from niddk_covid_sicr import data
@@ -49,7 +50,7 @@ for source in args.sources:
 if args.fix_negatives:
     print("Fixing negative values in daily data...")
     data.fix_negatives(data_path)
-    
+
 if args.negify_missing:
     print("Replacing missing columns with -1 in daily data...")
     data.negify_missing(data_path)
