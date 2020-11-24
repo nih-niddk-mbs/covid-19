@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# This is a test for GitHub Desktop
+# This is a test for GitHub Desktop a
 
 import argparse
 from niddk_covid_sicr import data
