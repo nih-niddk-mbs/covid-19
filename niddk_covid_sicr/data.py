@@ -1,6 +1,8 @@
 """Functions for getting data needed to fit the models."""
 
 import bs4
+import glob
+import re
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,7 +27,6 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
 
     Args:
         data_path (str): Full path to data directory.
-
     Returns:
         None
     """
@@ -254,13 +255,13 @@ def delphi_api_call(data_source:str, signal:str):
     """ Called by get_delphi() to pull state-level data from Delphi API
     for data-sources (hospital admissions, doctor visits, etc)
     for a default timeframe (March 3, 2020 to yesterday's date).
-        Args:
-            data_source (str): data-source we want data for. See
-            https://cmu-delphi.github.io/delphi-epidata/api/covidcast_signals.html
-            for complete list.
-            signal (str): signal for data-source.
-        Returns:
-            df (DataFrame): pulled data as DataFrame.
+    Args:
+        data_source (str): data-source we want data for. See
+        https://cmu-delphi.github.io/delphi-epidata/api/covidcast_signals.html
+        for complete list.
+        signal (str): signal for data-source.
+    Returns:
+        df (DataFrame): pulled data as DataFrame.
     """
     today = datetime.today() # get today's date
     # other date below is the start date for which we want to pull data from
@@ -319,6 +320,84 @@ def merge_delphi(data_path:str, df_delphi:pd.DataFrame, rois:list):
         df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')] # TODO: find out how Unnamed
                                                                       # is occurring and remove this
         df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
+
+def get_covid_tracking_ext(data_path: str):
+    """ Extension from get_covid_tracking() that uses COVID-Tracking API and
+    gets state-level data for ICU and ventilator usage and hospitalizations.
+                    https://api.covidtracking.com
+                    https://api.covidtracking.com/v1/states/daily.json <--- takes beyond 30 minutes...
+                    https://api.covidtracking.com/v1/states/ca/current.json trying just Cali
+    Args:
+        data_path (str): Path to time-series data. Default is ./data.
+    Returns:
+        None
+    """
+    # see what time-series files we already have for states and match to those
+    rois = glob.glob("{}/covidtimeseries_??_??.csv".format(data_path)) # check all possible US state rois
+    rois = [x[len(x)-6:-4] for x in rois] # get two letter state codes from rois
+    x = 0
+    for roi in rois:
+        if x == 2:
+            break
+        source = pd.read_csv('https://api.covidtracking.com/v1/states/{}/daily.csv'.format(roi))
+        # Create new df to populate
+        df = pd.DataFrame(columns=['dates2', 'ct_positive', 'ct_positiveIncrease',
+        'ct_negative', 'ct_negativeIncrease', 'ct_death', 'ct_deathConfirmed',
+        'ct_deathIncrease', 'ct_recovered',
+        'ct_hospitalizedCurrently', 'ct_hospitalizedCumulative', 'ct_hospitalizedIncrease',
+        'ct_inIcucurrently', 'ct_inIcuCumulative',
+        'ct_onVentilatorCurrently', 'ct_onVentilatorCumulative'])
+
+        df['dates2'] = source['date'].apply(fix_ct_dates) # Convert date format
+        df['ct_positive'] = source['positive'].values
+        df['ct_positiveIncrease'] = source['positiveIncrease'].values
+        df['ct_negative'] = source['negative'].values
+        df['ct_negativeIncrease'] = source['negativeIncrease'].values
+        df['ct_death'] = source['death'].values
+        df['ct_deathConfirmed'] = source['deathConfirmed'].values
+        df['ct_deathIncrease'] = source['deathIncrease'].values
+        df['ct_recovered'] = source['recovered'].values
+        df['ct_hospitalizedCurrently'] = source['hospitalizedCurrently'].values
+        df['ct_hospitalizedCumulative'] = source['hospitalizedCumulative'].values
+        df['ct_hospitalizedIncrease'] = source['hospitalizedIncrease'].values
+        df['ct_inIcucurrently'] = source['inIcuCurrently'].values
+        df['ct_inIcuCumulative'] = source['inIcuCumulative'].values
+        df['ct_onVentilatorCurrently'] = source['onVentilatorCurrently'].values
+        df['ct_onVentilatorCumulative'] = source['onVentilatorCumulative'].values
+        df.sort_values(by='dates2', inplace=True)# sort by dates2
+
+        try:
+            timeseries_path = Path(data_path) / ('covidtimeseries_%s.csv' % roi) # open time-series file that matches roi
+            df_timeseries = pd.read_csv(timeseries_path)
+        except FileNotFoundError as fnf_error:
+            print(fnf_error, 'Could not add Covid Tracking state-level data.')
+            pass
+        x+=1
+    #
+    # for roi in rois: #  If ROI time-series exists, open as df and merge delphi
+    #     try:
+    #         timeseries_path = Path(data_path) / ('covidtimeseries_%s.csv' % roi)
+    #         df_timeseries = pd.read_csv(timeseries_path)
+    #     except FileNotFoundError as fnf_error:
+    #         print(fnf_error, 'Could not add Delphi data.')
+    #         pass
+    #
+    #     for i in df_timeseries.columns: # Check if Delphi data already included
+    #         if 'd_' in i: # prefix 'd_' is Delphi indicator
+    #             df_timeseries.drop([i], axis=1, inplace=True)
+    #
+    #     df_timeseries['dates2'] = df_timeseries['dates2'].apply(fix_jhu_dates) # convert date from 1/2/20 to 01/02/2020
+    #     df_delphi_roi = df_delphi[df_delphi.index == roi] # filter delphi rows that match roi
+    #     df_combined = df_timeseries.merge(df_delphi_roi, how='left', on='dates2')
+    #     df_combined.fillna(-1, inplace=True) # fill empty rows with -1
+    #     df_combined.sort_values(by=['dates2'], inplace=True)
+    #     df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
+
+
+    # df.to_csv('/Users/schwartzao/Desktop/test_ak.csv')
+
+
+
 
 def fix_negatives(data_path: str, plot: bool = False) -> None:
     """Fix negative values in daily data.
@@ -442,3 +521,7 @@ def negify_missing(data_path: str) -> None:
                 df['new_%s' % kind] = -1
         out = data_path / (csv.name.split('.')[0]+'.csv')
         df.to_csv(out)
+
+
+if __name__ == '__main__':
+    get_covid_tracking_ext('./data')
