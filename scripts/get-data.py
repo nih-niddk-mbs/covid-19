@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-
 import argparse
 from niddk_covid_sicr import data
 from pathlib import Path
@@ -10,7 +9,7 @@ from pathlib import Path
 parser = argparse.ArgumentParser(description='Get data to use for fitting')
 parser.add_argument('-dp', '--data-path', default='./data',
                     help='Path for storing data')
-parser.add_argument('-s', '--sources', default=['jhu', 'covid-tracking'],
+parser.add_argument('-s', '--sources', default=['jhu', 'covid-tracking-API'],
                     nargs='+', help='Data sources to use. Data from CMUs Delphi API'
                     'can be gathered with "delphi".'
                     )

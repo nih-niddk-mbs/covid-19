@@ -8,11 +8,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
-from pathlib import Path
 from tqdm import tqdm
 from typing import Union
 from urllib.error import HTTPError
-import covidcast # API for Delphi’s COVID-19 Surveillance Streams (Carnegie Mellon)
+import covidcast # module for Delphi’s COVID-19 Surveillance Streams API (Carnegie Mellon)
 
 
 JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
@@ -197,10 +196,6 @@ def get_covid_tracking_API(data_path: str, filter_: Union[dict, bool] = True,
     Returns:
         None
     """
-    # see what time-series files we already have for states and match to those
-    # rois = glob.glob("{}/covidtimeseries_??_??.csv".format(data_path)) # check all possible US state rois
-    # rois = [x[len(x)-6:-4] for x in rois] # get two letter state codes from rois
-
     # Generate two letter codes for states
     states_info = pd.read_csv('https://api.covidtracking.com/v1/states/info.csv')
     states = states_info['state'].to_list()
@@ -223,7 +218,6 @@ def get_covid_tracking_API(data_path: str, filter_: Union[dict, bool] = True,
         'ct_onVentilatorCurrently', 'ct_onVentilatorCumulative'])
 
         df['dates2'] = source['date'].apply(fix_ct_dates) # Convert date format
-        df['dates2'] = source['date'].apply(fix_ct_dates)
         df['cum_cases'] = source['positive'].values
         df['cum_deaths'] = source['death'].values
         df['cum_recover'] = source['recovered'].values
@@ -245,7 +239,7 @@ def get_covid_tracking_API(data_path: str, filter_: Union[dict, bool] = True,
         #         enough *= (df[key].max() >= minimum)
         # if not enough:
         #     bad.append(state)
-
+        # else:
         df[['new_cases', 'new_deaths', 'new_recover']] = \
         df[['cum_cases', 'cum_deaths', 'cum_recover']].diff()
         df['new_uninfected'] = df['new_recover'] + df['new_deaths']
@@ -253,8 +247,8 @@ def get_covid_tracking_API(data_path: str, filter_: Union[dict, bool] = True,
 
         # Overwrite old data
         # TODO: when done testing, remove "Path" from below: already in get-data.py
-        # TODO: is it an issue that export does not reset index? 
-        df.to_csv(Path(data_path) / ('covidtimeseries_US_%s_test.csv' % state.upper()))
+        # TODO: is it an issue that export does not reset index?
+        df.to_csv(data_path / ('covidtimeseries_US_%s.csv' % state.upper()))
         # good.append(state)
 
         # print("COVID Tracking data acceptable for %s" % ','.join(good))
@@ -378,7 +372,7 @@ def merge_delphi(data_path:str, df_delphi:pd.DataFrame, rois:list):
     """
     for roi in rois: #  If ROI time-series exists, open as df and merge delphi
         try:
-            timeseries_path = Path(data_path) / ('covidtimeseries_%s.csv' % roi)
+            timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi)
             df_timeseries = pd.read_csv(timeseries_path)
         except FileNotFoundError as fnf_error:
             print(fnf_error, 'Could not add Delphi data.')
@@ -518,7 +512,3 @@ def negify_missing(data_path: str) -> None:
                 df['new_%s' % kind] = -1
         out = data_path / (csv.name.split('.')[0]+'.csv')
         df.to_csv(out)
-
-
-if __name__ == '__main__':
-    get_covid_tracking_API('./data')
