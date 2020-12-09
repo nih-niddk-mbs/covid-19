@@ -4,7 +4,6 @@
 import argparse
 from niddk_covid_sicr import data
 from pathlib import Path
-
 # Parse all the command-line arguments
 parser = argparse.ArgumentParser(description='Get data to use for fitting')
 parser.add_argument('-dp', '--data-path', default='./data',
