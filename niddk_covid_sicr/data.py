@@ -3,6 +3,8 @@
 import bs4
 import glob
 import re
+import os
+from pathlib import Path
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,6 +14,7 @@ from tqdm import tqdm
 from typing import Union
 from urllib.error import HTTPError
 import covidcast # module for Delphi’s COVID-19 Surveillance Streams API (Carnegie Mellon)
+from covid19dh import covid19 # mod for COVID-19 Data Hub (https://covid19datahub.io/articles/api/python.html)
 
 
 JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
@@ -68,6 +71,9 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     # Generate a list of countries that have "good" data,
     # according to these criteria:
     good_countries = get_countries(dfs['global'], filter_=filter_)
+    good_list = list(good_countries) # create list of good countries
+    good_list = pd.Series(good_list) # save list as CSV for get_data_hub_countries()
+    good_list.to_csv(Path(data_path) / 'good_countries_list.csv', index=False)
 
     # For each "good" country,
     # reformat and save that data in its own .csv file.
@@ -391,6 +397,95 @@ def merge_delphi(data_path:str, df_delphi:pd.DataFrame, rois:list):
                                                                       # is occurring and remove this
         df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
 
+def get_data_hub_countries(data_path: str):
+    """ Gets country-level data from COVID-19 Data Hub and adds it to CSV files
+    found in data-path (./data) for ROIs that exist and were gathered
+    by get_jhu(). Data Hub data is prefixed by 'dh_'.
+
+    https://github.com/covid19datahub/COVID19/
+    Args:
+        data_path (str): Full path to data directory.
+
+    Returns:
+        None
+    """
+    # get list of countries in our repo
+    files = os.listdir(data_path)
+    # r = re.compile("US") # find state ROIs to exclude
+    for i in files:
+        print(i)
+        result = re.match('US', i)
+        print(result)
+
+    # states = list(filter(r.match, files))
+    # print(states)
+    # states = re.findall('US_', files)
+    # print(states)
+    # # print(len(files))
+    # for i in files:
+    #     if "US_" in i:
+    #         files.remove(i)
+
+
+    # x = re.search("^covidtimeseries_^(?!US).", files)
+    # x = re.findall("^covidtimeseries_", files)
+    #
+    # print(x)
+
+
+
+
+    # get list of countries they have
+    country_list = pd.read_csv('https://raw.githubusercontent.com/covid19datahub/COVID19/master/inst/extdata/src.csv')
+    coun_codes_list = country_list['iso_alpha_3'].unique().tolist() # get 3 letter code
+    # TODO: should country codes below be downloaded and saved to repo or scraped?
+    coun_codes = pd.read_csv('https://gist.githubusercontent.com/tadast/8827699/raw/f5cac3d42d16b78348610fc4ec301e9234f82821/countries_codes_and_coordinates.csv') # source: tadast on GitHub
+    coun_codes['Alpha-3 code'] = [x.replace('"','').strip() for x in coun_codes['Alpha-3 code']]
+    country_dict = pd.Series(coun_codes['Alpha-3 code'].values, \
+                              index=coun_codes['Country']).to_dict()
+    # build list of Data Hub rois as full country names so we can match with our repo files
+    rois = []
+    # for k, v in country_dict.items():
+    #     if k in
+    # for i in coun_codes_list:
+    #     if i in country_dict.values():
+    #         print(i)
+        #
+        # if i in country_dict:
+        #     print(type(i))
+    #
+    #         rois.append(country_dict[i])
+    # print(rois)
+    # rois = []
+    # for roi in country_list:
+    #     if roi in country_codes['Alpha-3 code']:
+    #         print(roi)
+
+
+
+
+
+
+    # print(data_path)
+    # files = os.listdir(data_path)
+    # print(files)
+    #
+    # for roi in rois: #  If ROI time-series exists, open as df and merge delphi
+    #     try:
+    #         timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi)
+    #         df_timeseries = pd.read_csv(timeseries_path)
+    #     except FileNotFoundError as fnf_error:
+    #         print(fnf_error, 'Could not add Delphi data.')
+    #         pass
+
+
+
+
+    # x, src = covid19('ESP', raw = False, verbose = False)
+    # x.to_csv('/Users/schwartzao/Documents/GitHub/covid-sicr/ESP.csv')
+    # src.to_csv('/Users/schwartzao/Documents/GitHub/covid-sicr/ESP_src.csv')
+    # first, we'll add data to the
+
 def fix_negatives(data_path: str, plot: bool = False) -> None:
     """Fix negative values in daily data.
 
@@ -512,3 +607,7 @@ def negify_missing(data_path: str) -> None:
                 df['new_%s' % kind] = -1
         out = data_path / (csv.name.split('.')[0]+'.csv')
         df.to_csv(out)
+
+if __name__ == '__main__':
+    get_jhu('/Users/schwartzao/Documents/GitHub/covid-sicr/data')
+    # get_data_hub_countries('/Users/schwartzao/Documents/GitHub/covid-sicr/data')
