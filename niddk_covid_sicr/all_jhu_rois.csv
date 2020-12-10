@@ -1,192 +1,192 @@
-,Countries,Alpha-3 code
-0,Afghanistan,AFG
-1,Albania,ALB
-2,Algeria,DZA
-3,Andorra,AND
-4,Angola,AGO
-5,Antigua and Barbuda,ATG
-6,Argentina,ARG
-7,Armenia,ARM
-8,Australia,AUS
-9,Austria,AUT
-10,Azerbaijan,AZE
-11,Bahamas,BHS
-12,Bahrain,BHR
-13,Bangladesh,BGD
-14,Barbados,BRB
-15,Belarus,BLR
-16,Belgium,BEL
-17,Belize,BLZ
-18,Benin,BEN
-19,Bhutan,BTN
-20,Bolivia,BOL
-21,Bosnia and Herzegovina,BIH
-22,Botswana,BWA
-23,Brazil,BRA
-24,Brunei,BRN
-25,Bulgaria,BGR
-26,Burkina Faso,BFA
-27,Burma,MMR
-28,Burundi,BDI
-29,Cabo Verde,CPV
-30,Cambodia,KHM
-31,Cameroon,CMR
-32,Canada,CAN
-33,Central African Republic,CAF
-34,Chad,TCD
-35,Chile,CHL
-36,China,CHN
-37,Colombia,COL
-38,Comoros,COM
-39,Congo (Brazzaville),COG
-40,Congo (Kinshasa),COD
-41,Costa Rica,CRI
-42,Cote d'Ivoire,CIV
-43,Croatia,HRV
-44,Cuba,CUB
-45,Cyprus,CYP
-46,Czechia,CZE
-47,Denmark,DNK
-48,Diamond Princess,
-49,Djibouti,DJI
-50,Dominica,DMA
-51,Dominican Republic,DOM
-52,Ecuador,ECU
-53,Egypt,EGY
-54,El Salvador,SLV
-55,Equatorial Guinea,GNQ
-56,Eritrea,ERI
-57,Estonia,EST
-58,Eswatini,SWZ
-59,Ethiopia,ETH
-60,Fiji,FJI
-61,Finland,FIN
-62,France,FRA
-63,Gabon,GAB
-64,Gambia,GMB
-65,Georgia,GEO
-66,Germany,DEU
-67,Ghana,GHA
-68,Greece,GRC
-69,Grenada,GRD
-70,Guatemala,GTM
-71,Guinea,GIN
-72,Guinea-Bissau,GNB
-73,Guyana,GUY
-74,Haiti,HTI
-75,Holy See,VAT
-76,Honduras,HND
-77,Hungary,HUN
-78,Iceland,ISL
-79,India,IND
-80,Indonesia,IDN
-81,Iran,IRN
-82,Iraq,IRQ
-83,Ireland,IRL
-84,Israel,ISR
-85,Italy,ITA
-86,Jamaica,JAM
-87,Japan,JPN
-88,Jordan,JOR
-89,Kazakhstan,KAZ
-90,Kenya,KEN
-91,"Korea, South",KOR
-92,Kosovo,KOS
-93,Kuwait,KWT
-94,Kyrgyzstan,KGZ
-95,Laos,LAO
-96,Latvia,LVA
-97,Lebanon,LBN
-98,Lesotho,LSO
-99,Liberia,LBR
-100,Libya,LBY
-101,Liechtenstein,LIE
-102,Lithuania,LTU
-103,Luxembourg,LUX
-104,MS Zaandam,
-105,Madagascar,MDG
-106,Malawi,MWI
-107,Malaysia,MYS
-108,Maldives,MDV
-109,Mali,MLI
-110,Malta,MLT
-111,Marshall Islands,MHL
-112,Mauritania,MRT
-113,Mauritius,MUS
-114,Mexico,MEX
-115,Moldova,MDA
-116,Monaco,MCO
-117,Mongolia,MNG
-118,Montenegro,MNE
-119,Morocco,MAR
-120,Mozambique,MOZ
-121,Namibia,NAM
-122,Nepal,NPL
-123,Netherlands,NLD
-124,New Zealand,NZL
-125,Nicaragua,NIC
-126,Niger,NER
-127,Nigeria,NGA
-128,North Macedonia,MKD
-129,Norway,NOR
-130,Oman,OMN
-131,Pakistan,PAK
-132,Panama,PAN
-133,Papua New Guinea,PNG
-134,Paraguay,PRY
-135,Peru,PER
-136,Philippines,PHL
-137,Poland,POL
-138,Portugal,PRT
-139,Qatar,QAT
-140,Romania,ROU
-141,Russia,RUS
-142,Rwanda,RWA
-143,Saint Kitts and Nevis,KNA
-144,Saint Lucia,LCA
-145,Saint Vincent and the Grenadines,VCT
-146,Samoa,WSM
-147,San Marino,SMR
-148,Sao Tome and Principe,STP
-149,Saudi Arabia,SAU
-150,Senegal,SEN
-151,Serbia,SRB
-152,Seychelles,SYC
-153,Sierra Leone,SLE
-154,Singapore,SGP
-155,Slovakia,SVK
-156,Slovenia,SVN
-157,Solomon Islands,SLB
-158,Somalia,SOM
-159,South Africa,ZAF
-160,South Sudan,SSD
-161,Spain,ESP
-162,Sri Lanka,LKA
-163,Sudan,SDN
-164,Suriname,SUR
-165,Sweden,SWE
-166,Switzerland,CHE
-167,Syria,SYR
-168,Taiwan*,TWN
-169,Tajikistan,TJK
-170,Tanzania,TAN
-171,Thailand,THA
-172,Timor-Leste,TLS
-173,Togo,TGO
-174,Trinidad and Tobago,TTO
-175,Tunisia,TUN
-176,Turkey,TUR
-177,US,USA
-178,Uganda,UGA
-179,Ukraine,UKR
-180,United Arab Emirates,ARE
-181,United Kingdom,GBR
-182,Uruguay,URY
-183,Uzbekistan,UZB
-184,Vanuatu,VUT
-185,Venezuela,VEN
-186,Vietnam,VNM
-187,West Bank and Gaza,PSE
-188,Yemen,YEM
-189,Zambia,ZMB
-190,Zimbabwe,ZWE
+Countries,Alpha-3 code
+Afghanistan,AFG
+Albania,ALB
+Algeria,DZA
+Andorra,AND
+Angola,AGO
+Antigua and Barbuda,ATG
+Argentina,ARG
+Armenia,ARM
+Australia,AUS
+Austria,AUT
+Azerbaijan,AZE
+Bahamas,BHS
+Bahrain,BHR
+Bangladesh,BGD
+Barbados,BRB
+Belarus,BLR
+Belgium,BEL
+Belize,BLZ
+Benin,BEN
+Bhutan,BTN
+Bolivia,BOL
+Bosnia and Herzegovina,BIH
+Botswana,BWA
+Brazil,BRA
+Brunei,BRN
+Bulgaria,BGR
+Burkina Faso,BFA
+Burma,MMR
+Burundi,BDI
+Cabo Verde,CPV
+Cambodia,KHM
+Cameroon,CMR
+Canada,CAN
+Central African Republic,CAF
+Chad,TCD
+Chile,CHL
+China,CHN
+Colombia,COL
+Comoros,COM
+Congo (Brazzaville),COG
+Congo (Kinshasa),COD
+Costa Rica,CRI
+Cote d'Ivoire,CIV
+Croatia,HRV
+Cuba,CUB
+Cyprus,CYP
+Czechia,CZE
+Denmark,DNK
+Diamond Princess,
+Djibouti,DJI
+Dominica,DMA
+Dominican Republic,DOM
+Ecuador,ECU
+Egypt,EGY
+El Salvador,SLV
+Equatorial Guinea,GNQ
+Eritrea,ERI
+Estonia,EST
+Eswatini,SWZ
+Ethiopia,ETH
+Fiji,FJI
+Finland,FIN
+France,FRA
+Gabon,GAB
+Gambia,GMB
+Georgia,GEO
+Germany,DEU
+Ghana,GHA
+Greece,GRC
+Grenada,GRD
+Guatemala,GTM
+Guinea,GIN
+Guinea-Bissau,GNB
+Guyana,GUY
+Haiti,HTI
+Holy See,VAT
+Honduras,HND
+Hungary,HUN
+Iceland,ISL
+India,IND
+Indonesia,IDN
+Iran,IRN
+Iraq,IRQ
+Ireland,IRL
+Israel,ISR
+Italy,ITA
+Jamaica,JAM
+Japan,JPN
+Jordan,JOR
+Kazakhstan,KAZ
+Kenya,KEN
+"Korea, South",KOR
+Kosovo,KOS
+Kuwait,KWT
+Kyrgyzstan,KGZ
+Laos,LAO
+Latvia,LVA
+Lebanon,LBN
+Lesotho,LSO
+Liberia,LBR
+Libya,LBY
+Liechtenstein,LIE
+Lithuania,LTU
+Luxembourg,LUX
+MS Zaandam,
+Madagascar,MDG
+Malawi,MWI
+Malaysia,MYS
+Maldives,MDV
+Mali,MLI
+Malta,MLT
+Marshall Islands,MHL
+Mauritania,MRT
+Mauritius,MUS
+Mexico,MEX
+Moldova,MDA
+Monaco,MCO
+Mongolia,MNG
+Montenegro,MNE
+Morocco,MAR
+Mozambique,MOZ
+Namibia,NAM
+Nepal,NPL
+Netherlands,NLD
+New Zealand,NZL
+Nicaragua,NIC
+Niger,NER
+Nigeria,NGA
+North Macedonia,MKD
+Norway,NOR
+Oman,OMN
+Pakistan,PAK
+Panama,PAN
+Papua New Guinea,PNG
+Paraguay,PRY
+Peru,PER
+Philippines,PHL
+Poland,POL
+Portugal,PRT
+Qatar,QAT
+Romania,ROU
+Russia,RUS
+Rwanda,RWA
+Saint Kitts and Nevis,KNA
+Saint Lucia,LCA
+Saint Vincent and the Grenadines,VCT
+Samoa,WSM
+San Marino,SMR
+Sao Tome and Principe,STP
+Saudi Arabia,SAU
+Senegal,SEN
+Serbia,SRB
+Seychelles,SYC
+Sierra Leone,SLE
+Singapore,SGP
+Slovakia,SVK
+Slovenia,SVN
+Solomon Islands,SLB
+Somalia,SOM
+South Africa,ZAF
+South Sudan,SSD
+Spain,ESP
+Sri Lanka,LKA
+Sudan,SDN
+Suriname,SUR
+Sweden,SWE
+Switzerland,CHE
+Syria,SYR
+Taiwan*,TWN
+Tajikistan,TJK
+Tanzania,TAN
+Thailand,THA
+Timor-Leste,TLS
+Togo,TGO
+Trinidad and Tobago,TTO
+Tunisia,TUN
+Turkey,TUR
+US,USA
+Uganda,UGA
+Ukraine,UKR
+United Arab Emirates,ARE
+United Kingdom,GBR
+Uruguay,URY
+Uzbekistan,UZB
+Vanuatu,VUT
+Venezuela,VEN
+Vietnam,VNM
+West Bank and Gaza,PSE
+Yemen,YEM
+Zambia,ZMB
+Zimbabwe,ZWE

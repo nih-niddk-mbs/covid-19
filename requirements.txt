@@ -11,3 +11,4 @@ pystan>=2.19
 scipy
 tqdm
 covidcast
+covid19dh

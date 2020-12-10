@@ -2,8 +2,6 @@
 
 import bs4
 import glob
-import re
-import os
 from pathlib import Path
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -15,7 +13,6 @@ from typing import Union
 from urllib.error import HTTPError
 import covidcast # module for Delphi’s COVID-19 Surveillance Streams API (Carnegie Mellon)
 from covid19dh import covid19 # mod for COVID-19 Data Hub (https://covid19datahub.io/articles/api/python.html)
-
 
 JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
 COVIDTRACKER_FILTER_DEFAULTS = {'cum_cases': 5, 'cum_recover': 1, 'cum_deaths': 0}
@@ -72,8 +69,9 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     # according to these criteria:
     good_countries = get_countries(dfs['global'], filter_=filter_)
     good_list = list(good_countries) # create list of good countries
-    good_list = pd.Series(good_list) # save list as CSV for get_data_hub_countries()
-    good_list.to_csv(Path(data_path) / 'good_countries_list.csv', index=False)
+    good_list = pd.Series(good_list).sort_values() # save good_list as CSV for get_data_hub_countries()
+    good_list.name = "Countries"
+    good_list.to_csv(Path(data_path) / 'timeseries_countries.csv', index=False)
 
     # For each "good" country,
     # reformat and save that data in its own .csv file.
@@ -398,93 +396,106 @@ def merge_delphi(data_path:str, df_delphi:pd.DataFrame, rois:list):
         df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
 
 def get_data_hub_countries(data_path: str):
-    """ Gets country-level data from COVID-19 Data Hub and adds it to CSV files
-    found in data-path (./data) for ROIs that exist and were gathered
+    """ Gets country-level data from COVID-19 Data Hub and
+    adds it to CSV files for ROIs that exist and were gathered
     by get_jhu(). Data Hub data is prefixed by 'dh_'.
 
     https://github.com/covid19datahub/COVID19/
     Args:
         data_path (str): Full path to data directory.
-
     Returns:
         None
     """
-    # get list of countries in our repo
-    files = os.listdir(data_path)
-    # r = re.compile("US") # find state ROIs to exclude
-    for i in files:
-        print(i)
-        result = re.match('US', i)
-        print(result)
+    # following lines are just to build a list of 3-letter country codes for
+    # countries we scraped with get_jhu() so we can append Data Hub data to these
 
-    # states = list(filter(r.match, files))
-    # print(states)
-    # states = re.findall('US_', files)
-    # print(states)
-    # # print(len(files))
-    # for i in files:
-    #     if "US_" in i:
-    #         files.remove(i)
+    good_jhu_rois = pd.read_csv(data_path / 'timeseries_countries.csv')
+    all_jhu_rois = pd.read_csv('niddk_covid_sicr/all_jhu_rois.csv')
 
+    good_jhu_rois = good_jhu_rois.merge(all_jhu_rois, on='Countries', how='left')
+    good_jhu_rois.rename(columns={'Alpha-3 code':'iso_alpha_3'}, inplace=True)
 
-    # x = re.search("^covidtimeseries_^(?!US).", files)
-    # x = re.findall("^covidtimeseries_", files)
-    #
-    # print(x)
+    dh_rois = pd.read_csv('https://raw.githubusercontent.com/covid19datahub/COVID19/master/inst/extdata/src.csv')
+    dh_rois.drop_duplicates(subset='iso_alpha_3', inplace=True)
 
+    roi_codes = good_jhu_rois.merge(dh_rois, on='iso_alpha_3', how='inner')
+    roi_codes = roi_codes[roi_codes['iso_alpha_3'].notna()]
+
+    df, src = covid19(roi_codes['iso_alpha_3'].tolist(), verbose = False)
+    # df.to_csv('niddk_covid_sicr/datahubtest.csv', index=False)# for testing purposes, save as csv
+    # df = pd.read_csv('niddk_covid_sicr/datahubtest.csv')
+
+    # add countries column to data hub df so later we can sort by rois that match files
+    df_datahub_src = df.merge(roi_codes, on='iso_alpha_3', how='outer')
 
 
+    df_datahub = pd.DataFrame(columns=['Countries','dates2', 'dh_deaths',
+            'dh_confirmed', 'dh_tests', 'dh_recovered', 'dh_hosp', 'dh_icu',
+            'dh_vent', 'dh_population', 'dh_school_closing', 'dh_workplace_closing',
+            'dh_cancel_events', 'dh_gatherings_restrictions', 'dh_transport_closing',
+            'dh_stay_home_restrictions', 'dh_internal_movement_restrictions',
+            'dh_international_movement_restrictions', 'dh_information_campaigns',
+            'dh_testing_policy', 'dh_contact_tracing', 'dh_stringency_index'])
+    df_datahub['Countries'] = df_datahub_src['Countries'].values
+    df_datahub['dates2'] = df_datahub_src['date'].apply(fix_datahub_dates).values # fix dates
+    df_datahub['dh_deaths'] = df_datahub_src['deaths'].values
+    df_datahub['dh_confirmed'] = df_datahub_src['confirmed'].values
+    df_datahub['dh_tests'] = df_datahub_src['tests'].values
+    df_datahub['dh_recovered'] = df_datahub_src['recovered'].values
+    df_datahub['dh_hosp'] = df_datahub_src['hosp'].values
+    df_datahub['dh_icu'] = df_datahub_src['icu'].values
+    df_datahub['dh_vent'] = df_datahub_src['vent'].values
+    df_datahub['dh_population'] = df_datahub_src['population'].values
+    df_datahub['dh_school_closing'] = df_datahub_src['school_closing'].values
+    df_datahub['dh_workplace_closing'] = df_datahub_src['workplace_closing'].values
+    df_datahub['dh_cancel_events'] = df_datahub_src['cancel_events'].values
+    df_datahub['dh_gatherings_restrictions'] = df_datahub_src['gatherings_restrictions'].values
+    df_datahub['dh_transport_closing'] = df_datahub_src['transport_closing'].values
+    df_datahub['dh_stay_home_restrictions'] = df_datahub_src['stay_home_restrictions'].values
+    df_datahub['dh_internal_movement_restrictions'] = df_datahub_src['internal_movement_restrictions'].values
+    df_datahub['dh_international_movement_restrictions'] = df_datahub_src['international_movement_restrictions'].values
+    df_datahub['dh_information_campaigns'] = df_datahub_src['information_campaigns'].values
+    df_datahub['dh_testing_policy'] = df_datahub_src['testing_policy'].values
+    df_datahub['dh_contact_tracing'] = df_datahub_src['contact_tracing'].values
+    df_datahub['dh_stringency_index'] = df_datahub_src['stringency_index'].values
+    df_datahub.set_index('Countries', inplace=True)
 
-    # get list of countries they have
-    country_list = pd.read_csv('https://raw.githubusercontent.com/covid19datahub/COVID19/master/inst/extdata/src.csv')
-    coun_codes_list = country_list['iso_alpha_3'].unique().tolist() # get 3 letter code
-    # TODO: should country codes below be downloaded and saved to repo or scraped?
-    coun_codes = pd.read_csv('https://gist.githubusercontent.com/tadast/8827699/raw/f5cac3d42d16b78348610fc4ec301e9234f82821/countries_codes_and_coordinates.csv') # source: tadast on GitHub
-    coun_codes['Alpha-3 code'] = [x.replace('"','').strip() for x in coun_codes['Alpha-3 code']]
-    country_dict = pd.Series(coun_codes['Alpha-3 code'].values, \
-                              index=coun_codes['Country']).to_dict()
-    # build list of Data Hub rois as full country names so we can match with our repo files
-    rois = []
-    # for k, v in country_dict.items():
-    #     if k in
-    # for i in coun_codes_list:
-    #     if i in country_dict.values():
-    #         print(i)
-        #
-        # if i in country_dict:
-        #     print(type(i))
-    #
-    #         rois.append(country_dict[i])
-    # print(rois)
-    # rois = []
-    # for roi in country_list:
-    #     if roi in country_codes['Alpha-3 code']:
-    #         print(roi)
+    merge_data_hub(data_path, df_datahub) # merge data hub data with time-series
 
+def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
+    """ Take df_datahub DataFrame we created for global timeseries files we
+    have and merge country-level data with each file that it matches.
+    Args:
+        data_path (str): Full path to data directory.
+        df_datahub (pd.DataFrame): DataFrame containing COVID Data Hub data
+                                   for global ROIs in ./data.
+    Returns:
+        None
+    """
+    rois = df_datahub.index.unique() # get list of countries we scraped data for
+    for roi in rois: #  If ROI time-series exists, open as df and merge data hub data
+        try:
+            timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi)
+            df_timeseries = pd.read_csv(timeseries_path)
+            # df_timeseries.reset_index(drop=True)
+        except FileNotFoundError as fnf_error:
+            print(fnf_error, 'Could not add Data Hub data.')
+            pass
 
+        for i in df_timeseries.columns: # Check if Delphi data already included
+            if 'dh_' in i: # prefix 'd_' is Data Hub indicator
+                df_timeseries.drop([i], axis=1, inplace=True)
 
+        df_datahub_roi = df_datahub[df_datahub.index == roi] # filter delphi rows that match roi
+        df_combined = df_timeseries.merge(df_datahub_roi, how='left', on='dates2')
+        df_combined.fillna(-1, inplace=True) # fill empty rows with -1
+        df_combined.sort_values(by=['dates2'], inplace=True)
+        df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
+        df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
 
-
-
-    # print(data_path)
-    # files = os.listdir(data_path)
-    # print(files)
-    #
-    # for roi in rois: #  If ROI time-series exists, open as df and merge delphi
-    #     try:
-    #         timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi)
-    #         df_timeseries = pd.read_csv(timeseries_path)
-    #     except FileNotFoundError as fnf_error:
-    #         print(fnf_error, 'Could not add Delphi data.')
-    #         pass
-
-
-
-
-    # x, src = covid19('ESP', raw = False, verbose = False)
-    # x.to_csv('/Users/schwartzao/Documents/GitHub/covid-sicr/ESP.csv')
-    # src.to_csv('/Users/schwartzao/Documents/GitHub/covid-sicr/ESP_src.csv')
-    # first, we'll add data to the
+def fix_datahub_dates(x):
+    y = datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S')
+    return datetime.strftime(y, '%m/%d/%y')
 
 def fix_negatives(data_path: str, plot: bool = False) -> None:
     """Fix negative values in daily data.
@@ -609,5 +620,5 @@ def negify_missing(data_path: str) -> None:
         df.to_csv(out)
 
 if __name__ == '__main__':
-    get_jhu('/Users/schwartzao/Documents/GitHub/covid-sicr/data')
-    # get_data_hub_countries('/Users/schwartzao/Documents/GitHub/covid-sicr/data')
+    # get_jhu('/Users/schwartzao/Documents/GitHub/covid-sicr/data')
+    get_data_hub_countries(Path('/Users/schwartzao/Documents/GitHub/covid-sicr/data'))
