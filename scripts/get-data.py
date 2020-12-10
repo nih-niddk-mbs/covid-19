@@ -12,7 +12,7 @@ parser.add_argument('-s', '--sources', default=['jhu', 'covid-tracking'],
                     nargs='+', help='Data sources to use. Data from CMUs Delphi API'
                     'can be gathered with "delphi".'
                     )
-parser.add_argument('-fi', '--filter', default=1, type=int,
+parser.add_argument('-fi', '--filter', default=0, type=int,
                     help='Whether or not to filter based on data thresholds')
 parser.add_argument('-fn', '--fix-negatives', default=0, type=int,
                     help=("Whether or not to fix negative values "
