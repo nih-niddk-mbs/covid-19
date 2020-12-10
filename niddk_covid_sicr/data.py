@@ -182,7 +182,7 @@ def get_covid_tracking(data_path: str, filter_: Union[dict, bool] = True,
         # Overwrite old data
         df.to_csv(data_path / ('covidtimeseries_US_%s.csv' % state.upper()))
 
-def get_delphi(data_path: str, filter_: Union[dict, bool] = True) -> None: # What does filter_ do here?
+def get_delphi(data_path: str, filter_: Union[dict, bool] = True) -> None:
     """Gets data from Delphi’s COVID-19 Surveillance Streams (covidcast; US only)
 
     https://cmu-delphi.github.io/delphi-epidata/api/covidcast.html
@@ -319,7 +319,7 @@ def merge_delphi(data_path:str, df_delphi:pd.DataFrame, rois:list):
                                                                       # is occurring and remove this
         df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
 
-def get_data_hub_countries(data_path: str):
+def get_data_hub(data_path: str, filter_: Union[dict, bool] = True) -> None:
     """ Gets country-level data from COVID-19 Data Hub and
     adds it to CSV files for global ROIs that were gathered
     by get_jhu(). Data Hub data gets prefixed by 'dh_' in timeseries files.
@@ -345,7 +345,7 @@ def get_data_hub_countries(data_path: str):
 
     roi_codes = good_jhu_rois.merge(dh_rois, on='iso_alpha_3', how='inner')
     roi_codes = roi_codes[roi_codes['iso_alpha_3'].notna()]
-    print("Pulling data from Data Hub API for global rois...")
+
     df, src = covid19(roi_codes['iso_alpha_3'].tolist(), verbose = False)
 
     # Merge below to add countries column to Data Hub df so later we can sort by rois that match files
@@ -537,7 +537,3 @@ def negify_missing(data_path: str) -> None:
                 df['new_%s' % kind] = -1
         out = data_path / (csv.name.split('.')[0]+'.csv')
         df.to_csv(out)
-
-if __name__ == '__main__':
-    # get_jhu('/Users/schwartzao/Documents/GitHub/covid-sicr/data')
-    get_data_hub_countries(Path('/Users/schwartzao/Documents/GitHub/covid-sicr/data'))

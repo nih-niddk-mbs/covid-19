@@ -9,8 +9,9 @@ parser = argparse.ArgumentParser(description='Get data to use for fitting')
 parser.add_argument('-dp', '--data-path', default='./data',
                     help='Path for storing data')
 parser.add_argument('-s', '--sources', default=['jhu', 'covid-tracking'],
-                    nargs='+', help='Data sources to use. Data from CMUs Delphi API'
-                    'can be gathered with "delphi".'
+                    nargs='+', help='Data sources to use. More US state data from'
+                    'CMUs Delphi API can be gathered with "delphi". More global'
+                    'data can be gathered with "data-hub"'
                     )
 parser.add_argument('-fi', '--filter', default=0, type=int,
                     help='Whether or not to filter based on data thresholds')
