@@ -202,26 +202,27 @@ def get_delphi(data_path: str, filter_: Union[dict, bool] = True) -> None:
                 ('jhu-csse','deaths_cumulative_num'),
                 ('jhu-csse','deaths_cumulative_prop'),
                 ('jhu-csse','deaths_incidence_num'),
-                ('jhu-csse','deaths_incidence_prop'),
-                ('hospital-admissions','smoothed_adj_covid19_from_claims'),
-                ('doctor-visits','smoothed_adj_cli'),
-                ('safegraph','full_time_work_prop'),
-                ('safegraph','part_time_work_prop'),
-                ('ght','smoothed_search'),
-                ('fb-survey','smoothed_cli'),
-                ('fb-survey','smoothed_hh_cmnty_cli')
-                # TODO: if we want below signals, need to fix code
-                # so that column values don't get duplicated for overlapping
-                # signal names.
-                # ('indicator-combination','confirmed_cumulative_num'),
-                # ('indicator-combination','confirmed_cumulative_prop'),
-                # ('indicator-combination','confirmed_incidence_num'),
-                # ('indicator-combination','confirmed_incidence_prop'),
-                # ('indicator-combination','deaths_cumulative_num'),
-                # ('indicator-combination','deaths_cumulative_prop'),
-                # ('indicator-combination','deaths_incidence_num'),
-                # ('indicator-combination','deaths_incidence_prop'),
-                # ('indicator-combination','nmf_day_doc_fbc_fbs_ght')
+                ('jhu-csse','deaths_incidence_prop') #,
+                # ('hospital-admissions','smoothed_adj_covid19_from_claims'),
+                # ('doctor-visits','smoothed_adj_cli'),
+                # ('safegraph','full_time_work_prop'),
+                # ('safegraph','part_time_work_prop'),
+                # ('ght','smoothed_search'),
+                # ('fb-survey','smoothed_cli'),
+                # ('fb-survey','smoothed_hh_cmnty_cli'),
+                # ('nchs-mortality', 'deaths_covid_incidence_num'),
+                # ('nchs-mortality', 'deaths_covid_incidence_prop'),
+                # ('nchs-mortality', 'deaths_allcause_incidence_num'),
+                # ('nchs-mortality', 'deaths_allcause_incidence_prop'),
+                # ('nchs-mortality', 'deaths_flu_incidence_num'),
+                # ('nchs-mortality', 'deaths_flu_incidence_prop'),
+                # ('nchs-mortality', 'deaths_pneumonia_notflu_incidence_num'),
+                # ('nchs-mortality', 'deaths_pneumonia_notflu_incidence_prop'),
+                # ('nchs-mortality', 'deaths_covid_and_pneumonia_notflu_incidence_num'),
+                # ('nchs-mortality', 'deaths_covid_and_pneumonia_notflu_incidence_prop'),
+                # ('nchs-mortality', 'deaths_pneumonia_or_flu_or_covid_incidence_num'),
+                # ('nchs-mortality', 'deaths_pneumonia_or_flu_or_covid_incidence_prop'),
+                # ('nchs-mortality', 'deaths_percent_of_expected')
                    ]
 
     frames = [] # create separate dataframes for each datasource
@@ -229,6 +230,8 @@ def get_delphi(data_path: str, filter_: Union[dict, bool] = True) -> None:
 
     # iterate through delphi data-source types and pull api data
     # create dataframes for each data-source
+    print("Pulling data from API takes a long time for default start date "
+          "(March 7, 2020)... Be patient...")
     for i in delphi_data:
         data_source = i[0]
         signal = i[1]
@@ -382,7 +385,9 @@ def get_data_hub(data_path: str, filter_: Union[dict, bool] = True) -> None:
     df_datahub['dh_stringency_index'] = df_datahub_src['stringency_index'].values
     df_datahub.set_index('Countries', inplace=True)
 
-    merge_data_hub(data_path, df_datahub) # merge data hub data with time-series
+    merge_data_hub(data_path, df_datahub) # merge global data hub data with time-series
+    print("Getting Data Hub results for states...")
+    get_data_hub_states(data_path) # merge US state data hub data with time-series
 
 def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
     """ Take df_datahub DataFrame we created for global timeseries files we
@@ -396,7 +401,7 @@ def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
     """
     rois = df_datahub.index.unique() # get list of countries we scraped data for
 
-    for roi in tqdm(rois, desc='global rois'): #  If ROI time-series exists, open as df and merge data hub data
+    for roi in tqdm(rois, desc='countries'): #  If ROI time-series exists, open as df and merge data hub data
         try:
             timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi)
             df_timeseries = pd.read_csv(timeseries_path)
@@ -411,6 +416,42 @@ def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
 
         df_datahub_roi = df_datahub[df_datahub.index == roi] # filter delphi rows that match roi
         df_combined = df_timeseries.merge(df_datahub_roi, how='left', on='dates2')
+        df_combined.fillna(-1, inplace=True) # fill empty rows with -1
+        df_combined.sort_values(by=['dates2'], inplace=True)
+        df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
+        df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
+
+def get_data_hub_states(data_path: str):
+    """ Get COVID Data Hub data for US states (tests, population).
+        Args:
+            data_path (str)
+        Returns:
+            None
+    """
+    states, src = covid19("USA", level = 2, verbose = False)
+    # states = pd.read_csv('/Users/schwartzao/Desktop/dh_states.csv')
+    dhstates = pd.DataFrame(columns=['roi','dates2','dh_tests','dh_population'])
+    dhstates['roi'] = states['key_alpha_2'].values
+    dhstates['dates2'] = states['date'].apply(fix_delphi_dates).values
+    dhstates['dh_tests'] = states['tests'].values
+    dhstates['dh_population'] = states['population'].values
+    dhstates.set_index('roi', inplace=True)
+    rois = states['key_alpha_2'].unique()
+
+    for roi in tqdm(rois, desc="US states"): #  If ROI time-series exists, open as df and merge data hub
+        try:
+            timeseries_path = Path(data_path) / ('covidtimeseries_US_%s.csv' % roi)
+            df_timeseries = pd.read_csv(timeseries_path)
+        except FileNotFoundError as fnf_error:
+            print(fnf_error, 'Could not add US state-level Data Hub data.')
+            pass
+
+        for i in df_timeseries.columns: # Check if Data Hub data already included
+            if 'dh_' in i: # prefix 'dh_' is Data Hub indicator
+                df_timeseries.drop([i], axis=1, inplace=True)
+
+        df_datahub_roi = dhstates[dhstates.index == roi] # filter data hub rows that match roi
+        df_combined = df_timeseries.merge(df_datahub_roi, how='outer', on='dates2')
         df_combined.fillna(-1, inplace=True) # fill empty rows with -1
         df_combined.sort_values(by=['dates2'], inplace=True)
         df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
@@ -508,7 +549,6 @@ def fix_neg(df: pd.DataFrame, roi: str,
         # Replace the values
         df[new] = df[cum].diff().fillna(0).astype(int).values
     return df
-
 
 def negify_missing(data_path: str) -> None:
     """Fix negative values in daily data.
