@@ -8,7 +8,7 @@ from pathlib import Path
 parser = argparse.ArgumentParser(description='Get data to use for fitting')
 parser.add_argument('-dp', '--data-path', default='./data',
                     help='Path for storing data')
-parser.add_argument('-s', '--sources', default=['jhu', 'covid-tracking-API'],
+parser.add_argument('-s', '--sources', default=['jhu', 'covid-tracking'],
                     nargs='+', help='Data sources to use. Data from CMUs Delphi API'
                     'can be gathered with "delphi".'
                     )

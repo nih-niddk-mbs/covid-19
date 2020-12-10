@@ -130,65 +130,7 @@ def get_countries(d: pd.DataFrame, filter_: Union[dict, bool] = True):
     print("JHU data not acceptable for %s" % ','.join(bad))
     return good
 
-
 def get_covid_tracking(data_path: str, filter_: Union[dict, bool] = True,
-                       fixes: bool = False) -> None:
-    """Gets data from The COVID Tracking Project (US states only).
-
-    https://covidtracking.com
-
-    Args:
-        data_path (str): Full path to data directory.
-
-    Returns:
-        None
-    """
-    url = ("https://raw.githubusercontent.com/COVID19Tracking/"
-           "covid-tracking-data/master/data/states_daily_4pm_et.csv")
-    df_raw = pd.read_csv(url)
-
-    states = df_raw['state'].unique()
-
-    if filter_ and not isinstance(filter_, dict):
-        filter_ = COVIDTRACKER_FILTER_DEFAULTS
-    good = []
-    bad = []
-    for state in tqdm(states, desc='US States'):  # For each country
-        source = df_raw[df_raw['state'] == state]  # Only the given state
-        # If we have data in the downloaded file for that state
-        df = pd.DataFrame(columns=['dates2', 'cum_cases', 'cum_deaths',
-                                       'cum_recover', 'new_cases',
-                                       'new_deaths', 'new_recover',
-                                       'new_uninfected'])
-
-        # Convert date format
-        df['dates2'] = source['date'].apply(fix_ct_dates)
-        df['cum_cases'] = source['positive'].values
-        df['cum_deaths'] = source['death'].values
-        df['cum_recover'] = source['recovered'].values
-        # Fill NaN with 0 and convert to int
-        df = df.set_index('dates2').fillna(0).astype(int)
-        df = df.sort_index()  # Sort by date ascending
-        enough = True
-        if filter_:
-            for key, minimum in filter_.items():
-                enough *= (df[key].max() >= minimum)
-        if not enough:
-            bad.append(state)
-        else:
-            df[['new_cases', 'new_deaths', 'new_recover']] = \
-            df[['cum_cases', 'cum_deaths', 'cum_recover']].diff()
-            df['new_uninfected'] = df['new_recover'] + df['new_deaths']
-            df = df.fillna(0).astype(int)
-            # Overwrite old data
-            df.to_csv(data_path / ('covidtimeseries_US_%s.csv' % state))
-            good.append(state)
-
-    print("COVID Tracking data acceptable for %s" % ','.join(good))
-    print("COVID Tracking data not acceptable for %s" % ','.join(bad))
-
-
-def get_covid_tracking_API(data_path: str, filter_: Union[dict, bool] = True,
                        fixes: bool = False) -> None:
     """ Extension from get_covid_tracking() that uses COVID-Tracking API and
     gets state-level data for ICU and ventilator usage and hospitalizations.
@@ -203,12 +145,6 @@ def get_covid_tracking_API(data_path: str, filter_: Union[dict, bool] = True,
     # Generate two letter codes for states
     states_info = pd.read_csv('https://api.covidtracking.com/v1/states/info.csv')
     states = states_info['state'].to_list()
-
-    # TODO: how is filter in the following used?
-    # if filter_ and not isinstance(filter_, dict):
-    #     filter_ = COVIDTRACKER_FILTER_DEFAULTS
-    # good = []
-    # bad = []
 
     for state in tqdm(states, desc='US States'):
         state = state.lower() # need lowercase for API call below
@@ -237,26 +173,14 @@ def get_covid_tracking_API(data_path: str, filter_: Union[dict, bool] = True,
         # Fill NaN with 0 and convert to int
         df = df.set_index('dates2').fillna(0).astype(int)
         df = df.sort_index()  # Sort by date ascending
-        # enough = True
-        # if filter_:
-        #     for key, minimum in filter_.items():
-        #         enough *= (df[key].max() >= minimum)
-        # if not enough:
-        #     bad.append(state)
-        # else:
+
         df[['new_cases', 'new_deaths', 'new_recover']] = \
         df[['cum_cases', 'cum_deaths', 'cum_recover']].diff()
         df['new_uninfected'] = df['new_recover'] + df['new_deaths']
         df = df.fillna(0).astype(int)
 
         # Overwrite old data
-        # TODO: when done testing, remove "Path" from below: already in get-data.py
-        # TODO: is it an issue that export does not reset index?
         df.to_csv(data_path / ('covidtimeseries_US_%s.csv' % state.upper()))
-        # good.append(state)
-
-        # print("COVID Tracking data acceptable for %s" % ','.join(good))
-        # print("COVID Tracking data not acceptable for %s" % ','.join(bad))
 
 def get_delphi(data_path: str, filter_: Union[dict, bool] = True) -> None: # What does filter_ do here?
     """Gets data from Delphi’s COVID-19 Surveillance Streams (covidcast; US only)
@@ -397,8 +321,8 @@ def merge_delphi(data_path:str, df_delphi:pd.DataFrame, rois:list):
 
 def get_data_hub_countries(data_path: str):
     """ Gets country-level data from COVID-19 Data Hub and
-    adds it to CSV files for ROIs that exist and were gathered
-    by get_jhu(). Data Hub data is prefixed by 'dh_'.
+    adds it to CSV files for global ROIs that were gathered
+    by get_jhu(). Data Hub data gets prefixed by 'dh_' in timeseries files.
 
     https://github.com/covid19datahub/COVID19/
     Args:
@@ -406,7 +330,7 @@ def get_data_hub_countries(data_path: str):
     Returns:
         None
     """
-    # following lines are just to build a list of 3-letter country codes for
+    # Following lines are just to build a list of 3-letter country codes for
     # countries we scraped with get_jhu() so we can append Data Hub data to these
 
     good_jhu_rois = pd.read_csv(data_path / 'timeseries_countries.csv')
@@ -415,19 +339,17 @@ def get_data_hub_countries(data_path: str):
     good_jhu_rois = good_jhu_rois.merge(all_jhu_rois, on='Countries', how='left')
     good_jhu_rois.rename(columns={'Alpha-3 code':'iso_alpha_3'}, inplace=True)
 
-    dh_rois = pd.read_csv('https://raw.githubusercontent.com/covid19datahub/COVID19/master/inst/extdata/src.csv')
+    url = 'https://raw.githubusercontent.com/covid19datahub/COVID19/master/inst/extdata/src.csv'
+    dh_rois = pd.read_csv(url) # url for Data Hub's 3 letter codes per ROI
     dh_rois.drop_duplicates(subset='iso_alpha_3', inplace=True)
 
     roi_codes = good_jhu_rois.merge(dh_rois, on='iso_alpha_3', how='inner')
     roi_codes = roi_codes[roi_codes['iso_alpha_3'].notna()]
-
+    print("Pulling data from Data Hub API for global rois...")
     df, src = covid19(roi_codes['iso_alpha_3'].tolist(), verbose = False)
-    # df.to_csv('niddk_covid_sicr/datahubtest.csv', index=False)# for testing purposes, save as csv
-    # df = pd.read_csv('niddk_covid_sicr/datahubtest.csv')
 
-    # add countries column to data hub df so later we can sort by rois that match files
+    # Merge below to add countries column to Data Hub df so later we can sort by rois that match files
     df_datahub_src = df.merge(roi_codes, on='iso_alpha_3', how='outer')
-
 
     df_datahub = pd.DataFrame(columns=['Countries','dates2', 'dh_deaths',
             'dh_confirmed', 'dh_tests', 'dh_recovered', 'dh_hosp', 'dh_icu',
@@ -437,7 +359,7 @@ def get_data_hub_countries(data_path: str):
             'dh_international_movement_restrictions', 'dh_information_campaigns',
             'dh_testing_policy', 'dh_contact_tracing', 'dh_stringency_index'])
     df_datahub['Countries'] = df_datahub_src['Countries'].values
-    df_datahub['dates2'] = df_datahub_src['date'].apply(fix_datahub_dates).values # fix dates
+    df_datahub['dates2'] = df_datahub_src['date'].apply(fix_delphi_dates).values # fix dates
     df_datahub['dh_deaths'] = df_datahub_src['deaths'].values
     df_datahub['dh_confirmed'] = df_datahub_src['confirmed'].values
     df_datahub['dh_tests'] = df_datahub_src['tests'].values
@@ -473,7 +395,8 @@ def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
         None
     """
     rois = df_datahub.index.unique() # get list of countries we scraped data for
-    for roi in rois: #  If ROI time-series exists, open as df and merge data hub data
+
+    for roi in tqdm(rois, desc='global rois'): #  If ROI time-series exists, open as df and merge data hub data
         try:
             timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi)
             df_timeseries = pd.read_csv(timeseries_path)
@@ -492,10 +415,6 @@ def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
         df_combined.sort_values(by=['dates2'], inplace=True)
         df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
         df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
-
-def fix_datahub_dates(x):
-    y = datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S')
-    return datetime.strftime(y, '%m/%d/%y')
 
 def fix_negatives(data_path: str, plot: bool = False) -> None:
     """Fix negative values in daily data.
