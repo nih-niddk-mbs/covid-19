@@ -18,7 +18,7 @@ JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
 COVIDTRACKER_FILTER_DEFAULTS = {'cum_cases': 5, 'cum_recover': 1, 'cum_deaths': 0}
 
 
-def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
+def get_jhu(data_path: str, filter_: Union[dict, bool] = False) -> None:
     """Gets data from Johns Hopkins CSSEGIS (countries only).
 
     https://coronavirus.jhu.edu/map.html
@@ -130,13 +130,10 @@ def get_countries(d: pd.DataFrame, filter_: Union[dict, bool] = True):
     print("JHU data not acceptable for %s" % ','.join(bad))
     return good
 
-def get_covid_tracking(data_path: str, filter_: Union[dict, bool] = True,
-                       fixes: bool = False) -> None:
-    """ Extension from get_covid_tracking() that uses COVID-Tracking API and
-    gets state-level data for ICU and ventilator usage and hospitalizations.
+def get_covid_tracking(data_path: str, filter_: Union[dict, bool] = False) -> None:
+    """ Calls COVID-Tracking API and pulls state-level data for cases, deaths,
+    recoveries, hospitalizations, ICU and ventilator usage and hospitalizations.
                     https://api.covidtracking.com
-                    https://api.covidtracking.com/v1/states/daily.json <--- takes beyond 30 minutes...
-                    https://api.covidtracking.com/v1/states/ca/current.json trying just Cali
     Args:
         data_path (str): Path to time-series data. Default is ./data.
     Returns:
@@ -182,7 +179,7 @@ def get_covid_tracking(data_path: str, filter_: Union[dict, bool] = True,
         # Overwrite old data
         df.to_csv(data_path / ('covidtimeseries_US_%s.csv' % state.upper()))
 
-def get_delphi(data_path: str, filter_: Union[dict, bool] = True) -> None:
+def get_delphi(data_path: str, filter_: Union[dict, bool] = False) -> None:
     """Gets data from Delphi’s COVID-19 Surveillance Streams (covidcast; US only)
 
     https://cmu-delphi.github.io/delphi-epidata/api/covidcast.html
@@ -195,15 +192,18 @@ def get_delphi(data_path: str, filter_: Union[dict, bool] = True) -> None:
     """
     # Set data_sources and signals to pull API data for
     delphi_data = [
-                ('jhu-csse','confirmed_cumulative_num'),
-                ('jhu-csse','confirmed_cumulative_prop'),
-                ('jhu-csse','confirmed_incidence_num'),
-                ('jhu-csse','confirmed_incidence_prop'),
-                ('jhu-csse','deaths_cumulative_num'),
-                ('jhu-csse','deaths_cumulative_prop'),
-                ('jhu-csse','deaths_incidence_num'),
-                ('jhu-csse','deaths_incidence_prop') #,
-                # ('hospital-admissions','smoothed_adj_covid19_from_claims'),
+                # ('jhu-csse','confirmed_cumulative_num'),
+                # ('jhu-csse','confirmed_cumulative_prop'),
+                # ('jhu-csse','confirmed_incidence_num'),
+                # ('jhu-csse','confirmed_incidence_prop'),
+                # ('jhu-csse','deaths_cumulative_num'),
+                # ('jhu-csse','deaths_cumulative_prop'),
+                # ('jhu-csse','deaths_incidence_num'),
+                # ('jhu-csse','deaths_incidence_prop') #,
+                ('hospital-admissions','smoothed_adj_covid19_from_claims'),
+                ('hospital-admissions','smoothed_covid19_from_claims'),
+                ('hospital-admissions','smoothed_covid19'),
+                ('hospital-admissions','smoothed_adj_covid19'),
                 # ('doctor-visits','smoothed_adj_cli'),
                 # ('safegraph','full_time_work_prop'),
                 # ('safegraph','part_time_work_prop'),
@@ -224,14 +224,13 @@ def get_delphi(data_path: str, filter_: Union[dict, bool] = True) -> None:
                 # ('nchs-mortality', 'deaths_pneumonia_or_flu_or_covid_incidence_prop'),
                 # ('nchs-mortality', 'deaths_percent_of_expected')
                    ]
-
     frames = [] # create separate dataframes for each datasource
     filtered_frames = [] # for storing filtered dataframes (ROI, date, data-source signal)
 
     # iterate through delphi data-source types and pull api data
     # create dataframes for each data-source
     print("Pulling data from API takes a long time for default start date "
-          "(March 7, 2020)... Be patient...")
+          "March 7, 2020... Be patient...")
     for i in delphi_data:
         data_source = i[0]
         signal = i[1]
@@ -322,7 +321,7 @@ def merge_delphi(data_path:str, df_delphi:pd.DataFrame, rois:list):
                                                                       # is occurring and remove this
         df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
 
-def get_data_hub(data_path: str, filter_: Union[dict, bool] = True) -> None:
+def get_data_hub(data_path: str, filter_: Union[dict, bool] = False) -> None:
     """ Gets country-level data from COVID-19 Data Hub and
     adds it to CSV files for global ROIs that were gathered
     by get_jhu(). Data Hub data gets prefixed by 'dh_' in timeseries files.
@@ -335,7 +334,6 @@ def get_data_hub(data_path: str, filter_: Union[dict, bool] = True) -> None:
     """
     # Following lines are just to build a list of 3-letter country codes for
     # countries we scraped with get_jhu() so we can append Data Hub data to these
-
     good_jhu_rois = pd.read_csv(data_path / 'timeseries_countries.csv')
     all_jhu_rois = pd.read_csv('niddk_covid_sicr/all_jhu_rois.csv')
 
@@ -361,6 +359,7 @@ def get_data_hub(data_path: str, filter_: Union[dict, bool] = True) -> None:
             'dh_stay_home_restrictions', 'dh_internal_movement_restrictions',
             'dh_international_movement_restrictions', 'dh_information_campaigns',
             'dh_testing_policy', 'dh_contact_tracing', 'dh_stringency_index'])
+            
     df_datahub['Countries'] = df_datahub_src['Countries'].values
     df_datahub['dates2'] = df_datahub_src['date'].apply(fix_delphi_dates).values # fix dates
     df_datahub['dh_deaths'] = df_datahub_src['deaths'].values
