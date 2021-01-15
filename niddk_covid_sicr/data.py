@@ -30,7 +30,7 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     url_template = ("https://raw.githubusercontent.com/CSSEGISandData/"
                     "COVID-19/master/csse_covid_19_data/"
                     "csse_covid_19_time_series/time_series_covid19_%s_%s.csv")
-
+                    
     # Scrape the data
     dfs = {}
     for region in ['global', 'US']:
