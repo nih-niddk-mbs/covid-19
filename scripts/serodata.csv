@@ -1,0 +1,101 @@
+,cdc_case_earliest_dt,cdc_report_dt,pos_spec_dt,current_status,sex,age_group,race_ethnicity_combined,hosp_yn,icu_yn,death_yn,medcond_yn,onset_dt
+0,2020-03-23T00:00:00.000,2020-03-31T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,"Black, Non-Hispanic",Unknown,Unknown,Unknown,Unknown,
+1,2020-03-22T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Hispanic/Latino,Yes,Unknown,Unknown,Unknown,
+2,2020-03-22T00:00:00.000,2020-03-22T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Hispanic/Latino,No,No,No,No,2020-03-22T00:00:00.000
+3,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Hispanic/Latino,No,Missing,No,No,2020-03-23T00:00:00.000
+4,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Hispanic/Latino,Unknown,Unknown,Unknown,Unknown,
+5,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Hispanic/Latino,No,Missing,No,No,2020-03-23T00:00:00.000
+6,2020-03-23T00:00:00.000,2020-03-24T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Hispanic/Latino,Yes,Unknown,Unknown,Unknown,
+7,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Missing,Missing,Missing,Missing,Missing,
+8,2020-03-16T00:00:00.000,2020-03-31T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Missing,Yes,No,No,Yes,2020-03-16T00:00:00.000
+9,2020-03-22T00:00:00.000,2020-03-25T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"Black, Non-Hispanic",Yes,Unknown,Unknown,Unknown,
+10,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+11,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+12,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+13,2020-03-23T00:00:00.000,2020-03-25T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+14,2020-03-23T00:00:00.000,2020-03-30T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+15,2020-03-23T00:00:00.000,2020-04-05T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Yes,Unknown,No,Unknown,
+16,2020-03-15T00:00:00.000,2020-03-15T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,No,Missing,No,No,2020-03-15T00:00:00.000
+17,2020-03-23T00:00:00.000,2020-03-30T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+18,2020-03-18T00:00:00.000,2020-03-18T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,No,Missing,No,Unknown,2020-03-18T00:00:00.000
+19,2020-03-22T00:00:00.000,2020-03-22T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,No,No,No,No,2020-03-22T00:00:00.000
+20,2020-03-23T00:00:00.000,2020-03-25T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+21,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+22,2020-03-23T00:00:00.000,2020-03-25T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Yes,Unknown,Unknown,Yes,
+23,2020-03-23T00:00:00.000,2020-03-24T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+24,2020-03-23T00:00:00.000,2020-04-05T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,No,Unknown,Unknown,No,
+25,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+26,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+27,2020-03-23T00:00:00.000,2020-03-30T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Unknown,No,Unknown,
+28,2020-03-21T00:00:00.000,2020-04-05T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,No,Unknown,No,Yes,2020-03-21T00:00:00.000
+29,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Missing,Unknown,Unknown,
+30,2020-03-23T00:00:00.000,2020-04-11T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+31,2020-03-22T00:00:00.000,2020-03-25T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Hispanic/Latino,Yes,Unknown,Unknown,Unknown,
+32,2020-03-23T00:00:00.000,2020-03-27T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Hispanic/Latino,Unknown,Unknown,Unknown,Unknown,
+33,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Hispanic/Latino,Missing,Missing,Missing,Missing,
+34,2020-03-17T00:00:00.000,2020-04-05T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Hispanic/Latino,Yes,No,No,No,2020-03-23T00:00:00.000
+35,2020-03-23T00:00:00.000,2020-04-05T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Hispanic/Latino,No,No,No,No,2020-03-23T00:00:00.000
+36,2020-03-03T00:00:00.000,2020-04-07T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Unknown,0 - 9 Years,"White, Non-Hispanic",Yes,Missing,Missing,Missing,2020-03-03T00:00:00.000
+37,2020-03-22T00:00:00.000,2020-03-22T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,No,No,No,No,2020-03-22T00:00:00.000
+38,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+39,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Probable Case,Female,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+40,2020-03-23T00:00:00.000,2020-04-09T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+41,2020-03-23T00:00:00.000,2020-03-27T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+42,2020-03-23T00:00:00.000,2020-03-30T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+43,2020-03-23T00:00:00.000,2020-04-11T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+44,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Yes,Yes,Unknown,Unknown,
+45,2020-03-23T00:00:00.000,2020-03-27T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+46,2020-03-22T00:00:00.000,2020-04-14T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,No,No,No,No,2020-03-22T00:00:00.000
+47,2020-03-23T00:00:00.000,2020-03-25T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+48,2020-03-23T00:00:00.000,2020-03-27T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+49,2020-03-23T00:00:00.000,2020-03-27T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+50,2020-03-05T00:00:00.000,2020-03-26T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,No,Unknown,No,No,2020-03-05T00:00:00.000
+51,2020-03-23T00:00:00.000,2020-03-31T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+52,2020-03-09T00:00:00.000,2020-03-26T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,No,No,No,No,2020-03-09T00:00:00.000
+53,2020-03-23T00:00:00.000,2020-03-27T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+54,2020-03-23T00:00:00.000,2020-03-31T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+55,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+56,2020-03-23T00:00:00.000,2020-03-26T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+57,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"Multiple/Other, Non-Hispanic",Missing,Missing,Missing,Missing,
+58,2020-03-19T00:00:00.000,2020-03-26T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"Asian, Non-Hispanic",No,Missing,No,No,2020-03-19T00:00:00.000
+59,2020-03-19T00:00:00.000,2020-03-26T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"Asian, Non-Hispanic",No,Missing,No,No,2020-03-19T00:00:00.000
+60,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"White, Non-Hispanic",No,Missing,Missing,Missing,
+61,2020-03-22T00:00:00.000,2020-03-26T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"White, Non-Hispanic",Yes,No,No,Yes,2020-03-22T00:00:00.000
+62,2020-03-23T00:00:00.000,2020-03-25T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"White, Non-Hispanic",Unknown,Unknown,Unknown,Unknown,
+63,2020-03-17T00:00:00.000,2020-04-26T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"White, Non-Hispanic",No,No,No,Missing,2020-03-17T00:00:00.000
+64,2020-03-22T00:00:00.000,2020-03-22T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"White, Non-Hispanic",No,No,No,No,2020-03-22T00:00:00.000
+65,2020-03-16T00:00:00.000,2020-03-16T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"White, Non-Hispanic",No,Missing,No,No,2020-03-16T00:00:00.000
+66,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"White, Non-Hispanic",Yes,Unknown,Unknown,Unknown,
+67,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"White, Non-Hispanic",Yes,Unknown,Unknown,Unknown,
+68,2020-03-22T00:00:00.000,2020-04-07T00:00:00.000,2020-03-23T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"White, Non-Hispanic",No,Missing,Missing,No,2020-03-22T00:00:00.000
+69,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Missing,Missing,Missing,Missing,Missing,
+70,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Missing,Missing,Missing,Missing,Missing,
+71,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Missing,No,Missing,Missing,Missing,2020-03-24T00:00:00.000
+72,2020-01-20T00:00:00.000,2020-03-30T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,"Black, Non-Hispanic",Yes,Unknown,Unknown,Yes,
+73,2020-03-24T00:00:00.000,2020-03-27T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Hispanic/Latino,Unknown,Unknown,Unknown,Unknown,
+74,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Hispanic/Latino,Yes,Unknown,Unknown,Yes,
+75,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,Hispanic/Latino,Missing,Missing,Missing,Missing,
+76,2020-03-22T00:00:00.000,2020-03-22T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Missing,No,Missing,No,No,2020-03-22T00:00:00.000
+77,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Missing,Missing,Missing,Missing,Missing,2020-03-23T00:00:00.000
+78,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Missing,No,Missing,No,No,2020-03-23T00:00:00.000
+79,2020-03-22T00:00:00.000,2020-03-22T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Missing,No,Missing,No,Missing,2020-03-22T00:00:00.000
+80,2020-03-21T00:00:00.000,2020-03-21T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,"Black, Non-Hispanic",No,Unknown,No,Yes,2020-03-21T00:00:00.000
+81,2020-03-23T00:00:00.000,2020-03-27T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,"Multiple/Other, Non-Hispanic",No,No,No,No,2020-03-23T00:00:00.000
+82,2020-03-23T00:00:00.000,2020-03-23T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,"Multiple/Other, Non-Hispanic",Yes,Missing,Missing,Yes,
+83,2020-03-21T00:00:00.000,2020-03-21T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,"White, Non-Hispanic",No,No,No,Yes,2020-03-21T00:00:00.000
+84,2020-03-22T00:00:00.000,2020-04-04T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,"White, Non-Hispanic",No,Missing,No,No,2020-03-22T00:00:00.000
+85,2020-03-22T00:00:00.000,2020-05-07T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,"White, Non-Hispanic",No,Unknown,No,No,2020-03-22T00:00:00.000
+86,2020-03-21T00:00:00.000,2020-04-07T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Female,0 - 9 Years,"White, Non-Hispanic",No,Missing,Missing,Missing,2020-03-21T00:00:00.000
+87,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+88,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+89,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+90,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+91,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+92,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Probable Case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+93,2020-03-24T00:00:00.000,2020-03-31T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Yes,Unknown,No,Unknown,
+94,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Unknown,Unknown,Unknown,
+95,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+96,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+97,2020-03-23T00:00:00.000,2020-04-05T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Unknown,Unknown,No,Unknown,2020-03-23T00:00:00.000
+98,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Missing,Missing,Missing,Missing,
+99,2020-03-23T00:00:00.000,2020-03-24T00:00:00.000,2020-03-24T00:00:00.000,Laboratory-confirmed case,Male,0 - 9 Years,Unknown,Yes,Unknown,Unknown,Unknown,
