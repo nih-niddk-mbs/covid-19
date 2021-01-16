@@ -30,7 +30,7 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     url_template = ("https://raw.githubusercontent.com/CSSEGISandData/"
                     "COVID-19/master/csse_covid_19_data/"
                     "csse_covid_19_time_series/time_series_covid19_%s_%s.csv")
-                    
+
     # Scrape the data
     dfs = {}
     for region in ['global', 'US']:
@@ -71,7 +71,8 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     # reformat and save that data in its own .csv file.
     source = dfs['global']
     for country in tqdm(good_countries, desc='Countries'):  # For each country
-        if country in ['Diamond Princess', 'MS Zaandam']:
+        if country in ['Diamond Princess', 'MS Zaandam', 'Samoa',
+                       'Vanuatu', 'Marshall Islands']:
             print("Skipping {}".format(country))
             pass
         # If we have data in the downloaded JHU files for that country
