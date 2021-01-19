@@ -58,7 +58,7 @@ def get_stan_data_weekly_total(full_data_path, args):
     """ Get weekly totals for new cases, recoveries,
         and deaths from timeseries data.
     """
-    df = pd.read_csv(full_data_path)
+    df1 = pd.read_csv(full_data_path)
     if getattr(args, 'last_date', None):
         try:
             datetime.strptime(args.last_date, '%m/%d/%y')
@@ -66,14 +66,19 @@ def get_stan_data_weekly_total(full_data_path, args):
             msg = "Incorrect --last-date format, should be MM/DD/YY"
             raise ValueError(msg)
         else:
-            df = df[df['dates2'] <= args.last_date]
+            df1 = df1[df1['dates2'] <= args.last_date]
 
     n_proj = 120
     stan_data = {}
 
-    df['Date'] = pd.to_datetime(df['dates2']) # used to calculate leading week
+    # calculate t0 and start weekly totals on this day
+    t0 = np.where(df1["new_cases"].values >= 5)[0][0] # returns index position
+    df = df1.loc[t0:] # only use rows beyond and including t0
+
+    df['Date'] = pd.to_datetime(df.loc[:, 'dates2']) # used to calculate leading week
     df.set_index('Date', inplace=True) # need this for df.resample()
-    start_day = df.index[0] - timedelta(1)
+
+    start_day = df.index[0]
     start_day = start_day.strftime("%A")
     start_abr = start_day.upper()[:3] # get 3 letter abbrev
 
@@ -92,9 +97,6 @@ def get_stan_data_weekly_total(full_data_path, args):
     df['weeklytotal_new_recover'] = df['weeklytotal_new_recover'].clip(lower=0)
     df['weeklytotal_new_deaths'] = df['weeklytotal_new_deaths'].clip(lower=0)
     df.reset_index(inplace=True) # reset index
-
-    # t0 := where to start time series, index space
-    t0 = np.where(df["weeklytotal_new_cases"].values >= 5)[0][0]
 
     # tm := start of mitigation, index space
     try:
@@ -125,7 +127,7 @@ def get_stan_data_weekly_total(full_data_path, args):
     if args.fixed_t:
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(df['dates2'][0], '%m/%d/%y')
-        offset = (frame_start - global_start).days
+        offset = math.floor((frame_start - global_start).days/7)
         stan_data['tm'] += offset
         stan_data['ts'] += offset
     return stan_data, df['dates2'][t0]
