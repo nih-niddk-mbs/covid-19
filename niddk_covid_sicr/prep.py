@@ -6,9 +6,9 @@ from numpy.random import gamma, exponential, lognormal,normal
 import pandas as pd
 from pathlib import Path
 import sys
-from os import mkdir
-
 import niddk_covid_sicr as ncs
+# pd.options.mode.chained_assignment = None  # default='warn', turn off copy without
+                                            # setting warning
 
 def get_stan_data(full_data_path, args):
     df = pd.read_csv(full_data_path)
@@ -48,17 +48,22 @@ def get_stan_data(full_data_path, args):
     stan_data['n_total'] = len(df['dates2']) - t0 + n_proj
     if args.fixed_t:
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
+        # print('\nglobal start: ', global_start)
         frame_start = datetime.strptime(df['dates2'][0], '%m/%d/%y')
+        # print('frame start: ', frame_start)
         offset = (frame_start - global_start).days
+        # print('\noffset by: ', offset, ' days')
         stan_data['tm'] += offset
+        # print('\nstan_data[ts] without offset: \n', stan_data['ts'])
         stan_data['ts'] += offset
+        # print('\nstan_data[ts] with offset: \n', stan_data['ts'])
     return stan_data, df['dates2'][t0]
 
 def get_stan_data_weekly_total(full_data_path, args):
     """ Get weekly totals for new cases, recoveries,
         and deaths from timeseries data.
     """
-    df1 = pd.read_csv(full_data_path)
+    df = pd.read_csv(full_data_path)
     if getattr(args, 'last_date', None):
         try:
             datetime.strptime(args.last_date, '%m/%d/%y')
@@ -66,19 +71,20 @@ def get_stan_data_weekly_total(full_data_path, args):
             msg = "Incorrect --last-date format, should be MM/DD/YY"
             raise ValueError(msg)
         else:
-            df1 = df1[df1['dates2'] <= args.last_date]
+            df = df[df['dates2'] <= args.last_date]
 
     n_proj = 120
     stan_data = {}
 
     # calculate t0 and start weekly totals on this day
-    t0 = np.where(df1["new_cases"].values >= 5)[0][0] # returns index position
-    df = df1.loc[t0:] # only use rows beyond and including t0
+    t0 = np.where(df["new_cases"].values >= 5)[0][0] # returns index position
+    # df = df1.loc[t0:] # only use rows beyond and including t0
 
     df['Date'] = pd.to_datetime(df.loc[:, 'dates2']) # used to calculate leading week
     df.set_index('Date', inplace=True) # need this for df.resample()
 
-    start_day = df.index[0]
+    start_day = df.index[t0] # should this start at frame start (df.index[0]),
+                             #  or where new daily cases >=5?
     start_day = start_day.strftime("%A")
     start_abr = start_day.upper()[:3] # get 3 letter abbrev
 
@@ -126,10 +132,15 @@ def get_stan_data_weekly_total(full_data_path, args):
     stan_data['n_total'] = len(df['dates2']) - t0 + n_proj
     if args.fixed_t:
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
+        # print('\nglobal start: ', global_start)
         frame_start = datetime.strptime(df['dates2'][0], '%m/%d/%y')
+        # print('frame start: ', frame_start)
         offset = math.floor((frame_start - global_start).days/7)
+        # print('\noffset by: ', offset, ' weeks')
         stan_data['tm'] += offset
+        # print('\nstan_data[ts] without offset: \n', stan_data['ts'])
         stan_data['ts'] += offset
+        # print('\nstan_data[ts] with offset: \n', stan_data['ts'])
     return stan_data, df['dates2'][t0]
 
 def get_n_data(stan_data):
