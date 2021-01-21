@@ -7,8 +7,6 @@ import pandas as pd
 from pathlib import Path
 import sys
 import niddk_covid_sicr as ncs
-# pd.options.mode.chained_assignment = None  # default='warn', turn off copy without
-                                            # setting warning
 
 def get_stan_data(full_data_path, args):
     df = pd.read_csv(full_data_path)
@@ -48,15 +46,10 @@ def get_stan_data(full_data_path, args):
     stan_data['n_total'] = len(df['dates2']) - t0 + n_proj
     if args.fixed_t:
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
-        # print('\nglobal start: ', global_start)
         frame_start = datetime.strptime(df['dates2'][0], '%m/%d/%y')
-        # print('frame start: ', frame_start)
         offset = (frame_start - global_start).days
-        # print('\noffset by: ', offset, ' days')
         stan_data['tm'] += offset
-        # print('\nstan_data[ts] without offset: \n', stan_data['ts'])
         stan_data['ts'] += offset
-        # print('\nstan_data[ts] with offset: \n', stan_data['ts'])
     return stan_data, df['dates2'][t0]
 
 def get_stan_data_weekly_total(full_data_path, args):
@@ -76,11 +69,8 @@ def get_stan_data_weekly_total(full_data_path, args):
     n_proj = 120
     stan_data = {}
 
-    # calculate t0 and start weekly totals on this day
-    t0 = np.where(df["new_cases"].values > 0)[0][0] # returns index position
-    # print(''df.loc[t0-1])
-    # exit()
-
+    # calculate t0 where new cases > 0
+    t0 = np.where(df["new_cases"].values > 0)[0][0] # gives index position
     df['Date'] = pd.to_datetime(df.loc[:, 'dates2']) # used to calculate leading week
     df.set_index('Date', inplace=True) # need this for df.resample()
 
@@ -90,7 +80,6 @@ def get_stan_data_weekly_total(full_data_path, args):
     df['weeklytotal_new_cases'] = df.new_cases.resample('W-SAT').sum()
     df['weeklytotal_new_recover'] = df.new_recover.resample('W-SAT').sum()
     df['weeklytotal_new_deaths'] = df.new_deaths.resample('W-SAT').sum()
-
     df.dropna(inplace=True) # drop last rows if they spill over weekly chunks and present NAs
         # will also remove non-weekly dates so each element is by weekly amount
 
@@ -107,8 +96,8 @@ def get_stan_data_weekly_total(full_data_path, args):
     if df.loc[0 ,"dates2"] == 0: # handle cases where this did not get removed
         df.drop([0], inplace=True)
         df.reset_index(inplace=True)
-
     # tm := start of mitigation, index space
+
     try:
         dfm = pd.read_csv(args.data_path / 'mitigationprior.csv')
         tmdate = dfm.loc[dfm.region == args.roi, 'date'].values[0]
@@ -124,7 +113,7 @@ def get_stan_data_weekly_total(full_data_path, args):
         print("Could not get population estimate for {}".format(args.roi))
 
     if population:
-        stan_data['N'] = population
+        stan_data['N'] = int(population)
 
     stan_data['n_ostates'] = 3
     stan_data['tm'] = tm
@@ -135,35 +124,26 @@ def get_stan_data_weekly_total(full_data_path, args):
     stan_data['n_weeks'] = len(df['dates2']) - t0
     stan_data['n_total'] = len(df['dates2']) - t0 + n_proj
     if args.fixed_t:
-        print(df)
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
-        print('\nglobal start: ', global_start)
-        # frame_start = datetime.strptime(df['dates2'][0], '%m/%d/%y')
         frame_start = datetime.strptime(df.loc[t0 ,"dates2"], '%m/%d/%y')
-    
-        print('frame start: ', frame_start)
         offset = math.floor((frame_start - global_start).days/7)
-        print('\noffset by: ', offset, ' weeks')
         stan_data['tm'] += offset
-        print('\nstan_data[ts] without offset: \n', stan_data['ts'])
         stan_data['ts'] += offset
-        print('\nstan_data[ts] with offset: \n', stan_data['ts'])
-    exit()
     return stan_data, df['dates2'][t0]
 
 def get_sunday(df, t0_date):
-    """ Calculate Sunday prior to where new cases > 0.
+    """ Calculate Sunday prior to t0 (where new cases > 0).
         If Sunday is not present in dataframe (ie timeseries starts on a
-        Tuesday and new cases > 0 occurs before upcoming Sunday),
-        expand entries to previous Sunday and backfill dataframe with zeros.
+        Tuesday and new cases > 0 occurs between that Tuesday and upcoming Sunday),
+        expand entries to previous Sunday and backfill dataframe with zeros to
+        enable weekly resampling that starts on Sundays prior to t0.
 
         Args:
-            df (pd.DataFrame): Timeseries dataframe from csv.
-            t0 (index value): Index value where daily new cases > 0.
+            df (pd.DataFrame): Dataframe from timeseries csv.
+            t0 (int): Index value where daily new cases > 0.
         Returns:
-            df (pd.DataFrame): Timeseries dataframe with backfill to Sunday if
-                               t0 is not already Sunday.
-            t0_sunday () """
+            df (pd.DataFrame): Dataframe with backfill to Sunday prior if
+                               t0 is not already Sunday. """
 
     if t0_date.weekday() == 6: # handle cases where t0_date is already a Sunday
         return df
@@ -174,7 +154,7 @@ def get_sunday(df, t0_date):
     if last_sunday in df.index: # is last Sunday leading up to t0 present?
         return df
 
-    else: # backfill to last_sunday
+    else: # backfill to last_sunday if Sunday prior to t0 not present
         end_date = df.index[-1]
         dates_index = pd.date_range(last_sunday, end_date)
         df2 = pd.DataFrame(index = dates_index)
