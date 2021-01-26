@@ -45,6 +45,12 @@ parser.add_argument('-i', '--init',
 parser.add_argument('-ld', '--last-date',
                     help=('Last date to use in the data; dates past this '
                           'will be ignored'))
+parser.add_argument('-fld', '--first-last-date',
+                    help=('First and last dates to use in the data; dates before '
+                          'and after will be ignored. Format must be this: '
+                           'MM/DD/YY MM/DD/YY where first date is start date.'
+                           'Use Sundays and Saturdays for start and end dates'
+                           ' respectively.'))
 parser.add_argument('-nd', '--n-data-only',
                     help=('Only calculate number of data points used for each'
                           'region, write to a table, and stop before fitting'))

@@ -66,6 +66,19 @@ def get_stan_data_weekly_total(full_data_path, args):
         else:
             df = df[df['dates2'] <= args.last_date]
 
+    if getattr(args, 'first_last_date', None):
+        try:
+            date_range = args.first_last_date.split(" ") # split on whitespace
+            start_date = datetime.strptime(date_range[0], '%m/%d/%y')
+            end_date = datetime.strptime(date_range[1], '%m/%d/%y')
+        except ValueError:
+            msg = """Incorrect --first_last_date format, should be MM/DD/YY
+            MM/DD/YY where first date is start date, followed by a whitespace,
+            followed by last date"""
+            raise ValueError(msg)
+        else:
+            df = df[(df['dates2'] >= date_range[0]) & (df['dates2'] <= date_range[1])]
+
     n_proj = 120
     stan_data = {}
 
