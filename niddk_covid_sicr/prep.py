@@ -79,7 +79,7 @@ def get_stan_data_weekly_total(full_data_path, args):
         else:
             df = df[(df['dates2'] >= date_range[0]) & (df['dates2'] <= date_range[1])]
 
-    n_proj = 120
+    n_proj = 0
     stan_data = {}
 
     # calculate t0 where new cases > 0
