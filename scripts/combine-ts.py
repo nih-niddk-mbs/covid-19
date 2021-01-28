@@ -16,6 +16,9 @@ except:
     print("Missing timeseries files in data-path -- run scripts/get-data.py")
 
 df_list = []
+regions = pd.read_csv('./niddk_covid_sicr/rois.csv') # creating region category for rois
+
+roi_dict = dict(zip(regions.roi, regions.region)) # need roi:region dict
 
 for csv in csvs:
     roi = str(csv).split('.')[0].split('_') # get roi name
@@ -23,15 +26,29 @@ for csv in csvs:
         roi = roi[1] + '_' + roi[2]
     else: # if not US state or Canadian province
         roi = roi[1]
-        df = pd.read_csv(csv)
-        df2 = pd.DataFrame(columns=['date', 'roi', 'cum_cases'])
-        df2['date'] = pd.to_datetime(df.loc[:, 'dates2'])
-        df2['roi'] = roi
-        df2['cum_cases'] = df['cum_cases'].values
 
-        df_list.append(df2)
+    df = pd.read_csv(csv)
+
+    # calculate weekly totals
+    df['Date'] = pd.to_datetime(df.loc[:, 'dates2']) # used to calculate leading week
+    df.set_index('Date', inplace=True) # need this for df.resample()
+
+    df['weeklytotal_cum_deaths'] = df.cum_deaths.resample('W-SAT').sum()
+    df.dropna(inplace=True) # drop last rows if they spill over weekly chunks and present NAs
+        # will also remove non-weekly dates so each element is by weekly amount
+    df.weeklytotal_cum_deaths = df.weeklytotal_cum_deaths.astype(int) # convert float to int
+
+    df2 = pd.DataFrame(columns=['date', 'name', 'category', 'value'])
+    df2['date'] = pd.to_datetime(df.loc[:, 'dates2'])
+    df2['name'] = roi
+    try:
+        df2['category'] = roi_dict[roi]
+    except:
+        df2['category'] = roi
+    df2['value'] = df['weeklytotal_cum_deaths'].values
+    df_list.append(df2)
 df = pd.concat(df_list)
-df.sort_values(by=['date','roi'], inplace=True)
+df.sort_values(by=['date','name'], inplace=True)
 # df['date'] = df['date'].dt.strftime('%m/%d/%y')
 df.reset_index(inplace=True)
-df.to_csv('./data/all_rois_cases.csv', index=False)
+df.to_csv('./data/all_rois_deaths.csv', index=False)
