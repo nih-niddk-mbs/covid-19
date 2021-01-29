@@ -249,65 +249,65 @@ Unnamed: 0,roi,region,subregion
 247.0,South Africa,Africa,Southern Africa
 248.0,Zambia,Africa,Eastern Africa
 249.0,Zimbabwe,Africa,Eastern Africa
-250.0,US_AL,North America,United States
-251.0,US_AK,North America,United States
-252.0,US_AS,North America,United States
-253.0,US_AZ,North America,United States
-254.0,US_AR,North America,United States
-255.0,US_CA,North America,United States
-256.0,US_CO,North America,United States
-257.0,US_CT,North America,United States
-258.0,US_DE,North America,United States
-259.0,US_DC,North America,United States
-260.0,US_FM,North America,United States
-261.0,US_FL,North America,United States
-262.0,US_GA,North America,United States
+250.0,US_AL,North America,Southeast
+251.0,US_AK,North America,Far West
+252.0,US_AS,North America,US Territories
+253.0,US_AZ,North America,Southwest
+254.0,US_AR,North America,Southeast
+255.0,US_CA,North America,Far West
+256.0,US_CO,North America,Rocky Mountain
+257.0,US_CT,North America,New England
+258.0,US_DE,North America,Mideast
+259.0,US_DC,North America,Mideast
+260.0,US_FM,North America,US Territories
+261.0,US_FL,North America,Southeast
+262.0,US_GA,North America,Southeast
 263.0,US_GU,North America,United States
-264.0,US_HI,North America,United States
-265.0,US_ID,North America,United States
-266.0,US_IL,North America,United States
-267.0,US_IN,North America,United States
-268.0,US_IA,North America,United States
-269.0,US_KS,North America,United States
-270.0,US_KY,North America,United States
-271.0,US_LA,North America,United States
-272.0,US_ME,North America,United States
-273.0,US_MH,North America,United States
-274.0,US_MD,North America,United States
-275.0,US_MA,North America,United States
-276.0,US_MI,North America,United States
-277.0,US_MN,North America,United States
-278.0,US_MS,North America,United States
-279.0,US_MO,North America,United States
-280.0,US_MT,North America,United States
-281.0,US_NE,North America,United States
-282.0,US_NV,North America,United States
-283.0,US_NH,North America,United States
-284.0,US_NJ,North America,United States
-285.0,US_NM,North America,United States
-286.0,US_NY,North America,United States
-287.0,US_NC,North America,United States
-288.0,US_ND,North America,United States
-289.0,US_MP,North America,United States
-290.0,US_OH,North America,United States
-291.0,US_OK,North America,United States
-292.0,US_OR,North America,United States
-293.0,US_PW,North America,United States
-294.0,US_PA,North America,United States
-295.0,US_PR,North America,United States
-296.0,US_RI,North America,United States
-297.0,US_SC,North America,United States
-298.0,US_SD,North America,United States
-299.0,US_TN,North America,United States
-300.0,US_TX,North America,United States
-301.0,US_UT,North America,United States
-302.0,US_VT,North America,United States
-303.0,US_VI,North America,United States
-304.0,US_VA,North America,United States
-305.0,US_WA,North America,United States
-306.0,US_WV,North America,United States
-307.0,US_WI,North America,United States
-308.0,US_WY,North America,United States
+264.0,US_HI,North America,Far West
+265.0,US_ID,North America,Rocky Mountain
+266.0,US_IL,North America,Great Lakes
+267.0,US_IN,North America,Great Lakes
+268.0,US_IA,North America,Plains
+269.0,US_KS,North America,Plains
+270.0,US_KY,North America,Southeast
+271.0,US_LA,North America,Southeast
+272.0,US_ME,North America,New England
+273.0,US_MH,North America,US Territories
+274.0,US_MD,North America,Mideast
+275.0,US_MA,North America,New England
+276.0,US_MI,North America,Great Lakes
+277.0,US_MN,North America,Plains
+278.0,US_MS,North America,Southeast
+279.0,US_MO,North America,Plains
+280.0,US_MT,North America,Rocky Mountain
+281.0,US_NE,North America,Plains
+282.0,US_NV,North America,Far West
+283.0,US_NH,North America,New England
+284.0,US_NJ,North America,Mideast
+285.0,US_NM,North America,Southwest
+286.0,US_NY,North America,Mideast
+287.0,US_NC,North America,Southeast
+288.0,US_ND,North America,Plains
+289.0,US_MP,North America,US Territories
+290.0,US_OH,North America,Great Lakes
+291.0,US_OK,North America,Southwest
+292.0,US_OR,North America,Far West
+293.0,US_PW,North America,US Territories
+294.0,US_PA,North America,Mideast
+295.0,US_PR,North America,US Territories
+296.0,US_RI,North America,New England
+297.0,US_SC,North America,Southeast
+298.0,US_SD,North America,Plains
+299.0,US_TN,North America,Southeast
+300.0,US_TX,North America,Southwest
+301.0,US_UT,North America,Rocky Mountain
+302.0,US_VT,North America,New England
+303.0,US_VI,North America,US Territories
+304.0,US_VA,North America,Southeast
+305.0,US_WA,North America,Far West
+306.0,US_WV,North America,Southeast
+307.0,US_WI,North America,Great Lakes
+308.0,US_WY,North America,Rocky Mountain
 ,US,North America,United States
 ,CA_Yukon,Americas,North America
 ,CA_Saskatchewan,Americas,North America
