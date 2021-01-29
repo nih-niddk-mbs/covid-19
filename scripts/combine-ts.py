@@ -68,7 +68,7 @@ df = pd.concat(df_list)
 df.sort_values(by=['date','name'], inplace=True)
 # df['date'] = df['date'].dt.strftime('%m/%d/%y')
 df.reset_index(inplace=True)
-file_name_rois = 'all_rois'
+file_name_rois = 'AA_Global'
 if args.restrict_r:
-    file_name_rois = 'all_rois_US'
+    file_name_rois = 'AA_US'
 df.to_csv('./data/{}_{}.csv'.format(file_name_rois, param), index=False)
