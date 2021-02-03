@@ -123,7 +123,6 @@ def get_stan_data_weekly_total(full_data_path, args):
         population = df['population'].iloc[0]
         stan_data['N'] = int(population)
     except:
-        # stan_data['N'] = 1 # If no population found in population_estimates.csv
         print("Could not get population estimate for {}.".format(args.roi))
 
     stan_data['n_ostates'] = 3

@@ -318,6 +318,14 @@ def get_brazil(data_path: str, filter_: Union[dict, bool] = True,
         df['new_recover'] = df['cum_recover'].diff()
         df['new_uninfected'] = df['new_recover'] + df['new_deaths']
 
+        try:
+            roi = 'BR_' + state_code[state]
+            population = get_population_count(data_path, roi)
+            df['population'] = population
+        except:
+            print("Could not add population data for {}".format(state))
+            pass
+
         df.sort_values(by=['dates2'], inplace=True) # sort by datetime obj before converting to string
         df['dates2'] = pd.to_datetime(df['dates2']).dt.strftime('%m/%d/%y') # convert dates to string
         df = df.set_index('dates2').fillna(0).astype(int) # Fill NaN with 0 and convert to int
