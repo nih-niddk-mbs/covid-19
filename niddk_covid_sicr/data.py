@@ -279,6 +279,52 @@ def get_canada(data_path: str, filter_: Union[dict, bool] = True,
 def fix_canada_dates(x):
     return datetime.strptime(x, '%d-%m-%Y')
 
+def get_brazil(data_path: str, filter_: Union[dict, bool] = True,
+                       fixes: bool = False) -> None:
+    """ Get state-level data for Brazil.
+
+    https://github.com/wcota/covid19br (Wesley Cota)
+
+    """
+
+    url = "https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv"
+    df_raw = pd.read_csv(url)
+    dfs = [] # we will append dfs for cases, deaths, recovered here
+
+    state_code = {'AC':'Acre', 'AL':'Alagoas', 'AM':'Amazonas', 'AP':'Amapa',
+                  'BA':'Bahia','CE':'Ceara', 'DF':'Distrito Federal',
+                  'ES':'Espirito Santo', 'GO':'Goias', 'MA':'Maranhao',
+                  'MG':'Minas Gerais', 'MS':'Mato Grosso do Sul', 'MT':'Mato Grosso',
+                  'PA':'Para', 'PB':'Paraiba', 'PE':'Pernambuco', 'PI':'Piaui',
+                  'PR':'Parana', 'RJ':'Rio de Janeiro', 'RN':'Rio Grande do Norte',
+                  'RO':'Rondonia', 'RR':'Roraima', 'RS':'Rio Grande do Sul',
+                  'SC':'Santa Catarina', 'SE':'Sergipe', 'SP':'Sao Paulo', 'TO':'Tocantins'}
+    # print(df.columns) # 'date', 'country', 'state', 'city', 'newDeaths', 'deaths', 'newCases', 'totalCases', 'deathsMS', 'totalCasesMS', 'deaths_per_100k_inhabitants', 'totalCases_per_100k_inhabitants','deaths_by_totalCases', 'recovered'
+    # Export timeseries data for each province
+    # print(df_raw.columns)
+    for state in tqdm(state_code, desc='Brazilian States'):
+        source = df_raw[df_raw['state'] == state]  # Only the given province
+        df = pd.DataFrame(columns=['dates2','cum_cases', 'cum_deaths',
+                                   'cum_recover', 'new_cases',
+                                   'new_deaths', 'new_recover',
+                                   'new_uninfected'])
+
+        df['dates2'] = source['date']
+        df['cum_cases'] = source['totalCases'].values
+        df['cum_deaths'] = source['deaths'].values
+        df['cum_recover'] = source['recovered'].values
+        df['new_cases'] = source['newCases'].values
+        df['new_deaths'] = source['newDeaths'].values
+        df['new_recover'] = df['cum_recover'].diff()
+        df['new_uninfected'] = df['new_recover'] + df['new_deaths']
+
+        df.sort_values(by=['dates2'], inplace=True) # sort by datetime obj before converting to string
+        df['dates2'] = pd.to_datetime(df['dates2']).dt.strftime('%m/%d/%y') # convert dates to string
+        df = df.set_index('dates2').fillna(0).astype(int) # Fill NaN with 0 and convert to int
+        df.to_csv(data_path / ('covidtimeseries_BR_%s.csv' % state_code[state]))
+
+
+
 def fix_negatives(data_path: str, plot: bool = False) -> None:
     """Fix negative values in daily data.
 
@@ -400,3 +446,7 @@ def negify_missing(data_path: str) -> None:
                 df['new_%s' % kind] = -1
         out = data_path / (csv.name.split('.')[0]+'.csv')
         df.to_csv(out)
+
+if __name__ == '__main__':
+    from pathlib import Path
+    get_brazil(Path('./data'))
