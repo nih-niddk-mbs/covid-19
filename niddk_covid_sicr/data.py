@@ -444,7 +444,3 @@ def negify_missing(data_path: str) -> None:
                 df['new_%s' % kind] = -1
         out = data_path / (csv.name.split('.')[0]+'.csv')
         df.to_csv(out)
-
-if __name__ == '__main__':
-    from pathlib import Path
-    get_brazil(Path('./data'))
