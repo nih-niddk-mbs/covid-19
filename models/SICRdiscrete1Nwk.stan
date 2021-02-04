@@ -112,13 +112,14 @@ transformed parameters {
 model {
 
     sigmau ~ exponential(1.);
+    alpha ~ exponential(10.);
+    beta ~ normal(1.,.5);
+    sigd ~ exponential(5.);
+    sigc ~ exponential(1.);
+    sigr ~ exponential(2.);
 
     for (i in 1:n_weeks){
-      alpha ~ exponential(10.);
-      beta[i] ~ normal(1.,.5);
-      sigd[i] ~ exponential(5.);
-      sigc[i] ~ exponential(1.);
-      sigr[i] ~ exponential(2.);
+
       target += poisson_lpmf(y[i,1] | dC[i]);
       target += poisson_lpmf(y[i,2] | dR[i]);
       target += poisson_lpmf(y[i,3] | dD[i]);
