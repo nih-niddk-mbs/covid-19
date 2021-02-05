@@ -65,13 +65,13 @@ for csv in csvs:
     if args.adjust_population:
         try:
             population = df['population'].iloc[0]
+            df2['value'] = df[weekly_param].values / population * 100
         except:
             print('could not get population for {}'.format(roi))
             pass
     else:
-        population = 1
+        df2['value'] = df[weekly_param].values
 
-    df2['value'] = df[weekly_param].values / population
     df3 = df2[(df2 != 0).all(1)]
     df_list.append(df3)
 
