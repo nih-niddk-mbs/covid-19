@@ -31,7 +31,7 @@ parser.add_argument('-tp', '--tables-path', default='./tables/',
                     help='Path to directory to save tables')
 parser.add_argument('-f', '--fit-format', type=int, default=1,
                     help='Version of fit format')
-parser.add_argument('-p', '--params', default=['R0', 'car', 'ifr', 'ir'], nargs='+',
+parser.add_argument('-p', '--params', default=['R0', 'car', 'ifr', 'ir', 'ar'], nargs='+',
                     help='Which params to include in the table')
 parser.add_argument('-d', '--dates', default=None, nargs='+',
                     help='Which dates to include in the table')
@@ -173,8 +173,8 @@ if n_data_path.resolve().is_file():
     ncs.reweighted_stats(out, extra=extra, dates=args.dates)
 else:
     print("No sample size file found at %s; unable to compute global average" % n_data_path.resolve())
-try:
-    ncs.add_ir(args.data_path, args.tables_path) # Add infectivity ratio IR to tables
-                                            # using regional populations
-except:
-    print("Could not add Infectivity Ratio to tables.")
+# try:
+#     ncs.add_ir(args.data_path, args.tables_path) # Add infectivity ratio IR to tables
+#                                             # using regional populations
+# except:
+#     print("Could not add Infectivity Ratio to tables.")
