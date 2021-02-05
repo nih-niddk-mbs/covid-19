@@ -9,6 +9,9 @@ parser.add_argument('parameter',
 parser.add_argument('-rr', '--restrict-r', type=int, default=0,
                     help=('Restrict rois to just US (default global)'))
 
+parser.add_argument('-pop', '--adjust-population', type=int, default=0,
+                    help=('Adjust for population'))
+
 args = parser.parse_args()
 
 
@@ -58,12 +61,20 @@ for csv in csvs:
         df2['category'] = roi_dict[roi]
     except:
         df2['category'] = roi
-    df2['value'] = df[weekly_param].values
+
+    if args.adjust_population:
+        try:
+            population = df['population'].iloc[0]
+        except:
+            print('could not get population for {}'.format(roi))
+            pass
+    else:
+        population = 1
+
+    df2['value'] = df[weekly_param].values / population
     df3 = df2[(df2 != 0).all(1)]
     df_list.append(df3)
-    # except:
-    #     print('did not add %s' % roi)
-    #     pass
+
 df = pd.concat(df_list)
 df.sort_values(by=['date','name'], inplace=True)
 # df['date'] = df['date'].dt.strftime('%m/%d/%y')
@@ -71,4 +82,8 @@ df.reset_index(inplace=True)
 file_name_rois = 'AA_Global'
 if args.restrict_r:
     file_name_rois = 'AA_US'
-df.to_csv('./data/{}_{}.csv'.format(file_name_rois, param), index=False)
+if args.adjust_population:
+    pop_adj = '_pop'
+else:
+    pop_adj = ''
+df.to_csv('./data/{}{}_{}.csv'.format(file_name_rois, pop_adj, param), index=False)
