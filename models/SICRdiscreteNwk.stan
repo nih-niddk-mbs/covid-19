@@ -121,6 +121,7 @@ model {
 generated quantities {
     //real It[n_weeks];
     real ir[n_weeks];
+    real ar[n_weeks];
     real car[n_weeks];
     real ifr[n_weeks];
     real Rt[n_weeks];
@@ -145,6 +146,7 @@ generated quantities {
         //It[i] = I_cum;
         D_cum += dD[i];
         ir[i] = I_cum/N;
+        ar[i] = N*ir[i]/S[i];
         car[i] = C_cum/I_cum;
         ifr[i] = D_cum/I_cum;
         Rt[i] = beta[i]*S[i]/(sigc[i]+sigmau)/N;
