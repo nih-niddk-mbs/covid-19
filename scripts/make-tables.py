@@ -102,11 +102,9 @@ def roi_df(args, model_name, roi):
         csv = csv.resolve()
         assert csv.exists(), "No such csv file: %s" % csv
         stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
-        print(csv)
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(t0, '%m/%d/%y')
         day_offset = math.floor((frame_start - global_start).days/7)
-        print(day_offset)
 
 
     else:
@@ -121,6 +119,7 @@ def roi_df(args, model_name, roi):
         fit = ncs.load_fit(fit_path, model_path)
         stats = ncs.get_waic_and_loo(fit)
         samples = fit.to_dataframe()
+
     elif args.fit_format == 0:
         samples = ncs.extract_samples(args.fits_path, args.models_path,
                                       model_name, roi, args.fit_format)
@@ -128,7 +127,8 @@ def roi_df(args, model_name, roi):
     df = ncs.make_table(roi, samples, args.params,
                         stats, quantiles=args.quantiles,
                         day_offset=day_offset)
-
+    print(df)
+    print(df.columns)
     return model_name, roi, df
 
 

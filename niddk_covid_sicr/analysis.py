@@ -22,7 +22,7 @@ def get_top_n(
     exclude_us_states=False,
 ):
     """Get the top N regions, by total case count, up to a certain date.
-    
+
     last_data: Use 'YYYY/MM/DD' format.
     """
     rois = list_rois(data_path, prefix, extension)
@@ -63,6 +63,8 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, stats: dict,
     Returns:
         pd.DataFrame: A table of fit parameter summary statistics.
     """
+    print(roi)
+    print("Weeks to offset: ", day_offset)
     if chain:
         samples = samples[samples['chain'] == chain]
     dfs = []
