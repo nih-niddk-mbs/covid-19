@@ -102,6 +102,7 @@ def roi_df(args, model_name, roi):
         csv = csv.resolve()
         assert csv.exists(), "No such csv file: %s" % csv
         stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
+        print(csv)
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(t0, '%m/%d/%y')
         day_offset = math.floor((frame_start - global_start).days/7)
