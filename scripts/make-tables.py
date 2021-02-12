@@ -50,6 +50,8 @@ parser.add_argument('-ft', '--fixed-t', type=int, default=0,
                     help=('Use a fixed time base (where 1/22/20 is t=0)'
                           'rather than a time base that is relative to the '
                           'beginning of the data for each region'))
+parser.add_argument('-ftw', '--fixed-t-weekly', type=int, default=0,
+                    help=('Essentially the same as -ft, but handles weekly data '))
 parser.add_argument('-ao', '--average-only', type=int, default=0,
                     help=('Assume all of the model-specific tables already '
                           'exist, skip creating them and instead make only '
@@ -92,6 +94,17 @@ def roi_df(args, model_name, roi):
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(t0, '%m/%d/%y')
         day_offset = (frame_start - global_start).days
+
+    if args.fixed_t_weekly:
+        args.roi = roi  # Temporary
+        csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
+        csv = csv.resolve()
+        assert csv.exists(), "No such csv file: %s" % csv
+        stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
+        global_start = datetime.strptime('01/22/20', '%m/%d/%y')
+        frame_start = datetime.strptime(t0, '%m/%d/%y')
+        day_offset = math.floor((frame_start - global_start).days/7)
+
     else:
         day_offset = 0
     model_path = ncs.get_model_path(args.models_path, model_name)
@@ -111,6 +124,7 @@ def roi_df(args, model_name, roi):
     df = ncs.make_table(roi, samples, args.params,
                         stats, quantiles=args.quantiles,
                         day_offset=day_offset)
+
     return model_name, roi, df
 
 
