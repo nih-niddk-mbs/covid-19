@@ -106,9 +106,7 @@ def roi_df(args, model_name, roi):
         frame_start = datetime.strptime(t0, '%m/%d/%y')
         day_offset = math.floor((frame_start - global_start).days/7)
         print(day_offset)
-        frame_start = datetime.strptime(df.loc[t0 ,"dates2"], '%m/%d/%y')
-        day_offset = math.floor((frame_start - global_start).days/7)
-        print(day_offset)
+
 
     else:
         day_offset = 0
