@@ -9,6 +9,7 @@ from pathlib import Path
 from p_tqdm import p_map
 from pathos.helpers import cpu_count
 import warnings
+import math
 warnings.simplefilter("ignore")
 
 import niddk_covid_sicr as ncs
