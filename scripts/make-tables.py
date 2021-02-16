@@ -127,8 +127,6 @@ def roi_df(args, model_name, roi):
     df = ncs.make_table(roi, samples, args.params,
                         stats, quantiles=args.quantiles,
                         day_offset=day_offset)
-    print(df)
-    print(df.columns)
     return model_name, roi, df
 
 

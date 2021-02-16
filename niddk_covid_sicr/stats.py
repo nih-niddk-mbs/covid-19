@@ -212,11 +212,37 @@ def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
     """
 
     # Assume that loo is on a deviance scale (lower is better)
+    # print('stat_vals:n ', stat_vals)
     min_loo = min(loo_vals)
-    weights = np.exp(-0.5*(loo_vals-min_loo))
+    loo_diff = loo_vals/min_loo
+
+    # loo_vals = np.array(loo_vals, dtype=np.float128)
+    # min_loo = np.array(min_loo, dtype=np.float128)
+
+    print('\nloo values = \n',loo_vals)
+    print('\nminimum loo value = \n',min_loo)
+    print('\nloo diff = \n', loo_diff)
+    # print('\nloo values minus minimum loo value = \n',loo_vals-min_loo)
+    # weights = np.exp(-0.5*(loo_vals-min_loo))
+    weights = np.exp(-0.5*(loo_diff))
+    print(weights)
+
     if loo_se_vals is not None:
+        min_loo_se = min(loo_se_vals)
+        loo_se_vals = loo_se_vals/min_loo_se
+        # loo_se_vals = np.array(loo_se_vals, dtype=np.float128)
         weights *= np.exp(-0.5*loo_se_vals)
+        print('weights = ', weights)
+        exit()
     weights = weights/np.sum(weights)
+    print('weights: ', weights)
+    exit()
+    print('stat_vals = ', stat_vals)
+    stat_vals = np.array(stat_vals, dtype=np.float128)
+    print(print('stat_vals 128 = ', stat_vals))
+
+    print('np.sum(stat_vals * weights) = ', np.sum(stat_vals * weights))
+    exit()
     return np.sum(stat_vals * weights)
 
 
@@ -235,24 +261,34 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
                       (i.e. a weighted average across models).
     """
     df = pd.read_csv(raw_table_path, index_col=['model', 'roi', 'quantile'])
+    # print(df)
     df = df[~df.index.duplicated(keep='last')]
     df.columns.name = 'param'
     df = df.stack('param').unstack(['roi', 'quantile', 'param']).T
+    # print('columns:', df.columns)
     rois = df.index.get_level_values('roi').unique()
     result = pd.Series(index=df.index)
+
     if first is not None:
         rois = rois[:first]
+
     for roi in tqdm(rois):
         loo = df.loc[(roi, 'mean', 'loo')]
+        # print('loo: ', loo)
         loo_se = df.loc[(roi, 'std', 'loo')]
+        # print('loo_se: ', loo_se)
+        # exit()
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
+        # print('before weights: ', df[chunk])
         result[chunk] = df[chunk].apply(lambda x:
                                         reweighted_stat(x, loo, loo_se),
                                         axis=1)
+
     result = result.unstack(['param'])
     result = result[~result.index.get_level_values('quantile')
                            .isin(['min', 'max'])]  # Remove min and max
+
     if extra is not None:
         extra.columns.name = 'param'
         # Don't overwrite with anything already present in the result
