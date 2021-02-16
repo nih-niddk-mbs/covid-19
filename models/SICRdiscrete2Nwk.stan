@@ -73,8 +73,8 @@ transformed parameters {
     sigmar[i] = sigr[i];
     sigmad[i] = sigd;
     I0 = s*Nt;
-    I *= exp(beta[i]*s - sigmac[i] - sigmau);
     I += alpha[i];
+    I *= exp(beta[i]*s - sigmac[i] - sigmau);
     s *= exp(-beta[i]*I/Nt);
     dC[i] = sigmac[i]*I;
     C *= exp(-(sigmar[i]+sigmad[i]));
