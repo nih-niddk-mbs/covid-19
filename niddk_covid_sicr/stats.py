@@ -213,9 +213,12 @@ def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
 
     # Assume that loo is on a deviance scale (lower is better)
     min_loo = min(loo_vals)
-    weights = np.exp(-0.5*(loo_vals-min_loo))
+    loo_norm = loo_vals/min_loo # normalized loo values to smallest loo
+    weights = np.exp(-0.5*loo_norm)
     if loo_se_vals is not None:
-        weights *= np.exp(-0.5*loo_se_vals)
+        min_loo_se = min(loo_se_vals)
+        loo_se_norm = loo_se_vals/min_loo_se  # normalized loo se values to smallest loo se
+        weights *= np.exp(-0.5*loo_se_norm)
     weights = weights/np.sum(weights)
     return np.sum(stat_vals * weights)
 
