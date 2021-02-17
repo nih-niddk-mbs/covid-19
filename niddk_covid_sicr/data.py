@@ -73,7 +73,7 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     source = dfs['global']
     for country in tqdm(good_countries, desc='Countries'):  # For each country
         if country in ['Diamond Princess', 'MS Zaandam', 'Samoa',
-                       'Vanuatu', 'Marshall Islands', 'US']:
+                       'Vanuatu', 'Marshall Islands', 'US', 'Micronesia']:
             print("Skipping {}".format(country))
             continue
         # If we have data in the downloaded JHU files for that country
@@ -464,7 +464,7 @@ def remove_old_rois(data_path: str):
 
     csvs = [x for x in data_path.iterdir() if 'covidtimeseries' in str(x)]
     rois_to_remove = ['Diamond Princess', 'MS Zaandam', 'Samoa', 'Vanuatu',
-                        'Marshall Islands', 'US', 'US_AS']
+                        'Marshall Islands', 'US', 'US_AS', 'Micronesia']
     for csv in csvs:
         roi = str(csv).split('.')[0].split('_', 1)[-1]
         if roi in rois_to_remove:
