@@ -123,7 +123,10 @@ def get_stan_data_weekly_total(full_data_path, args):
         population = df['population'].iloc[0]
         stan_data['N'] = int(population)
     except:
-        print("Could not get population estimate for {}.".format(args.roi))
+        if args.roi:
+            print("Could not get population estimate for {}.".format(args.roi))
+        else:
+            print("Could not get population estimate.")
 
     stan_data['n_ostates'] = 3
     stan_data['tm'] = tm

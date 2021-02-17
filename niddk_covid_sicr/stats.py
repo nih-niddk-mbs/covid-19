@@ -275,8 +275,8 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     # Get weights for global region and calculate mean and var
     (global_mean, global_var) = get_weight(result, means, roi_weight)
     global_sd = global_var**(1/2)
-    result.loc[('AA_Global', 'mean'), :] = global_mean
-    result.loc[('AA_Global', 'std'), :] = global_sd
+    result.loc[('AAA_Global', 'mean'), :] = global_mean
+    result.loc[('AAA_Global', 'std'), :] = global_sd
     result = result.sort_index()
 
     # Compute stats for a superregion (Asia, Southern Asia, United States, etc)
@@ -285,23 +285,29 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
 
     # Define superregion as second argument and iterate through index removing
     #   rois not in superregion.
-    (super_means, region) = filter_region(super_means, 'United States')
+
+    # (super_means, region) = filter_region(super_means, 'United States')
+    regions = ['Brazil', 'Canada', 'United States']
 
 
-    # Get weights for superregion and calculate mean and variance.
-    (super_mean, super_var) = get_weight(super_result, super_means, roi_weight)
 
-    super_sd = super_var**(1/2)
+    for i in range(len(regions)):
+        roi = regions[i]
+        (tmp_super_means, region) = filter_region(super_means, roi)
+        # Get weights for superregion and calculate mean and variance.
+        (super_mean, super_var) = get_weight(super_result, tmp_super_means, roi_weight)
 
-    super_result.loc[('AA_'+region, 'mean'), :] = super_mean
-    super_result.loc[('AA_'+region, 'std'), :] = super_sd
+        super_sd = super_var**(1/2)
 
-    # Insert into a new column beside 'R0' the average between superregion mean
-    #   and ROI in that row.
-    super_result.insert(1, region+"_avg", (super_mean[0] + super_result['R0'])/2)
+        super_result.loc[('AA_'+region, 'mean'), :] = super_mean
+        super_result.loc[('AA_'+region, 'std'), :] = super_sd
 
-    super_result = super_result.sort_index()
+        # Insert into a new column beside 'R0' the average between superregion mean
+        #   and ROI in that row.
+        print('\nsuper_mean[0]: \n', super_mean[0])
+        super_result.insert(i, region+"_avg", (super_mean[0] + super_result['R0'])/2)
 
+    super_result.sort_index(inplace=True)
     if save:
         path = Path(raw_table_path).parent / 'fit_table_reweighted.csv'
         super_result.to_csv(path)
@@ -344,7 +350,6 @@ def get_weight(result, means, roi_weight):
         weights = n_data
         region_mean = means.mul(weights, axis=0).sum() / weights.sum()
         region_var = (((means - region_mean)**2).mul(weights, axis=0)).sum()/weights.sum()
-
     return region_mean, region_var
 #
 def filter_region(super_means, region):
