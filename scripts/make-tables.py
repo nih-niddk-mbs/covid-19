@@ -88,10 +88,10 @@ def roi_df(args, model_name, roi):
         csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
         csv = csv.resolve()
         assert csv.exists(), "No such csv file: %s" % csv
-        stan_data, t0 = ncs.get_stan_data(csv, args)
+        stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(t0, '%m/%d/%y')
-        day_offset = (frame_start - global_start).days
+        day_offset = (frame_start - global_start).weeks
     else:
         day_offset = 0
     model_path = ncs.get_model_path(args.models_path, model_name)
