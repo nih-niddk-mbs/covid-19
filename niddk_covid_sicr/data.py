@@ -73,9 +73,9 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     source = dfs['global']
     for country in tqdm(good_countries, desc='Countries'):  # For each country
         if country in ['Diamond Princess', 'MS Zaandam', 'Samoa',
-                       'Vanuatu', 'Marshall Islands']:
+                       'Vanuatu', 'Marshall Islands', 'US']:
             print("Skipping {}".format(country))
-            pass
+            continue
         # If we have data in the downloaded JHU files for that country
         if country in source['confirmed'].index:
             df = pd.DataFrame(columns=['dates2', 'cum_cases', 'cum_deaths',
@@ -180,6 +180,9 @@ def get_covid_tracking(data_path: str, filter_: Union[dict, bool] = True,
     good = []
     bad = []
     for state in tqdm(states, desc='US States'):  # For each country
+        if state in ['AS']:
+            print("Skipping {}".format(state))
+            continue
         source = df_raw[df_raw['state'] == state]  # Only the given state
         # If we have data in the downloaded file for that state
         df = pd.DataFrame(columns=['dates2', 'cum_cases', 'cum_deaths',
@@ -462,9 +465,10 @@ def remove_old_rois(data_path: str):
     csvs = [x for x in data_path.iterdir() if 'covidtimeseries' in str(x)]
     rois_to_remove = ['Diamond Princess', 'MS Zaandam', 'Samoa', 'Vanuatu',
                         'Marshall Islands', 'US', 'US_AS']
-    for csv in tqdm(csvs, desc="Regions"):
-        roi = str(csv).split('.')[0].split('_')[-1]
+    for csv in csvs:
+        roi = str(csv).split('.')[0].split('_', 1)[-1]
         if roi in rois_to_remove:
+            print(roi)
             try:
                 if os.path.exists(csv):
                     print("Removing {} from data_path".format(roi))

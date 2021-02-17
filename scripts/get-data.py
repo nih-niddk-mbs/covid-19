@@ -58,7 +58,7 @@ if args.negify_missing:
     data.negify_missing(data_path)
 
 if args.remove_old_rois:
-    print("Removing old regions that no longer report data.")
+    print("Removing old regions that no longer report data:")
     data.remove_old_rois(data_path)
 
 print("Data now available at %s" % data_path.resolve())
