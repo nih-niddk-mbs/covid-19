@@ -17,8 +17,6 @@ parser.add_argument('-fp', '--fits-path', default=today,
 parser.add_argument('-tp', '--tables-path', default=today,
                     help='Path to subdirectory to save tables. Default is'
                     ' todays date')
-parser.add_argument('-ft', '--fixed-t', default=1,
-                    help='Use a fixed time base (where 1/22/20 is t=0'))
 args = parser.parse_args()
 
 swarmFile = open(f"../{args.file_name}.swarm", "w")
@@ -27,7 +25,7 @@ line = ("source /data/schwartzao/conda/etc/profile.d/conda.sh "
         "&& python /home/schwartzao/covid-sicr/scripts/make-tables.py "
         f"-fp='/data/schwartzao/covid-sicr/fits/{args.fits_path}' "
         f"-tp='/data/schwartzao/covid-sicr/tables/{args.tables_path}' "
-        f"-ft={args.fixed_t} --max-jobs=$SLURM_CPUS_PER_TASK"
+        "--max-jobs=$SLURM_CPUS_PER_TASK"
         )
 print(line)
 
