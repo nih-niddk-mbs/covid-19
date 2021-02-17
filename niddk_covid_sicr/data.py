@@ -74,7 +74,7 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
         if country in ['Diamond Princess', 'MS Zaandam', 'Samoa',
                        'Vanuatu', 'Marshall Islands']:
             print("Skipping {}".format(country))
-            pass
+            continue
         # If we have data in the downloaded JHU files for that country
         if country in source['confirmed'].index:
             df = pd.DataFrame(columns=['dates2', 'cum_cases', 'cum_deaths',
@@ -178,7 +178,10 @@ def get_covid_tracking(data_path: str, filter_: Union[dict, bool] = True,
         filter_ = COVIDTRACKER_FILTER_DEFAULTS
     good = []
     bad = []
-    for state in tqdm(states, desc='US States'):  # For each country
+    for state in tqdm(states, desc='US States'): # For each country
+        if state in ['AS']:
+            print("Skipping {}".format(state))
+            continue
         source = df_raw[df_raw['state'] == state]  # Only the given state
         # If we have data in the downloaded file for that state
         df = pd.DataFrame(columns=['dates2', 'cum_cases', 'cum_deaths',
