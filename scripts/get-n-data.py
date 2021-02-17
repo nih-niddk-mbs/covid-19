@@ -28,7 +28,7 @@ for roi in rois:
     csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % roi)
     csv = csv.resolve()
     assert csv.exists(), "No such csv file: %s" % csv
-    stan_data, t0 = ncs.get_stan_data(csv, args)
+    stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
     n_data = ncs.get_n_data(stan_data)
     df.loc[roi, 'n_data_pts'] = int(n_data)
     df.loc[roi, 't0'] = t0

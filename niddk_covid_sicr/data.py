@@ -179,7 +179,7 @@ def get_covid_tracking(data_path: str, filter_: Union[dict, bool] = True,
         filter_ = COVIDTRACKER_FILTER_DEFAULTS
     good = []
     bad = []
-    for state in tqdm(states, desc='US States'):  # For each country
+    for state in tqdm(states, desc='US States'): # For each country
         if state in ['AS']:
             print("Skipping {}".format(state))
             continue
