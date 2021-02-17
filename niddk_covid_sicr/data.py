@@ -10,6 +10,7 @@ from tqdm import tqdm
 from typing import Union
 from urllib.error import HTTPError
 import urllib.request, json
+import os
 
 JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
 COVIDTRACKER_FILTER_DEFAULTS = {'cum_cases': 5, 'cum_recover': 1, 'cum_deaths': 0}
@@ -452,3 +453,21 @@ def negify_missing(data_path: str) -> None:
                 df['new_%s' % kind] = -1
         out = data_path / (csv.name.split('.')[0]+'.csv')
         df.to_csv(out)
+
+def remove_old_rois(data_path: str):
+    """Delete time-series files for regions no longer tracked, such as:
+     Diamond Princess, MS Zaandam, Samoa, Vanuatu, Marshall Islands,
+     US, US_AS (American Somoa)"""
+
+    csvs = [x for x in data_path.iterdir() if 'covidtimeseries' in str(x)]
+    rois_to_remove = ['Diamond Princess', 'MS Zaandam', 'Samoa', 'Vanuatu',
+                        'Marshall Islands', 'US', 'US_AS']
+    for csv in tqdm(csvs, desc="Regions"):
+        roi = str(csv).split('.')[0].split('_')[-1]
+        if roi in rois_to_remove:
+            try:
+                if os.path.exists(csv):
+                    print("Removing {} from data_path".format(roi))
+                    os.remove(csv)
+            except:
+                print("could not remove {}. Check that path is correct.".format(csv))

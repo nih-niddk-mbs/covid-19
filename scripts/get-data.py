@@ -23,6 +23,9 @@ parser.add_argument('-nm', '--negify-missing', default=1, type=int,
                           "daily change (i.e. a column of all 0's for cumulative "
                           "recovered becomes a column of all -1's for new "
                           "recovered"))
+parser.add_argument('-ror', '--remove-old-rois', default=1, type=int,
+                    help=("Remove rois that no longer report adequate data from data_path if present "))
+
 args = parser.parse_args()
 
 # Create the data path
@@ -53,5 +56,9 @@ if args.fix_negatives:
 if args.negify_missing:
     print("Replacing missing columns with -1 in daily data...")
     data.negify_missing(data_path)
+
+if args.remove_old_rois:
+    print("Removing old regions that no longer report data.")
+    data.remove_old_rois(data_path)
 
 print("Data now available at %s" % data_path.resolve())
