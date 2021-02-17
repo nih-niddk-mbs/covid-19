@@ -15,7 +15,7 @@ data {
 
 transformed data {
 
-  int seg  = 4;
+  int seg  = 8;
   int n_blocks = (n_weeks-1)/seg + 1;
 
 }
@@ -87,8 +87,9 @@ transformed parameters {
     I *= exp(beta_wk[i]*s - sigmac[i] - sigmau);
     s *= exp(-beta_wk[i]*I/Nt);
     dC[i] = sigmac[i]*I;
-    C *= exp(-(sigmar[i]+sigmad[i]));
     C += dC[i];
+    C *= exp(-(sigmar[i]+sigmad[i]));
+
 
     dR[i] = sigmar[i]*C;
     dD[i] = sigmad[i]*C;
