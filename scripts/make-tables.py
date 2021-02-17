@@ -91,7 +91,7 @@ def roi_df(args, model_name, roi):
         stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(t0, '%m/%d/%y')
-        day_offset = (frame_start - global_start).weeks
+        day_offset = (frame_start - global_start).days
     else:
         day_offset = 0
     model_path = ncs.get_model_path(args.models_path, model_name)
