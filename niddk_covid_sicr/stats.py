@@ -213,9 +213,9 @@ def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
 
     # Assume that loo is on a deviance scale (lower is better)
     min_loo = min(loo_vals)
-    weights = np.exp(-0.5*(loo_vals-min_loo))
-    if loo_se_vals is not None:
-        weights *= np.exp(-0.5*loo_se_vals)
+    loo_vals = loo_vals-min_loo # take difference then exclude >200
+    loo_diff = loo_vals[loo_vals < 200]
+    weights = np.exp(-0.5*loo_diff)
     weights = weights/np.sum(weights)
     return np.sum(stat_vals * weights)
 
