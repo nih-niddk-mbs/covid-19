@@ -289,6 +289,15 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     # (super_means, region) = filter_region(super_means, 'United States')
     regions = ['Brazil', 'Canada', 'United States']
 
+    # selectable regions:
+ #    ['Caribbean' 'Southern Asia' 'Middle Africa' 'Northern Europe'
+ # 'Southern Europe' 'Western Asia' 'South America' 'Polynesia',
+ # 'Australia and New Zealand', 'Western Europe', 'Eastern Africa',
+ # 'Western Africa', 'Eastern Europe', 'Brazil', 'Central America',
+ # 'North America', 'South-Eastern Asia', 'Southern Africa', 'Canada',
+ # 'Eastern Asia', 'Northern Africa', 'Melanesia', 'Micronesia', 'Central Asia',
+ # 'Central Europe', 'United States']
+
 
 
     for i in range(len(regions)):
