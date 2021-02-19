@@ -287,16 +287,15 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     #   rois not in superregion.
 
     # (super_means, region) = filter_region(super_means, 'United States')
-    regions = ['Brazil', 'Canada', 'United States']
-
-    # selectable regions:
- #    ['Caribbean' 'Southern Asia' 'Middle Africa' 'Northern Europe'
- # 'Southern Europe' 'Western Asia' 'South America' 'Polynesia',
- # 'Australia and New Zealand', 'Western Europe', 'Eastern Africa',
- # 'Western Africa', 'Eastern Europe', 'Brazil', 'Central America',
- # 'North America', 'South-Eastern Asia', 'Southern Africa', 'Canada',
- # 'Eastern Asia', 'Northern Africa', 'Melanesia', 'Micronesia', 'Central Asia',
- # 'Central Europe', 'United States']
+    regions = ['Brazil', 'Canada', 'United States','Caribbean','Southern Asia',
+               'Middle Africa', 'Northern Europe', 'Southern Europe',
+               'Western Asia', 'South America', 'Polynesia',
+               'Australia and New Zealand', 'Western Europe', 'Eastern Africa',
+               'Western Africa', 'Eastern Europe', 'Central America',
+               'North America', 'South-Eastern Asia', 'Southern Africa',
+               'Eastern Asia', 'Northern Africa', 'Melanesia', 'Micronesia',
+               'Central Asia','Central Europe', 'Americas', 'Asia', 'Africa',
+               'Europe', 'Oceania', 'South America', 'North America', 'Antarctic' ]
 
 
 
@@ -313,8 +312,11 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
 
         # Insert into a new column beside 'R0' the average between superregion mean
         #   and ROI in that row.
-        print('\nsuper_mean[0]: \n', super_mean[0])
-        super_result.insert(i, region+"_avg", (super_mean[0] + super_result['R0'])/2)
+        try:
+            super_result.insert(i, region+"_avg", (super_mean[0] + super_result['R0'])/2)
+        except:
+            print('did not add super region mean for {}'.format(roi))
+            pass
 
     super_result.sort_index(inplace=True)
     if save:
