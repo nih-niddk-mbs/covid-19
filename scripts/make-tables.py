@@ -170,7 +170,8 @@ if n_data_path.resolve().is_file():
     extra = pd.read_csv(n_data_path).set_index('roi')
     extra['t0'] = extra['t0'].fillna('2020-01-23').astype('datetime64').apply(lambda x: x.weekofyear).astype(int)
     # Model-averaged table
-    ncs.reweighted_stats(out, extra=extra, dates=args.dates)
+
+    ncs.reweighted_stats(out, args.data_path, extra=extra, dates=args.dates)
 else:
     print("No sample size file found at %s; unable to compute global average" % n_data_path.resolve())
 # try:

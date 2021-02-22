@@ -196,8 +196,8 @@ def getllxtensor_singleroi(roi: str, data_path: str, fits_path: str,
     return llx
 
 
-def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
-                    loo_se_vals: np.array = None) -> float:
+def reweighted_stat(stat_vals: np.array, cum_cases, cum_deaths, cum_recover,
+                    loo_vals: np.array, loo_se_vals: np.array = None) -> float:
     """Get weighted means of a stat (across models),
     where the weights are related to the LOO's of model/
 
@@ -212,15 +212,31 @@ def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
     """
 
     # Assume that loo is on a deviance scale (lower is better)
+    # min_loo = min(loo_vals)
+    # count_type = cum_recover
+    # print('\ncum_cases: ', count_type)
+    # print('\nLoo vals:\n',loo_vals)
+    # loo_vals = loo_vals/count_type
     min_loo = min(loo_vals)
+
+    # loo_diff = loo_vals - min_loo
+    # print(loo_diff)
+
     loo_vals = loo_vals-min_loo # take difference then exclude >200
     loo_diff = loo_vals[loo_vals < 200]
+
+    # print(print('\nLoo vals/cum_cases:\n',loo_vals))
+    # loo_vals = loo_vals-min_loo # take difference then exclude >200
+    # loo_diff = loo_vals[loo_vals < 200]
+
     weights = np.exp(-0.5*loo_diff)
+    # print('\nWeights = exp(-0.5*(loo_vals/counts)):\n', weights)
     weights = weights/np.sum(weights)
+    # print('\nWeights = weights/np.sum(weights):\n', weights)
     return np.sum(stat_vals * weights)
 
 
-def reweighted_stats(raw_table_path: str, save: bool = True,
+def reweighted_stats(raw_table_path: str, data_path: str, save: bool = True,
                      roi_weight='n_data_pts', extra=None, first=None, dates=None) -> pd.DataFrame:
     """Reweight all statistics (across models) according to the LOO
     of each of the models.
@@ -240,16 +256,22 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     df = df.stack('param').unstack(['roi', 'quantile', 'param']).T
     rois = df.index.get_level_values('roi').unique()
     result = pd.Series(index=df.index)
+    covid_counts = get_covid_counts(data_path)
     if first is not None:
         rois = rois[:first]
+    rois = ['US_MD']
     for roi in tqdm(rois):
         loo = df.loc[(roi, 'mean', 'loo')]
         loo_se = df.loc[(roi, 'std', 'loo')]
+        cum_cases = covid_counts[roi][0]
+        cum_deaths = covid_counts[roi][1]
+        cum_recover = covid_counts[roi][2]
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
         result[chunk] = df[chunk].apply(lambda x:
-                                        reweighted_stat(x, loo, loo_se),
-                                        axis=1)
+                                        reweighted_stat(x, cum_cases, cum_deaths,
+                                                        cum_recover, loo, loo_se),
+                                                        axis=1)
     result = result.unstack(['param'])
     result = result[~result.index.get_level_values('quantile')
                            .isin(['min', 'max'])]  # Remove min and max
@@ -310,10 +332,10 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
         super_result.loc[('AA_'+region, 'mean'), :] = super_mean
         super_result.loc[('AA_'+region, 'std'), :] = super_sd
 
-        # Insert into a new column beside 'R0' the average between superregion mean
+        # Insert into a new column at the end the average between superregion mean
         #   and ROI in that row.
         try:
-            super_result.insert(i, region+"_avg", (super_mean[0] + super_result['R0'])/2)
+            super_result.insert(len(super_result.columns), region+"_avg", (super_mean[0] + super_result['R0'])/2)
         except:
             print('did not add super region mean for {}'.format(roi))
             pass
@@ -392,6 +414,27 @@ def filter_region(super_means, region):
             super_means = super_means.drop(index=i)
 
     return super_means, region
+
+def get_covid_counts(data_path):
+    """ Helper function for reweight_stat() that creates a dictionary where keys
+    are rois and values are total cum cases and total cum deaths. """
+
+    csvs = [x for x in Path(data_path).iterdir() if 'covidtimeseries' in str(x)]
+    covid_counts = {}
+    for csv in csvs:
+        roi = str(csv).split('.')[0].split('_') # get roi name
+        if len(roi) > 2: # handle US_ and CA_ prefixes
+            roi = roi[1] + '_' + roi[2]
+        else: # if not US state or Canadian province
+            roi = roi[1]
+        df = pd.read_csv(csv)
+        counts = [] # tmp
+        cum_cases = df['cum_cases'][df.index[-1]] # get most recent cum case count
+        cum_deaths = df['cum_deaths'][df.index[-1]] # get most recent cum death count
+        cum_recover = df['cum_recover'][df.index[-1]]
+        counts.extend([cum_cases, cum_deaths, cum_recover])
+        covid_counts[roi] = counts
+    return covid_counts
 
 def days_into_2020(date_str):
     date = datetime.strptime(date_str, '%Y-%m-%d')
