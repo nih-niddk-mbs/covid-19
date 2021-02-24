@@ -69,15 +69,31 @@ def get_stan_data_weekly_total(full_data_path, args):
     if getattr(args, 'first_last_date', None):
         try:
             date_range = args.first_last_date.split(" ") # split on whitespace
-            start_date = datetime.strptime(date_range[0], '%m/%d/%y')
-            end_date = datetime.strptime(date_range[1], '%m/%d/%y')
+            test_start = datetime.strptime(date_range[0], '%m/%d/%y') # make sure its formatted correctly
+            test_end_date = datetime.strptime(date_range[1], '%m/%d/%y')
+            start_date = date_range[0]
+            end_date = date_range[1]
+
         except ValueError:
             msg = """Incorrect --first_last_date format, should be MM/DD/YY
             MM/DD/YY where first date is start date, followed by a whitespace,
             followed by last date"""
             raise ValueError(msg)
         else:
-            df = df[(df['dates2'] >= date_range[0]) & (df['dates2'] <= date_range[1])]
+            try: # check if start_date exists
+                start = df[df['dates2'] == start_date].index.values[0]
+            except:
+                start = 0
+                print("Start date of {} not found in time-series. "
+                     "Using first date found instead: {}".format(start_date, df['dates2'][0]))
+            try: # check if end_date exists
+                end = df[df['dates2'] == end_date].index.values[0]
+            except:
+                end = len(df)-1
+                print("End date of {} not found in time-series. "
+                     "Using last date found instead: {}".format(end_date, df['dates2'][end]))
+
+            df = df.iloc[start:end]
 
     n_proj = 0
     stan_data = {}
