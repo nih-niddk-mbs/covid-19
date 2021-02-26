@@ -195,7 +195,6 @@ def getllxtensor_singleroi(roi: str, data_path: str, fits_path: str,
         print('--')
     return llx
 
-
 def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
                     loo_se_vals: np.array = None) -> float:
     """Get weighted means of a stat (across models),
@@ -219,6 +218,21 @@ def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
     weights = weights/np.sum(weights)
     return np.sum(stat_vals * weights)
 
+def model_contribution(loo_vals: np.array):
+    """ Return a column showing which models are contributing to stats.
+
+        Args:
+            loo_vals (np.array): Values (across models) of LOO.
+
+        Returns:
+            string: List containing model(s) which contribute to stats.
+    """
+    min_loo = min(loo_vals)
+    loo_vals = loo_vals-min_loo # take difference then exclude >200
+    loo_diff = loo_vals[loo_vals < 200]
+    model_contr = loo_diff.to_dict() # keep track of which models contribute
+    model_contr = list(model_contr.keys())
+    return model_contr
 
 def reweighted_stats(raw_table_path: str, save: bool = True,
                      roi_weight='n_data_pts', extra=None, first=None, dates=None) -> pd.DataFrame:
@@ -238,8 +252,11 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     df = df[~df.index.duplicated(keep='last')]
     df.columns.name = 'param'
     df = df.stack('param').unstack(['roi', 'quantile', 'param']).T
+    df2 = df.copy()
     rois = df.index.get_level_values('roi').unique()
     result = pd.Series(index=df.index)
+    result2 = result.copy()
+
     if first is not None:
         rois = rois[:first]
     for roi in tqdm(rois):
@@ -250,9 +267,20 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
         result[chunk] = df[chunk].apply(lambda x:
                                         reweighted_stat(x, loo, loo_se),
                                         axis=1)
+        result2[chunk]= df[chunk].apply(lambda x:
+                                        model_contribution(loo),
+                                        axis=1)
+
     result = result.unstack(['param'])
+
+    result2 = result2.unstack(['param'])
+    df2['model_contributions'] = result2['loo']
+    path = Path(raw_table_path).parent / 'fit_table_reweighted_model_contributions.csv'
+    df2.to_csv(path)
+
     result = result[~result.index.get_level_values('quantile')
                            .isin(['min', 'max'])]  # Remove min and max
+
     if extra is not None:
         extra.columns.name = 'param'
         # Don't overwrite with anything already present in the result
@@ -274,6 +302,7 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
 
     # Get weights for global region and calculate mean and var
     (global_mean, global_var) = get_weight(result, means, roi_weight)
+
     global_sd = global_var**(1/2)
     result.loc[('AAA_Global', 'mean'), :] = global_mean
     result.loc[('AAA_Global', 'std'), :] = global_sd
