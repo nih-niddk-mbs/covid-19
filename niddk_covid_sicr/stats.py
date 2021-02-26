@@ -313,7 +313,7 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
         # Insert into a new column beside 'R0' the average between superregion mean
         #   and ROI in that row.
         try:
-            super_result.insert(i, region+"_avg", (super_mean[0] + super_result['R0'])/2)
+            super_result.insert(len(super_result.columns), region+"_avg", (super_mean[0] + super_result['R0'])/2)
         except:
             print('did not add super region mean for {}'.format(roi))
             pass
