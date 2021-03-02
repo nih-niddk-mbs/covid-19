@@ -9,6 +9,7 @@ from pathlib import Path
 from p_tqdm import p_map
 from pathos.helpers import cpu_count
 import warnings
+import math
 warnings.simplefilter("ignore")
 
 import niddk_covid_sicr as ncs
@@ -91,7 +92,8 @@ def roi_df(args, model_name, roi):
         stan_data, t0 = ncs.get_stan_data(csv, args)
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(t0, '%m/%d/%y')
-        day_offset = (frame_start - global_start).days
+        # day_offset = (frame_start - global_start).days
+        day_offset = math.floor((frame_start - global_start).days/7) # for weeks
     else:
         day_offset = 0
     model_path = ncs.get_model_path(args.models_path, model_name)
