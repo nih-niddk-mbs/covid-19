@@ -98,8 +98,12 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, stats: dict,
                 #     # And then null it because we don't want to trust < 1 week
                 #     # of data
                 #     df[:] = None
+                print("#####################")
+                print(roi)
+                print(df.columns)
                 df.columns = ['%s (week %d)' % (param, i)
                               for i in range(len(df.columns))]
+                exit()
             try:
                 df = df.describe(percentiles=quantiles)
             except ValueError as e:
