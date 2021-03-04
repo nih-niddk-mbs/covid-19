@@ -55,7 +55,7 @@ parser.add_argument('-ao', '--average-only', type=int, default=0,
                     help=('Assume all of the model-specific tables already '
                           'exist, skip creating them and instead make only '
                           'the concatenated (raw) and reweighted tables'))
-parser.add_argument('-tw', '--totwk', action="store_true",
+parser.add_argument('-tw', '--totwk', type=int, default=1,
                    help=('Use weekly totals for new cases, recoveries and deaths'))
 args = parser.parse_args()
 
@@ -93,7 +93,7 @@ def roi_df(args, model_name, roi):
         assert csv.exists(), "No such csv file: %s" % csv
         if not args.totwk:
             stan_data, t0 = ncs.get_stan_data(csv, args)
-        if args.towk:
+        if args.totwk:
             stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
 
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
