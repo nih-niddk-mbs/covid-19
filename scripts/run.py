@@ -71,7 +71,8 @@ csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
 csv = csv.resolve()
 assert csv.exists(), "No such csv file: %s" % csv
 
-stan_data, t0 = ncs.get_stan_data(csv, args)
+if not args.towk:
+    stan_data, t0 = ncs.get_stan_data(csv, args)
 if args.totwk:
     stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
 if stan_data is None:

@@ -81,23 +81,24 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, stats: dict,
         else:
             df = samples[cols]
             if by_week:
-                if day_offset:
-                    padding = pd.DataFrame(None, index=df.index, columns=['padding_%d' % i for i in range(day_offset)])
-                    df = padding.join(df)
-                #     min_periods = 4
-                # else:
-                #     min_periods = 7
-                # if df.shape[1] >= 7:  # At least one week worth of data
-                #     # Column 6 will be the last day of the first week
-                #     # It will contain the average of the first week
-                #     # Do this every 7 days
-                #     df = df.T.rolling(7, min_periods=min_periods).mean().T.iloc[:, 6::7]
-                # else:
-                #     # Just use the last value we have
-                #     df = df.T.rolling(7, min_periods=min_periods).mean().T.iloc[:, -1:]
-                #     # And then null it because we don't want to trust < 1 week
-                #     # of data
-                #     df[:] = None
+                if not args.totwk:
+                    if day_offset:
+                        padding = pd.DataFrame(None, index=df.index, columns=['padding_%d' % i for i in range(day_offset)])
+                        df = padding.join(df)
+                        min_periods = 4
+                    else:
+                        min_periods = 7
+                    if df.shape[1] >= 7:  # At least one week worth of data
+                        # Column 6 will be the last day of the first week
+                        # It will contain the average of the first week
+                        # Do this every 7 days
+                        df = df.T.rolling(7, min_periods=min_periods).mean().T.iloc[:, 6::7]
+                    else:
+                        # Just use the last value we have
+                        df = df.T.rolling(7, min_periods=min_periods).mean().T.iloc[:, -1:]
+                        # And then null it because we don't want to trust < 1 week
+                        # of data
+                        df[:] = None
                 df.columns = ['%s (week %d)' % (param, i)
                               for i in range(len(df.columns))]
             try:
