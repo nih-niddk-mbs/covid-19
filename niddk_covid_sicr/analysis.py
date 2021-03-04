@@ -99,6 +99,12 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, stats: dict,
                         # And then null it because we don't want to trust < 1 week
                         # of data
                         df[:] = None
+
+                if args.totwk:
+                    if day_offset:
+                        padding = pd.DataFrame(None, index=df.index, columns=['padding_%d' % i for i in range(day_offset)])
+                        df = padding.join(df)
+                        
                 df.columns = ['%s (week %d)' % (param, i)
                               for i in range(len(df.columns))]
             try:
