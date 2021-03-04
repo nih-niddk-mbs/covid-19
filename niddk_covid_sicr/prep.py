@@ -17,8 +17,8 @@ def get_stan_data(full_data_path, args):
             msg = "Incorrect --last-date format, should be MM/DD/YY"
             raise ValueError(msg)
         else:
-            df = df[df['dates2'] <= args.last_date]
-
+            end = df[df['dates2'] == args.last_date].index.values[0]
+            df = df.iloc[:end+1]
     # t0 := where to start time series, index space
     try:
         t0 = np.where(df["new_cases"].values >= 5)[0][0]
