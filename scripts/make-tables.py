@@ -9,6 +9,7 @@ from pathlib import Path
 from p_tqdm import p_map
 from pathos.helpers import cpu_count
 import warnings
+import math
 warnings.simplefilter("ignore")
 
 import niddk_covid_sicr as ncs
@@ -54,6 +55,8 @@ parser.add_argument('-ao', '--average-only', type=int, default=0,
                     help=('Assume all of the model-specific tables already '
                           'exist, skip creating them and instead make only '
                           'the concatenated (raw) and reweighted tables'))
+parser.add_argument('-tw', '--totwk', type=int, default=1,
+                   help=('Use weekly totals for new cases, recoveries and deaths'))
 args = parser.parse_args()
 
 # Max jobs
@@ -88,10 +91,18 @@ def roi_df(args, model_name, roi):
         csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
         csv = csv.resolve()
         assert csv.exists(), "No such csv file: %s" % csv
-        stan_data, t0 = ncs.get_stan_data(csv, args)
+        if not args.totwk:
+            stan_data, t0 = ncs.get_stan_data(csv, args)
+        if args.totwk:
+            stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
+
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(t0, '%m/%d/%y')
-        day_offset = (frame_start - global_start).days
+
+        if not args.totwk:
+            day_offset = (frame_start - global_start).days
+        if args.totwk:
+            day_offset = math.floor((frame_start - global_start).days/7) # for weeks
     else:
         day_offset = 0
     model_path = ncs.get_model_path(args.models_path, model_name)
