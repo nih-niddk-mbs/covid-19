@@ -22,7 +22,7 @@ def get_top_n(
     exclude_us_states=False,
 ):
     """Get the top N regions, by total case count, up to a certain date.
-    
+
     last_data: Use 'YYYY/MM/DD' format.
     """
     rois = list_rois(data_path, prefix, extension)
@@ -80,6 +80,8 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, stats: dict,
             print("No param like %s is in the samples dataframe" % param)
         else:
             df = samples[cols]
+            print('#############')
+            print(df)
             if by_week:
                 if day_offset:
                     padding = pd.DataFrame(None, index=df.index, columns=['padding_%d' % i for i in range(day_offset)])
@@ -92,14 +94,17 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, stats: dict,
                     # It will contain the average of the first week
                     # Do this every 7 days
                     df = df.T.rolling(7, min_periods=min_periods).mean().T.iloc[:, 6::7]
+                    print('after rolling\n', df)
                 else:
                     # Just use the last value we have
                     df = df.T.rolling(7, min_periods=min_periods).mean().T.iloc[:, -1:]
                     # And then null it because we don't want to trust < 1 week
                     # of data
                     df[:] = None
+                    print('after rolling: nullified\n', df)
                 df.columns = ['%s (week %d)' % (param, i)
                               for i in range(len(df.columns))]
+                print(df)
             try:
                 df = df.describe(percentiles=quantiles)
             except ValueError as e:
