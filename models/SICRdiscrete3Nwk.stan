@@ -73,12 +73,12 @@ transformed parameters {
     sigmar[i] = sigr;
     sigmad[i] = sigd;
     I0 = s*Nt;
-    I *= exp(beta[i]*s - sigmac[i] - sigmau);
     I += alpha[i];
+    I *= exp(beta[i]*s - sigmac[i] - sigmau);
     s *= exp(-beta[i]*I/Nt);
     dC[i] = sigmac[i]*I;
-    C *= exp(-(sigmar[i]+sigmad[i]));
     C += dC[i];
+    C *= exp(-(sigmar[i]+sigmad[i]));
 
     dR[i] = sigmar[i]*C;
     dD[i] = sigmad[i]*C;
@@ -124,31 +124,11 @@ model {
       target += poisson_lpmf(y[i,2] | dR[i]);
       target += poisson_lpmf(y[i,3] | dD[i]);
     }
-/*
-    target += normal_lpdf(beta[2]-beta[1] | 0, .1);
-    target += normal_lpdf(alpha[2]-alpha[1] | 0, .1);
-    target += normal_lpdf(sigc[2]-sigc[1] | 0, .1);
-    target += normal_lpdf(sigd[2]-sigd[1] | 0, .1);
-    target += normal_lpdf(sigr[2]-sigr[1] | 0, .1);
 
-    for (i in 2:n_weeks-1){
-      target += normal_lpdf(beta[i+1]-beta[i] | 0, .1);
-      target += normal_lpdf(beta[i+1]-2*beta[i]+beta[i-1] | 0, .05);
-      target += normal_lpdf(alpha[i+1]-alpha[i] | 0, .1);
-      target += normal_lpdf(alpha[i+1]-2*alpha[i]+alpha[i-1] | 0, .05);
-      target += normal_lpdf(sigc[i+1]-sigc[i] | 0, .1);
-      target += normal_lpdf(sigc[i+1]-2*sigc[i]+sigd[i-1] | 0, .05);
-      target += normal_lpdf(sigd[i+1]-sigd[i] | 0, .1);
-      target += normal_lpdf(sigd[i+1]-2*sigd[i]+sigd[i-1] | 0, .05);
-      target += normal_lpdf(sigr[i+1]-sigr[i] | 0, .1);
-      target += normal_lpdf(sigr[i+1]-2*sigr[i]+sigr[i-1] | 0, .05);
-
-    }
-*/
     for (i in 1:n_weeks){
-      target += normal_lpdf(car[i] | .1, .1);
-      target += normal_lpdf(ifr[i] | .01, .005);
-      target += normal_lpdf(Rt[i] | 1., 1.);
+      target += exponential_lpdf(car[i] | 2.);
+      target += normal_lpdf(ifr[i] | .01, .01);
+      target += exponential_lpdf(Rt[i] | .2);
       }
 }
 

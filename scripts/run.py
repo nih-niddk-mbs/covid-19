@@ -58,7 +58,7 @@ parser.add_argument('-ft', '--fixed-t', type=int, default=0,
                     help=('Use a fixed time base (where 1/22/20 is t=0)'
                           'rather than a time base that is relative to the '
                           'beginning of the data for each region'))
-parser.add_argument('-tw', '--totwk', action="store_true",
+parser.add_argument('-tw', '--totwk', type=int, default=1,
                    help=('Use weekly totals for new cases, recoveries and deaths'))
 args = parser.parse_args()
 
@@ -71,7 +71,8 @@ csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
 csv = csv.resolve()
 assert csv.exists(), "No such csv file: %s" % csv
 
-stan_data, t0 = ncs.get_stan_data(csv, args)
+if not args.totwk:
+    stan_data, t0 = ncs.get_stan_data(csv, args)
 if args.totwk:
     stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
 if stan_data is None:
