@@ -102,14 +102,9 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
                         df[:] = None
 
                 if totwk == 1: # samples were calculated with weekly totals
-                    print("triggered args.totwk")
                     if day_offset:
-                        print('roi: ', roi)
-                        print('day offset = ', day_offset)
-                        print(df)
                         padding = pd.DataFrame(None, index=df.index, columns=['padding_%d' % i for i in range(day_offset)])
                         df = padding.join(df)
-                        print(df)
 
                 df.columns = ['%s (week %d)' % (param, i)
                               for i in range(len(df.columns))]
