@@ -43,7 +43,7 @@ def get_top_n(
     return list(total_cases.head(n).index)
 
 
-def make_table(roi: str, samples: pd.DataFrame, params: list, stats: dict,
+def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats: dict,
                quantiles: list = [0.025, 0.25, 0.5, 0.75, 0.975],
                chain: [int, None] = None, day_offset=0) -> pd.DataFrame:
     """Make a table summarizing the fit.
@@ -52,6 +52,7 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, stats: dict,
         roi (str): A single region, e.g. "US_MI" or "Greece".
         samples (pd.DataFrame): The sample from the fit.
         params (list): The fit parameters to summarize.
+        totwk (int): Whether data is in weekly totals (1) or not (0).
         stats (dict): Stats for models computed separately
                       (e.g. from `get_waic_and_loo`)
         quantiles (list, optional): Quantiles to repport.
@@ -81,7 +82,7 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, stats: dict,
         else:
             df = samples[cols]
             if by_week:
-                if not args.totwk:
+                if totwk == 0: # samples were calculated with daily counts
                     if day_offset:
                         padding = pd.DataFrame(None, index=df.index, columns=['padding_%d' % i for i in range(day_offset)])
                         df = padding.join(df)
@@ -100,11 +101,11 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, stats: dict,
                         # of data
                         df[:] = None
 
-                if args.totwk:
+                if totwk == 1: # samples were calculated with weekly totals
                     if day_offset:
                         padding = pd.DataFrame(None, index=df.index, columns=['padding_%d' % i for i in range(day_offset)])
                         df = padding.join(df)
-                        
+
                 df.columns = ['%s (week %d)' % (param, i)
                               for i in range(len(df.columns))]
             try:
