@@ -212,25 +212,21 @@ def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
 
     # Assume that loo is on a deviance scale (lower is better)
     min_loo = min(loo_vals)
-    loo_vals = loo_vals-min_loo # take difference then exclude >200
-    loo_diff = loo_vals[loo_vals < 200]
-    weights = np.exp(-0.5*loo_diff)
+    weights = np.exp(-0.5*min_loo)
     weights = weights/np.sum(weights)
     return np.sum(stat_vals * weights)
 
-def model_contribution(loo_vals: np.array):
+def model_contribution(stat_vals: np.array):
     """ Return a column showing which models are contributing to stats.
 
         Args:
-            loo_vals (np.array): Values (across models) of LOO.
+            stat_vals (np.array): Values (across models) of LOO or WAIC.
 
         Returns:
             string: List containing model(s) which contribute to stats.
     """
-    min_loo = min(loo_vals)
-    loo_vals = loo_vals-min_loo # take difference then exclude >200
-    loo_diff = loo_vals[loo_vals < 200]
-    model_contr = loo_diff.to_dict() # keep track of which models contribute
+    min_stat = min(stat_vals) # waic or loo
+    model_contr = min_stat.to_dict() # keep track of which models contribute
     model_contr = list(model_contr.keys())
     return model_contr
 
@@ -256,12 +252,14 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     rois = df.index.get_level_values('roi').unique()
     result = pd.Series(index=df.index)
     result2 = result.copy()
+    result3 = result.copy()
 
     if first is not None:
         rois = rois[:first]
     for roi in tqdm(rois):
         loo = df.loc[(roi, 'mean', 'loo')]
         loo_se = df.loc[(roi, 'std', 'loo')]
+        waic = df.loc[(roi, 'mean', 'waic')]
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
         result[chunk] = df[chunk].apply(lambda x:
@@ -270,11 +268,18 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
         result2[chunk]= df[chunk].apply(lambda x:
                                         model_contribution(loo),
                                         axis=1)
+        result3[chunk]= df[chunk].apply(lambda x:
+                                        model_contribution(waic),
+                                        axis=1)
 
     result = result.unstack(['param'])
-
     result2 = result2.unstack(['param'])
-    df2['model_contributions'] = result2['loo']
+    result3 = result2.unstack(['param'])
+
+    df2['model_contributions_loo'] = result2['loo']
+    df2['model_contributions_waic'] = result2['waic']
+
+    
     path = Path(raw_table_path).parent / 'fit_table_reweighted_model_contributions.csv'
     df2.to_csv(path)
 
