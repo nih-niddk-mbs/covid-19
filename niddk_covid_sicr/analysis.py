@@ -82,10 +82,15 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
         else:
             df = samples[cols]
             if by_week:
+                print('by_week triggered')
                 if totwk == 0: # samples were calculated with daily counts
+                    print('totwk=0')
                     if day_offset:
+                        print(roi)
+                        print('dayoffset: ', day_offset)
                         padding = pd.DataFrame(None, index=df.index, columns=['padding_%d' % i for i in range(day_offset)])
                         df = padding.join(df)
+                        print(df)
                         min_periods = 4
                     else:
                         min_periods = 7
@@ -108,6 +113,7 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
 
                 df.columns = ['%s (week %d)' % (param, i)
                               for i in range(len(df.columns))]
+                print(df)
             try:
                 df = df.describe(percentiles=quantiles)
             except ValueError as e:
@@ -141,6 +147,7 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
         if param not in df:
             df[param] = None
     df = df.sort_index()
+    print(df)
     return df
 
 
