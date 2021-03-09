@@ -226,7 +226,9 @@ def model_contribution(stat_vals: np.array):
             string: List containing model(s) which contribute to stats.
     """
     min_stat = min(stat_vals) # waic or loo
-    model_contr = min_stat.to_dict() # keep track of which models contribute
+    stat_vals = stat_vals-min_stat # take difference then exclude > 0 (ie keep lowest)
+    stat_diff = stat_vals[stat_vals == 0]
+    model_contr = stat_diff.to_dict() # keep track of which models contribute
     model_contr = list(model_contr.keys())
     return model_contr
 
@@ -257,9 +259,12 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     if first is not None:
         rois = rois[:first]
     for roi in tqdm(rois):
-        loo = df.loc[(roi, 'mean', 'loo')]
-        loo_se = df.loc[(roi, 'std', 'loo')]
-        waic = df.loc[(roi, 'mean', 'waic')]
+        try: # catch nan instances
+            loo = df.loc[(roi, 'mean', 'loo')]
+            loo_se = df.loc[(roi, 'std', 'loo')]
+            waic = df.loc[(roi, 'mean', 'waic')]
+        except:
+            break
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
         result[chunk] = df[chunk].apply(lambda x:
@@ -271,17 +276,17 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
         result3[chunk]= df[chunk].apply(lambda x:
                                         model_contribution(waic),
                                         axis=1)
-
     result = result.unstack(['param'])
     result2 = result2.unstack(['param'])
-    result3 = result2.unstack(['param'])
+    result3 = result3.unstack(['param'])
 
     df2['model_contributions_loo'] = result2['loo']
-    df2['model_contributions_waic'] = result2['waic']
+    df2['model_contributions_waic'] = result3['waic']
 
-    
+    df3 = df2.loc[(df2.index.get_level_values('param') == 'loo') | (df2.index.get_level_values('param') == 'waic')]
+
     path = Path(raw_table_path).parent / 'fit_table_reweighted_model_contributions.csv'
-    df2.to_csv(path)
+    df3.to_csv(path)
 
     result = result[~result.index.get_level_values('quantile')
                            .isin(['min', 'max'])]  # Remove min and max
