@@ -258,6 +258,7 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
 
     if first is not None:
         rois = rois[:first]
+
     for roi in tqdm(rois):
         try: # catch nan instances
             loo = df.loc[(roi, 'mean', 'loo')]
@@ -276,6 +277,7 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
         result3[chunk]= df[chunk].apply(lambda x:
                                         model_contribution(waic),
                                         axis=1)
+
     result = result.unstack(['param'])
     result2 = result2.unstack(['param'])
     result3 = result3.unstack(['param'])
@@ -283,7 +285,13 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     df2['model_contributions_loo'] = result2['loo']
     df2['model_contributions_waic'] = result3['waic']
 
-    df3 = df2.loc[(df2.index.get_level_values('param') == 'loo') | (df2.index.get_level_values('param') == 'waic')]
+    df3 = df2.loc[(df2.index.get_level_values('param') == 'loo') &
+    (df2.index.get_level_values('quantile') == 'mean') |
+    (df2.index.get_level_values('param') == 'waic') &
+    (df2.index.get_level_values('quantile') == 'mean') |
+    (df2.index.get_level_values('param') == 'll_') &
+    (df2.index.get_level_values('quantile') == 'mean')
+    ]
 
     path = Path(raw_table_path).parent / 'fit_table_reweighted_model_contributions.csv'
     df3.to_csv(path)
