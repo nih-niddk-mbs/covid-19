@@ -230,7 +230,7 @@ def model_contribution(stat_vals: np.array):
     stat_diff = stat_vals[stat_vals == 0]
     model_contr = stat_diff.to_dict() # keep track of which models contribute
     model_contr = list(model_contr.keys())
-    return model_contr
+    return model_contr[0]
 
 def reweighted_stats(raw_table_path: str, save: bool = True,
                      roi_weight='n_data_pts', extra=None, first=None, dates=None) -> pd.DataFrame:
@@ -266,14 +266,17 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
             waic = df.loc[(roi, 'mean', 'waic')]
         except:
             break
+
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
         result[chunk] = df[chunk].apply(lambda x:
                                         reweighted_stat(x, loo, loo_se),
                                         axis=1)
+
         result2[chunk]= df[chunk].apply(lambda x:
                                         model_contribution(loo),
                                         axis=1)
+
         result3[chunk]= df[chunk].apply(lambda x:
                                         model_contribution(waic),
                                         axis=1)
@@ -282,19 +285,55 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     result2 = result2.unstack(['param'])
     result3 = result3.unstack(['param'])
 
+    # multiple value by -2 where column param = loo; only multiply for columns start with "SICR"
+    ll = df2.loc[(df2.index.get_level_values('param') == 'll_')]
+    ll2 = ll.apply(lambda x: x*(-2) if x.name.startswith('SICR') else x)
+    ll2_mean = ll2.loc[(ll2.index.get_level_values('quantile') == 'mean')]
+
     df2['model_contributions_loo'] = result2['loo']
     df2['model_contributions_waic'] = result3['waic']
 
     df3 = df2.loc[(df2.index.get_level_values('param') == 'loo') &
     (df2.index.get_level_values('quantile') == 'mean') |
     (df2.index.get_level_values('param') == 'waic') &
-    (df2.index.get_level_values('quantile') == 'mean') |
-    (df2.index.get_level_values('param') == 'll_') &
     (df2.index.get_level_values('quantile') == 'mean')
     ]
+    df4 = pd.concat([df3, ll2_mean])
+    df4.sort_values(by=['roi', 'param'], inplace=True)
+    df4.fillna(method='bfill', inplace=True)
 
-    path = Path(raw_table_path).parent / 'fit_table_reweighted_model_contributions.csv'
-    df3.to_csv(path)
+    df4["lowest_loo_convergence"] = np.nan
+    df4["lowest_waic_convergence"] = np.nan
+    rois = df4.index.get_level_values('roi').unique()
+    dfs = [] # append chunks to this and concatenate
+    for roi in tqdm(rois):
+        loo_contr_values = [] # waic, loo, ll values per lowest loo model contribution
+        waic_contr_values = [] # waic, loo, ll values per lowest waic model contribution
+        chunk = df4.index.get_level_values('roi') == roi
+        df_tmp = df4[chunk]
+        low_loo_mod = df_tmp['model_contributions_loo'].values[0]
+        low_waic_mod = df_tmp['model_contributions_waic'].values[0]
+
+        low_loo = df_tmp[low_loo_mod].to_numpy(dtype=float)
+        low_loo_2 = np.array([low_loo[1], low_loo[2], low_loo[0]])
+        low_waic = df_tmp[low_waic_mod].to_numpy(dtype=float)
+        low_waic_2 = np.array([low_waic[1], low_waic[2], low_waic[0]])
+
+        rat_loo = low_loo / low_loo_2 # get ratios
+        rat_waic = low_waic / low_waic_2
+        # check if ratios are between 0.1 and 10 (factor of 10)
+        # if they are, insert True into lowest_stat_convergence, else False
+        rat_loo_bool = (rat_loo > 0.1).all() & (rat_loo < 10).all()
+        rat_waic_bool = (rat_waic > 0.1).all() & (rat_waic < 10).all()
+
+        df_tmp['lowest_loo_convergence'] = rat_loo_bool
+        df_tmp['lowest_waic_convergence'] = rat_waic_bool
+
+        dfs.append(df_tmp)
+
+    df_conv = pd.concat(dfs)
+    path = Path(raw_table_path).parent / 'fit_table_reweighted_model_contr.csv'
+    df_conv.to_csv(path)
 
     result = result[~result.index.get_level_values('quantile')
                            .isin(['min', 'max'])]  # Remove min and max
