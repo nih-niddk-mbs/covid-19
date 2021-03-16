@@ -126,7 +126,7 @@ model {
     }
 
     for (i in 1:n_weeks){
-      target += normal_lpdf(car[i] | .1, .1);
+      target += normal_lpdf(car[i] | .2, .2);
       target += normal_lpdf(ifr[i] | .01, .01);
       target += normal_lpdf(Rt[i] | 1., 1.);
       }
