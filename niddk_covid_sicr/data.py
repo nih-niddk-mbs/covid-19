@@ -99,9 +99,13 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
 
             # Fill NaN with 0 and convert to int
             dfs[country] = df.set_index('dates2').fillna(0).astype(int)
-            # Overwrite old data
-            dfs[country].to_csv(data_path /
-                                ('covidtimeseries_%s.csv' % country))
+
+            if country == "Cote d'Ivoire":
+                dfs[country].to_csv(data_path /
+                                    ('covidtimeseries_%s.csv' % "Cote d Ivoire"))
+            else:
+                dfs[country].to_csv(data_path /
+                                    ('covidtimeseries_%s.csv' % country))
         else:
             print("No data for %s" % country)
 
