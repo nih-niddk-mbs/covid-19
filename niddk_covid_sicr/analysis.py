@@ -64,8 +64,6 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
     Returns:
         pd.DataFrame: A table of fit parameter summary statistics.
     """
-    print(roi)
-    print('Number weeks: ', num_weeks)
 
     if chain:
         samples = samples[samples['chain'] == chain]
@@ -127,6 +125,7 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
             df.columns = [x.split('[')[0] for x in df.columns]
             df.index = pd.MultiIndex.from_product(([roi], df.index),
                                                   names=['roi', 'quantile'])
+            df.to_csv('/Users/schwartzao/Desktop/workspace/covid-sicr/tables/test.csv')
             dfs.append(df)
     df = pd.concat(dfs, axis=1)
     for stat in ['waic', 'loo', 'lp__rhat']:
