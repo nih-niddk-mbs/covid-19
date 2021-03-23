@@ -66,8 +66,7 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
                             us_state_abbrev[k] = 'US_' + v # Add 'US_' to abbrev
                     df.replace(us_state_abbrev, inplace=True)
                     df = df.set_index('Province_State')
-                    df = df.groupby('Province_State').sum() # combine counties into state level data
-                    # replace state name with 'US_' + 2 letter state code
+                    df = df.groupby('Province_State').sum() # combine counties to create state level data
 
                 df = df[[x for x in df if any(year in x for year in ['20', '21'])]]  # Use only data columns
                                                 # 20 or 21 signifies 2020 or 2021
