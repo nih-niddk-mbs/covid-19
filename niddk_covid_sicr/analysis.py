@@ -150,7 +150,7 @@ def get_weeks(args):
     Return dataframe, then merge on roi on big table. """
     # Create lists: rois, and num weeks.
     roi_weeks = {}
-    for roi in rois:
+    for roi in args.rois:
         csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
         csv = csv.resolve()
         assert csv.exists(), "No such csv file: %s" % csv
