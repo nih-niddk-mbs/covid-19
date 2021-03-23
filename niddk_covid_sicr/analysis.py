@@ -44,8 +44,8 @@ def get_top_n(
 
 
 def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats: dict,
-               quantiles: list = [0.025, 0.25, 0.5, 0.75, 0.975],
-               chain: [int, None] = None, day_offset=0, num_weeks:int) -> pd.DataFrame:
+               num_weeks:int, quantiles: list = [0.025, 0.25, 0.5, 0.75, 0.975],
+               chain: [int, None] = None, day_offset=0) -> pd.DataFrame:
     """Make a table summarizing the fit.
 
     Args:
