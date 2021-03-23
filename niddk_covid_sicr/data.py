@@ -11,6 +11,8 @@ from typing import Union
 from urllib.error import HTTPError
 import urllib.request, json
 import os
+from us_state_abbrev import us_state_abbrev
+
 
 JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
 COVIDTRACKER_FILTER_DEFAULTS = {'cum_cases': 5, 'cum_recover': 1, 'cum_deaths': 0}
@@ -59,7 +61,13 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
                     df = pd.concat([df1] + more_dfs)
                 elif region == 'US':
                     # Use state name as index
+                    for k, v in us_state_abbrev.items(): # get US state abbrev
+                        if not us_state_abbrev[k].startswith('US_'):
+                            us_state_abbrev[k] = 'US_' + v # Add 'US_' to abbrev
+                    df.replace(us_state_abbrev, inplace=True)
                     df = df.set_index('Province_State')
+                    df = df.groupby('Province_State').sum() # combine counties to create state level data
+
                 df = df[[x for x in df if any(year in x for year in ['20', '21'])]]  # Use only data columns
                                                 # 20 or 21 signifies 2020 or 2021
                 dfs[region][kind] = df  # Add to dictionary of dataframes
@@ -91,6 +99,7 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
                 df[['cum_cases', 'cum_deaths', 'cum_recover']].diff()
             df['new_uninfected'] = df['new_recover'] + df['new_deaths']
 
+
             try:
                 population = get_population_count(data_path, country)
                 df['population'] = population
@@ -99,11 +108,53 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
 
             # Fill NaN with 0 and convert to int
             dfs[country] = df.set_index('dates2').fillna(0).astype(int)
-            # Overwrite old data
-            dfs[country].to_csv(data_path /
-                                ('covidtimeseries_%s.csv' % country))
+
+            if country == "Cote d'Ivoire":
+                dfs[country].to_csv(data_path /
+                                    ('covidtimeseries_%s.csv' % "Cote d Ivoire"))
+            else:
+                dfs[country].to_csv(data_path /
+                                    ('covidtimeseries_%s.csv' % country))
         else:
             print("No data for %s" % country)
+
+    source = dfs['US']
+    states = source['confirmed'].index.tolist()
+    for state in tqdm(states, desc='US States'):  # For each country
+        if state in ['Diamond Princess', 'MS Zaandam', 'US_AS']:
+            print("Skipping {}".format(state))
+            continue
+        # If we have data in the downloaded JHU files for that country
+        if state in source['confirmed'].index:
+            df = pd.DataFrame(columns=['dates2', 'cum_cases', 'cum_deaths',
+                                       'cum_recover', 'new_cases',
+                                       'new_deaths', 'new_recover',
+                                       'new_uninfected'])
+            df['dates2'] = source['confirmed'].columns
+            df['dates2'] = df['dates2'].apply(fix_jhu_dates)
+            df['cum_cases'] = source['confirmed'].loc[state].values
+            df['cum_deaths'] = source['deaths'].loc[state].values
+            df['cum_recover'] = 0
+            df['new_recover'] = 0
+
+            df[['new_cases', 'new_deaths']] = \
+                df[['cum_cases', 'cum_deaths']].diff()
+            df['new_uninfected'] = df['new_recover'] + df['new_deaths']
+
+            try:
+                population = get_population_count(data_path, state)
+                df['population'] = population
+            except:
+                pass
+
+            # Fill NaN with 0 and convert to int
+            dfs[state] = df.set_index('dates2').fillna(0).astype(int)
+
+            dfs[state].to_csv(data_path /
+                                ('covidtimeseries_%s.csv' % state))
+        else:
+            print("No data for %s" % state)
+
 
 def fix_jhu_dates(x):
     y = datetime.strptime(x, '%m/%d/%y')

@@ -122,30 +122,11 @@ model {
       sigc[i] ~ exponential(1.);
       sigr[i] ~ exponential(2.);
       target += poisson_lpmf(y[i,1] | dC[i]);
-      target += poisson_lpmf(y[i,2] | dR[i]);
+      if (y[i,2] > -1)
+        target += poisson_lpmf(y[i,2] | dR[i]);
       target += poisson_lpmf(y[i,3] | dD[i]);
     }
-/*
-    target += normal_lpdf(beta[2]-beta[1] | 0, .1);
-    target += normal_lpdf(alpha[2]-alpha[1] | 0, .1);
-    target += normal_lpdf(sigc[2]-sigc[1] | 0, .1);
-    target += normal_lpdf(sigd[2]-sigd[1] | 0, .1);
-    target += normal_lpdf(sigr[2]-sigr[1] | 0, .1);
 
-    for (i in 2:n_weeks-1){
-      target += normal_lpdf(beta[i+1]-beta[i] | 0, .1);
-      target += normal_lpdf(beta[i+1]-2*beta[i]+beta[i-1] | 0, .05);
-      target += normal_lpdf(alpha[i+1]-alpha[i] | 0, .1);
-      target += normal_lpdf(alpha[i+1]-2*alpha[i]+alpha[i-1] | 0, .05);
-      target += normal_lpdf(sigc[i+1]-sigc[i] | 0, .1);
-      target += normal_lpdf(sigc[i+1]-2*sigc[i]+sigd[i-1] | 0, .05);
-      target += normal_lpdf(sigd[i+1]-sigd[i] | 0, .1);
-      target += normal_lpdf(sigd[i+1]-2*sigd[i]+sigd[i-1] | 0, .05);
-      target += normal_lpdf(sigr[i+1]-sigr[i] | 0, .1);
-      target += normal_lpdf(sigr[i+1]-2*sigr[i]+sigr[i-1] | 0, .05);
-
-    }
-*/
     for (i in 1:n_weeks){
       target += normal_lpdf(car[i] | .1, .1);
       target += normal_lpdf(ifr[i] | .01, .005);
@@ -169,7 +150,10 @@ generated quantities {
         y_proj[i,2] = poisson_rng(min([dR[i],1e8]));
         y_proj[i,3] = poisson_rng(min([dD[i],1e8]));
         llx[i,1] = poisson_lpmf(y[i,1] | min([dC[i]/7,1e8]));
-        llx[i,2] = poisson_lpmf(y[i,2] | min([dR[i]/7,1e8]));
+        if (y[i,2] > -1)
+          llx[i,2] = poisson_lpmf(y[i,2] | min([dR[i]/7,1e8]));
+        else
+          llx[i,2] = 0.;
         llx[i,3] = poisson_lpmf(y[i,3] | min([dD[i]/7,1e8]));
         ll_ += llx[i,1] + llx[i,2] + llx[i,3];
       }
