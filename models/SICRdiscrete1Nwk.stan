@@ -154,7 +154,7 @@ generated quantities {
         if (y[i,2] > -1)
           llx[i,2] = poisson_lpmf(y[i,2] | min([dR[i]/7,1e8]));
         else
-          llx[i,2] = 0.
+          llx[i,2] = 0.;
         llx[i,3] = poisson_lpmf(y[i,3] | min([dD[i]/7,1e8]));
         ll_ += llx[i,1] + llx[i,2] + llx[i,3];
       }
