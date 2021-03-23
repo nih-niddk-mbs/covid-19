@@ -156,13 +156,12 @@ def get_weeks(args):
         assert csv.exists(), "No such csv file: %s" % csv
 
         if not args.totwk:
-            stan_data, t0, last_date = ncs.get_stan_data(csv, args)
+            stan_data, t0, num_weeks = ncs.get_stan_data(csv, args)
         if args.totwk:
-            stan_data, t0, last_date = ncs.get_stan_data_weekly_total(csv, args)
+            stan_data, t0, num_weeks = ncs.get_stan_data_weekly_total(csv, args)
 
         frame_start = datetime.strptime(t0, '%m/%d/%y')
-        last_date = datetime.strptime(last_date, '%m/%d/%y')
-        num_weeks = math.floor((last_date - frame_start).days/7) # report number of weeks of data
+
         roi_weeks[roi] = num_weeks
 
     df_numweek = pd.DataFrame(roi_weeks.items(), columns=['roi', 'num weeks'])
