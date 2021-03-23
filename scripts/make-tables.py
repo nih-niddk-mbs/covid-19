@@ -122,7 +122,7 @@ def roi_df(args, model_name, roi):
                                       model_name, roi, args.fit_format)
         stats = ncs.get_waic(samples)
     df = ncs.make_table(roi, samples, args.params, args.totwk,
-                        stats, num_weeks, quantiles=args.quantiles,
+                        stats, quantiles=args.quantiles,
                         day_offset=day_offset)
     return model_name, roi, df
 
@@ -142,6 +142,10 @@ for model_name in args.model_names:
         if not len(tables):  # Probably no matching models
             continue
         df = pd.concat(tables)
+        # add new column num_weeks and index through df to
+
+
+
         df = df.sort_index()
         # Export the CSV file for this model
         df.to_csv(out)
@@ -173,6 +177,12 @@ df = df[sorted(df.columns)]
 
 # Remove duplicate model/region combinations (keep most recent)
 df = df[~df.index.duplicated(keep='last')]
+
+# add number of weeks of data per roi to big table
+df = df.reset_index()
+df_numweek = get_weeks(args)
+df = pd.merge(df, df_numweek, on='roi')
+df = df.set_index(['model', 'roi', 'quantile']).sort_index()
 
 # Export the CSV file for the big table
 df.to_csv(out)

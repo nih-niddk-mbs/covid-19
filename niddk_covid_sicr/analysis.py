@@ -44,7 +44,7 @@ def get_top_n(
 
 
 def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats: dict,
-               num_weeks:int, quantiles: list = [0.025, 0.25, 0.5, 0.75, 0.975],
+               quantiles: list = [0.025, 0.25, 0.5, 0.75, 0.975],
                chain: [int, None] = None, day_offset=0) -> pd.DataFrame:
     """Make a table summarizing the fit.
 
@@ -122,10 +122,8 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
                 df = df.median(axis=1).to_frame(name=param)
             # Drop the index
             df.columns = [x.split('[')[0] for x in df.columns]
-            df['num_weeks'] = num_weeks # Add number of weeks data to df
             df.index = pd.MultiIndex.from_product(([roi], df.index),
                                                   names=['roi', 'quantile'])
-            # df.to_csv(f'/data/schwartzao/covid-sicr/tables/{roi}.csv')
             dfs.append(df)
     df = pd.concat(dfs, axis=1)
     for stat in ['waic', 'loo', 'lp__rhat']:
@@ -146,10 +144,34 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
     df = df.sort_index()
     return df
 
-# def get_weeks():
-#     """Build dictionary containing roi and number of weeks of data per roi.
-#     Need this to calculate number of parameters per model to then calulate AIC. """
-#
+def get_weeks(args):
+    """Build dataframe containing roi and number of weeks of data per roi.
+    Need this to calculate number of parameters per model to then calulate AIC.
+    Return dataframe, then merge on roi on big table. """
+    # Create lists: rois, and num weeks.
+    roi_weeks = {}
+    for roi in rois:
+        csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
+        csv = csv.resolve()
+        assert csv.exists(), "No such csv file: %s" % csv
+
+        if not args.totwk:
+            stan_data, t0, last_date = ncs.get_stan_data(csv, args)
+        if args.totwk:
+            stan_data, t0, last_date = ncs.get_stan_data_weekly_total(csv, args)
+
+        frame_start = datetime.strptime(t0, '%m/%d/%y')
+        last_date = datetime.strptime(last_date, '%m/%d/%y')
+        num_weeks = math.floor((last_date - frame_start).days/7) # report number of weeks of data
+        roi_weeks[roi] = num_weeks
+
+    df_numweek = pd.DataFrame(roi_weeks.items(), columns=['roi', 'num weeks'])
+    df_numweek = df_numweek.set_index('roi').sort_index()
+    return df_numweek
+
+    # open covidtimeseries_ file per roi
+    # calculate num weeks
+    #
 #
 #
 # def get_aic():
