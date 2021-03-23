@@ -92,12 +92,14 @@ def roi_df(args, model_name, roi):
         csv = csv.resolve()
         assert csv.exists(), "No such csv file: %s" % csv
         if not args.totwk:
-            stan_data, t0 = ncs.get_stan_data(csv, args)
+            stan_data, t0, last_date = ncs.get_stan_data(csv, args)
         if args.totwk:
-            stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
+            stan_data, t0, last_date = ncs.get_stan_data_weekly_total(csv, args)
 
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(t0, '%m/%d/%y')
+        last_date = datetime.strptime(t0, '%m/%d/%y')
+        num_weeks = math.floor((frame_start - last_date).days/7) # report number of weeks of data
 
         if not args.totwk:
             day_offset = (frame_start - global_start).days
@@ -121,7 +123,7 @@ def roi_df(args, model_name, roi):
         stats = ncs.get_waic(samples)
     df = ncs.make_table(roi, samples, args.params, args.totwk,
                         stats, quantiles=args.quantiles,
-                        day_offset=day_offset)
+                        day_offset=day_offset, num_weeks)
     return model_name, roi, df
 
 

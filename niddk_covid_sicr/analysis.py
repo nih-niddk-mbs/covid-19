@@ -45,7 +45,7 @@ def get_top_n(
 
 def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats: dict,
                quantiles: list = [0.025, 0.25, 0.5, 0.75, 0.975],
-               chain: [int, None] = None, day_offset=0) -> pd.DataFrame:
+               chain: [int, None] = None, day_offset=0, num_weeks:int) -> pd.DataFrame:
     """Make a table summarizing the fit.
 
     Args:
@@ -64,6 +64,8 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
     Returns:
         pd.DataFrame: A table of fit parameter summary statistics.
     """
+    print(num_weeks)
+    exit()
     if chain:
         samples = samples[samples['chain'] == chain]
     dfs = []
@@ -142,6 +144,17 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
             df[param] = None
     df = df.sort_index()
     return df
+
+# def get_weeks():
+#     """Build dictionary containing roi and number of weeks of data per roi.
+#     Need this to calculate number of parameters per model to then calulate AIC. """
+#
+#
+#
+# def get_aic():
+#     """ Calculate AIC in Dataframe  """
+#     # Append
+
 
 
 def get_day_labels(data: pd.DataFrame, days: list, t0: int) -> list:
