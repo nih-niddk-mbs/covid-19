@@ -121,7 +121,8 @@ model {
     for (i in 1:n_weeks){
 
       target += poisson_lpmf(y[i,1] | dC[i]);
-      target += poisson_lpmf(y[i,2] | dR[i]);
+      if (y[i,2] > -1)
+        target += poisson_lpmf(y[i,2] | dR[i]);
       target += poisson_lpmf(y[i,3] | dD[i]);
     }
 
@@ -148,7 +149,10 @@ generated quantities {
         y_proj[i,2] = poisson_rng(min([dR[i],1e8]));
         y_proj[i,3] = poisson_rng(min([dD[i],1e8]));
         llx[i,1] = poisson_lpmf(y[i,1] | min([dC[i]/7,1e8]));
-        llx[i,2] = poisson_lpmf(y[i,2] | min([dR[i]/7,1e8]));
+        if (y[i,2] > -1)
+          llx[i,2] = poisson_lpmf(y[i,2] | min([dR[i]/7,1e8]));
+        else
+          llx[i,2] = 0.;
         llx[i,3] = poisson_lpmf(y[i,3] | min([dD[i]/7,1e8]));
         ll_ += llx[i,1] + llx[i,2] + llx[i,3];
       }
