@@ -125,7 +125,7 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
             df.columns = [x.split('[')[0] for x in df.columns]
             df.index = pd.MultiIndex.from_product(([roi], df.index),
                                                   names=['roi', 'quantile'])
-            df.to_csv('/data/schwartzao/covid-sicr/tables/test.csv')
+            df.to_csv(f'/data/schwartzao/covid-sicr/tables/{roi}.csv')
             dfs.append(df)
     df = pd.concat(dfs, axis=1)
     for stat in ['waic', 'loo', 'lp__rhat']:
