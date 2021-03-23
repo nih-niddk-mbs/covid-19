@@ -178,7 +178,7 @@ df = df[~df.index.duplicated(keep='last')]
 
 # add number of weeks of data per roi to big table
 df = df.reset_index()
-df_numweek = get_weeks(args)
+df_numweek = ncs.get_weeks(args)
 df = pd.merge(df, df_numweek, on='roi')
 df = df.set_index(['model', 'roi', 'quantile']).sort_index()
 
