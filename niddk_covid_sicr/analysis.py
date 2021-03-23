@@ -109,7 +109,7 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
 
                 df.columns = ['%s (week %d)' % (param, i)
                               for i in range(len(df.columns))]
-            # df['num_weeks'] = num_weeks # Add number of weeks data to df
+            df['num_weeks'] = num_weeks # Add number of weeks data to df
             try:
                 df = df.describe(percentiles=quantiles)
             except ValueError as e:
