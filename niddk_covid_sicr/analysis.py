@@ -109,7 +109,6 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
 
                 df.columns = ['%s (week %d)' % (param, i)
                               for i in range(len(df.columns))]
-                df['num_weeks'] = num_weeks # Add number of weeks data to df
             try:
                 df = df.describe(percentiles=quantiles)
             except ValueError as e:
@@ -123,9 +122,10 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
                 df = df.median(axis=1).to_frame(name=param)
             # Drop the index
             df.columns = [x.split('[')[0] for x in df.columns]
+            df['num_weeks'] = num_weeks # Add number of weeks data to df
             df.index = pd.MultiIndex.from_product(([roi], df.index),
                                                   names=['roi', 'quantile'])
-            df.to_csv(f'/data/schwartzao/covid-sicr/tables/{roi}.csv')
+            # df.to_csv(f'/data/schwartzao/covid-sicr/tables/{roi}.csv')
             dfs.append(df)
     df = pd.concat(dfs, axis=1)
     for stat in ['waic', 'loo', 'lp__rhat']:
