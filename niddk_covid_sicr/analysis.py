@@ -111,6 +111,7 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
 
                 df.columns = ['%s (week %d)' % (param, i)
                               for i in range(len(df.columns))]
+            df['num_weeks'] = num_weeks # Add number of weeks data to df
             try:
                 df = df.describe(percentiles=quantiles)
             except ValueError as e:
@@ -122,7 +123,6 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
             if not by_week:
                 # Compute the median across all of the matching column names
                 df = df.median(axis=1).to_frame(name=param)
-            df['num_weeks'] = num_weeks # Add number of weeks data to df
             # Drop the index
             df.columns = [x.split('[')[0] for x in df.columns]
             df.index = pd.MultiIndex.from_product(([roi], df.index),
