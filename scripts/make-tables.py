@@ -98,7 +98,7 @@ def roi_df(args, model_name, roi):
 
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(t0, '%m/%d/%y')
-        last_date = datetime.strptime(t0, '%m/%d/%y')
+        last_date = datetime.strptime(last_date, '%m/%d/%y')
         num_weeks = math.floor((frame_start - last_date).days/7) # report number of weeks of data
 
         if not args.totwk:
