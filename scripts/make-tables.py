@@ -144,7 +144,7 @@ for model_name in args.model_names:
             continue
         df = pd.concat(tables)
         df = df.sort_index()
-        df.reset_index(level='quantile', inplace=True)
+        df.reset_index(inplace=True)
         print(df)
         df.to_csv(tables_path / 'pre-merge.csv')
         # df = pd.join(df, df_numweek, on='roi')
