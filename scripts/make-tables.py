@@ -81,7 +81,7 @@ if not args.average_only:
             rois = list(set(rois).intersection(args.rois))
         combos += [(model_name, roi) for roi in rois]
         roi_list.append(rois)
-    all_rois = {x for l in roi_list for x in l}
+    all_rois = [x for l in roi_list for x in l]
     print(roi_list)
     print(all_rois)
     # Organize into (model_name, roi) tuples
