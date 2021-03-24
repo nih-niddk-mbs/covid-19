@@ -72,7 +72,7 @@ if not args.model_names:
 # Get all model_names, roi combinations
 if not args.average_only:
     combos = []
-    roi_list = 0
+    roi_list = []
     for model_name in args.model_names:
         model_path = ncs.get_model_path(args.models_path, model_name)
         extension = ['csv', 'pkl'][args.fit_format]
