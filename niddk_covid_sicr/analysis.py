@@ -160,12 +160,13 @@ def get_weeks(args):
         if args.totwk:
             stan_data, t0, num_weeks = ncs.get_stan_data_weekly_total(csv, args)
 
-        frame_start = datetime.strptime(t0, '%m/%d/%y')
-
         roi_weeks[roi] = num_weeks
+    print(roi_weeks)
 
     df_numweek = pd.DataFrame(roi_weeks.items(), columns=['roi', 'num weeks'])
+    print(df_numweek)
     df_numweek = df_numweek.set_index('roi').sort_index()
+    print(df_numweek)
     return df_numweek
 
     # open covidtimeseries_ file per roi
