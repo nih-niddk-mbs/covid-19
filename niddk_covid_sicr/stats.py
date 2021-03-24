@@ -192,6 +192,8 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
 
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
+        print(chunk)
+        exit()
         result[chunk] = df[chunk].apply(lambda x:
                                         reweighted_stat(x, loo, loo_se),
                                         axis=1)

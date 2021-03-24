@@ -151,38 +151,33 @@ def get_weeks(args, rois):
     Return dataframe, then merge on roi on big table. """
     # Create lists: rois, and num weeks.
     roi_weeks = {}
-    print(rois)
     for roi in rois:
-        print(roi)
         csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % roi)
         csv = csv.resolve()
         assert csv.exists(), "No such csv file: %s" % csv
-
         if not args.totwk:
             stan_data, t0, num_weeks = ncs.get_stan_data(csv, args)
         if args.totwk:
             stan_data, t0, num_weeks = ncs.get_stan_data_weekly_total(csv, args)
-        print(num_weeks)
-
         roi_weeks[roi] = num_weeks
-    print(roi_weeks)
-
     df_numweek = pd.DataFrame(roi_weeks.items(), columns=['roi', 'num weeks'])
-    print(df_numweek)
     df_numweek = df_numweek.set_index('roi').sort_index()
-    print(df_numweek)
     return df_numweek
 
-    # open covidtimeseries_ file per roi
-    # calculate num weeks
-    #
+# def get_aic(models):
+#     """Calculate AIC and add to table. """
 #
 #
-# def get_aic():
-#     """ Calculate AIC in Dataframe  """
-#     # Append
-
-
+#     n_blocks = int(np.floor((int(last_week)-1)/9))
+#
+#     num_params = np.array([(2 + 4*int(last_week)),  # 1Nwk
+#                        (2 + 4*int(last_week)),      # 2Nwk
+#                        (3 + 3*int(last_week)),      # 3Nwk
+#                        (2 + 4*n_blocks),            # 4Nwk
+#                        (1 + 5*int(last_week)),      # 5Nwk
+#                        (3 + 3*int(last_week)),      # 6Nwk
+#                        (1 + 5*int(last_week))       # Nwk
+#                       ])
 
 def get_day_labels(data: pd.DataFrame, days: list, t0: int) -> list:
     """Gets labels for days. Used for plotting only.
