@@ -144,10 +144,9 @@ for model_name in args.model_names:
         if not len(tables):  # Probably no matching models
             continue
         df = pd.concat(tables)
-
-        print(df)
         df = df.sort_index()
-        print(df)
+        df_numweek = ncs.get_weeks(args, all_rois)
+        df = pd.merge(df, df_numweek, on='roi')
         # Export the CSV file for this model
         df.to_csv(out)
     else:
@@ -180,10 +179,10 @@ df = df[sorted(df.columns)]
 df = df[~df.index.duplicated(keep='last')]
 
 # add number of weeks of data per roi to big table
-df = df.reset_index()
-df_numweek = ncs.get_weeks(args, all_rois)
-df = pd.merge(df, df_numweek, on='roi')
-df = df.set_index(['model', 'roi', 'quantile']).sort_index()
+# df = df.reset_index()
+# df_numweek = ncs.get_weeks(args, all_rois)
+# df = pd.merge(df, df_numweek, on='roi')
+# df = df.set_index(['model', 'roi', 'quantile']).sort_index()
 # calculate AIC and add to table
 
 # Export the CSV file for the big table
