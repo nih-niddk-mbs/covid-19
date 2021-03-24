@@ -182,6 +182,7 @@ df = df[~df.index.duplicated(keep='last')]
 # df.to_csv(tables_path / 'multi_index.csv')
 df = df.reset_index()
 # df.to_csv(tables_path / 'reset_index.csv')
+print(roi_list)
 df_numweek = ncs.get_weeks(args, roi_list)
 df_numweek.to_csv(tables_path / 'num_week_roi.csv')
 
