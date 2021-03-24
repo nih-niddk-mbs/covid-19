@@ -164,21 +164,6 @@ def get_weeks(args, rois):
     df_numweek = df_numweek.set_index('roi').sort_index()
     return df_numweek
 
-# def get_aic(models):
-#     """Calculate AIC and add to table. """
-#
-#
-#     n_blocks = int(np.floor((int(last_week)-1)/9))
-#
-#     num_params = np.array([(2 + 4*int(last_week)),  # 1Nwk
-#                        (2 + 4*int(last_week)),      # 2Nwk
-#                        (3 + 3*int(last_week)),      # 3Nwk
-#                        (2 + 4*n_blocks),            # 4Nwk
-#                        (1 + 5*int(last_week)),      # 5Nwk
-#                        (3 + 3*int(last_week)),      # 6Nwk
-#                        (1 + 5*int(last_week))       # Nwk
-#                       ])
-
 def get_day_labels(data: pd.DataFrame, days: list, t0: int) -> list:
     """Gets labels for days. Used for plotting only.
 
