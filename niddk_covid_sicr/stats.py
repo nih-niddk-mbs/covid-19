@@ -12,7 +12,7 @@ from warnings import warn
 
 from .io import extract_samples
 # constants for model parameters' module; used for aic calculation
-MODEL_PARAMETER_CONSTANTS= {
+MODEL_PARAMETER_CONSTANTS = {
               'SICRdiscreteNwk':{'cons1':1, 'cons2':5},
               'SICRdiscrete1Nwk':{'cons1':2, 'cons2':4},
               'SICRdiscrete2Nwk':{'cons1':2, 'cons2':4},
@@ -194,17 +194,12 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
                       (i.e. a weighted average across models).
     """
     df = pd.read_csv(raw_table_path, index_col=['model', 'roi', 'quantile'])
-    print(df['index'])
-    print(df)
-    exit()
     df = df[~df.index.duplicated(keep='last')]
     df['ll_'] = df['ll_'] * -2 # first calculate ll (ll * -2)
     df.reset_index(inplace=True)
     df = df.apply(get_aic, axis=1)
     df = df.set_index(['model', 'roi', 'quantile']).sort_index()
     df.to_csv(raw_table_path)
-    exit()
-
 
     df.columns.name = 'param'
     df = df.stack('param').unstack(['roi', 'quantile', 'param']).T
@@ -217,8 +212,6 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
         try: # catch nan instances
             loo = df.loc[(roi, 'mean', 'loo')]
             loo_se = df.loc[(roi, 'std', 'loo')]
-            # ll = df.loc[(roi, 'mean', 'll_')]
-            # num_weeks = df.loc[(roi, 'mean', 'num weeks')]
         except:
             break
 
@@ -227,7 +220,6 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
         result[chunk] = df[chunk].apply(lambda x:
                                         reweighted_stat(x, loo, loo_se),
                                         axis=1)
-
     result = result.unstack(['param'])
     result = result[~result.index.get_level_values('quantile')
                            .isin(['min', 'max'])]  # Remove min and max
