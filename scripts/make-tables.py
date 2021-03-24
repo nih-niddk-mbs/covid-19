@@ -144,12 +144,14 @@ for model_name in args.model_names:
             continue
         df = pd.concat(tables)
         df = df.sort_index()
+        df.reset_index(level='quantile', inplace=True)
         print(df)
         df.to_csv(tables_path / 'pre-merge.csv')
         # df = pd.join(df, df_numweek, on='roi')
         df = pd.merge(df, df_numweek,
                         how="left", on=["roi"])
         df.to_csv(tables_path / 'post-merge.csv')
+        df.set_index(['roi', 'quantile'], inplace=True)
         print(df)
         # Export the CSV file for this model
         df.to_csv(out)
