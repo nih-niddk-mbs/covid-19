@@ -146,7 +146,9 @@ for model_name in args.model_names:
         df = df.sort_index()
         print(df)
         df.to_csv(tables_path / 'pre-merge.csv')
-        df = pd.merge(df, df_numweek, on='roi')
+        # df = pd.join(df, df_numweek, on='roi')
+        df = pd.merge(df, df_numweek,
+                        how="left", on=["roi"])
         df.to_csv(tables_path / 'post-merge.csv')
         print(df)
         # Export the CSV file for this model
