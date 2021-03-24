@@ -72,6 +72,7 @@ if not args.model_names:
 # Get all model_names, roi combinations
 if not args.average_only:
     combos = []
+    roi_list = []
     for model_name in args.model_names:
         model_path = ncs.get_model_path(args.models_path, model_name)
         extension = ['csv', 'pkl'][args.fit_format]
@@ -79,6 +80,7 @@ if not args.average_only:
         if args.rois:
             rois = list(set(rois).intersection(args.rois))
         combos += [(model_name, roi) for roi in rois]
+        roi_list.append(rois)
     # Organize into (model_name, roi) tuples
     combos = list(zip(*combos))
     assert len(combos), "No combinations of models and ROIs found"
@@ -180,7 +182,7 @@ df = df[~df.index.duplicated(keep='last')]
 # df.to_csv(tables_path / 'multi_index.csv')
 df = df.reset_index()
 # df.to_csv(tables_path / 'reset_index.csv')
-df_numweek = ncs.get_weeks(args)
+df_numweek = ncs.get_weeks(args, roi_list)
 df_numweek.to_csv(tables_path / 'num_week_roi.csv')
 
 df = pd.merge(df, df_numweek, on='roi')

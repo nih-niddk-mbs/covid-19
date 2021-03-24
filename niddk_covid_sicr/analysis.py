@@ -144,13 +144,13 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
     df = df.sort_index()
     return df
 
-def get_weeks(args):
+def get_weeks(args, rois):
     """Build dataframe containing roi and number of weeks of data per roi.
     Need this to calculate number of parameters per model to then calulate AIC.
     Return dataframe, then merge on roi on big table. """
     # Create lists: rois, and num weeks.
     roi_weeks = {}
-    for roi in args.rois:
+    for roi in rois:
         print(roi)
         csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
         csv = csv.resolve()
