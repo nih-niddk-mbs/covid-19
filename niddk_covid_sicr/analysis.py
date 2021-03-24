@@ -153,7 +153,7 @@ def get_weeks(args, rois):
     print(rois)
     for roi in rois:
         print(roi)
-        csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
+        csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % roi)
         csv = csv.resolve()
         assert csv.exists(), "No such csv file: %s" % csv
 
