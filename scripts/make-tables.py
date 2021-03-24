@@ -134,7 +134,6 @@ if not args.average_only:
     result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
 
 dfs = []
-df_numweek = ncs.get_weeks(args, all_rois) # get df for roi/num_week pairs
 for model_name in args.model_names:
     out = tables_path / ('%s_fit_table.csv' % model_name)
     if not args.average_only:
@@ -144,15 +143,6 @@ for model_name in args.model_names:
             continue
         df = pd.concat(tables)
         df = df.sort_index()
-        df.reset_index(inplace=True)
-        print(df)
-        df.to_csv(tables_path / 'pre-merge.csv')
-        # df = pd.join(df, df_numweek, on='roi')
-        df = pd.merge(df, df_numweek,
-                        how="left", on=["roi"])
-        df.to_csv(tables_path / 'post-merge.csv')
-        df.set_index(['roi', 'quantile'], inplace=True)
-        print(df)
         # Export the CSV file for this model
         df.to_csv(out)
     else:
@@ -185,10 +175,10 @@ df = df[sorted(df.columns)]
 df = df[~df.index.duplicated(keep='last')]
 
 # add number of weeks of data per roi to big table
-# df = df.reset_index()
-# df_numweek = ncs.get_weeks(args, all_rois)
-# df = pd.merge(df, df_numweek, on='roi')
-# df = df.set_index(['model', 'roi', 'quantile']).sort_index()
+df_numweek = ncs.get_weeks(args, all_rois)
+df = df.reset_index()
+df = pd.merge(df, df_numweek, on='roi')
+df = df.set_index(['model', 'roi', 'quantile']).sort_index()
 # calculate AIC and add to table
 
 # Export the CSV file for the big table
