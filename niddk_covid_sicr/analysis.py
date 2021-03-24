@@ -10,6 +10,7 @@ from scipy.stats import norm
 from tqdm import tqdm
 
 from .io import get_data, get_fit_path, list_rois, load_fit
+import niddk_covid_sicr as ncs
 
 
 def get_top_n(
