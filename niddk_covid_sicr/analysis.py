@@ -151,6 +151,7 @@ def get_weeks(args):
     # Create lists: rois, and num weeks.
     roi_weeks = {}
     for roi in args.rois:
+        print(roi)
         csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
         csv = csv.resolve()
         assert csv.exists(), "No such csv file: %s" % csv
@@ -159,6 +160,7 @@ def get_weeks(args):
             stan_data, t0, num_weeks = ncs.get_stan_data(csv, args)
         if args.totwk:
             stan_data, t0, num_weeks = ncs.get_stan_data_weekly_total(csv, args)
+        print(num_weeks)
 
         roi_weeks[roi] = num_weeks
     print(roi_weeks)
