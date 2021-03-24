@@ -82,8 +82,6 @@ if not args.average_only:
         combos += [(model_name, roi) for roi in rois]
         roi_list.append(rois)
     all_rois = [x for l in roi_list for x in l]
-    print(roi_list)
-    print(all_rois)
     # Organize into (model_name, roi) tuples
     combos = list(zip(*combos))
     assert len(combos), "No combinations of models and ROIs found"
@@ -136,6 +134,7 @@ if not args.average_only:
     result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
 
 dfs = []
+df_numweek = ncs.get_weeks(args, all_rois) # get df for roi/num_week pairs
 for model_name in args.model_names:
     out = tables_path / ('%s_fit_table.csv' % model_name)
     if not args.average_only:
@@ -145,8 +144,11 @@ for model_name in args.model_names:
             continue
         df = pd.concat(tables)
         df = df.sort_index()
-        df_numweek = ncs.get_weeks(args, all_rois)
+        print(df)
+        df.to_csv(tables_path / 'pre-merge.csv')
         df = pd.merge(df, df_numweek, on='roi')
+        df.to_csv(tables_path / 'post-merge.csv')
+        print(df)
         # Export the CSV file for this model
         df.to_csv(out)
     else:
