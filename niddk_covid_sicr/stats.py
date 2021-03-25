@@ -211,14 +211,11 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     if first is not None:
         rois = rois[:first]
     for roi in tqdm(rois):
-        # if roi != 'Andorra':
-        #     pass
         try: # catch nan instances
             loo = df.loc[(roi, 'mean', 'loo')]
             loo_se = df.loc[(roi, 'std', 'loo')]
         except:
             break
-
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
         result[chunk] = df[chunk].apply(lambda x:
