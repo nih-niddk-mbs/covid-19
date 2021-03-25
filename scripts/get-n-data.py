@@ -17,7 +17,8 @@ parser.add_argument('-ft', '--fixed-t', type=int, default=0,
                           'beginning of the data for each region'))
 parser.add_argument('-tw', '--totwk', type=int, default=1,
                    help=('Use weekly totals for new cases, recoveries and deaths'))
-
+parser.add_argument('-r', '--roi', default='',
+                    help='ROI to use')
 args = parser.parse_args()
 
 
@@ -26,6 +27,8 @@ assert data_path.exists(), "No such data path: %s" % data_path
 
 # Get all model_names, roi combinations
 rois = ncs.list_rois(args.data_path, 'covidtimeseries', '.csv')
+args.roi = rois
+
 df = pd.DataFrame(index=rois, columns=['n_data_pts'], dtype=int)
 for roi in rois:
     csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % roi)
