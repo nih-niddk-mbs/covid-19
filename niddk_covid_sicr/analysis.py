@@ -10,6 +10,7 @@ from scipy.stats import norm
 from tqdm import tqdm
 
 from .io import get_data, get_fit_path, list_rois, load_fit
+import niddk_covid_sicr as ncs
 
 
 def get_top_n(
@@ -64,6 +65,7 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
     Returns:
         pd.DataFrame: A table of fit parameter summary statistics.
     """
+
     if chain:
         samples = samples[samples['chain'] == chain]
     dfs = []
@@ -143,6 +145,24 @@ def make_table(roi: str, samples: pd.DataFrame, params: list, totwk: int, stats:
     df = df.sort_index()
     return df
 
+def get_weeks(args, rois):
+    """Build dataframe containing roi and number of weeks of data per roi.
+    Need this to calculate number of parameters per model to then calulate AIC.
+    Return dataframe, then merge on roi on big table. """
+    # Create lists: rois, and num weeks.
+    roi_weeks = {}
+    for roi in rois:
+        csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % roi)
+        csv = csv.resolve()
+        assert csv.exists(), "No such csv file: %s" % csv
+        if not args.totwk:
+            stan_data, t0, num_weeks = ncs.get_stan_data(csv, args)
+        if args.totwk:
+            stan_data, t0, num_weeks = ncs.get_stan_data_weekly_total(csv, args)
+        roi_weeks[roi] = num_weeks
+    df_numweek = pd.DataFrame(roi_weeks.items(), columns=['roi', 'num weeks'])
+    df_numweek = df_numweek.set_index('roi').sort_index()
+    return df_numweek
 
 def get_day_labels(data: pd.DataFrame, days: list, t0: int) -> list:
     """Gets labels for days. Used for plotting only.

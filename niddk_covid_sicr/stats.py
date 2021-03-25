@@ -11,7 +11,16 @@ from tqdm.auto import tqdm
 from warnings import warn
 
 from .io import extract_samples
-
+# constants for model parameters' module; used for aic calculation
+MODEL_PARAMETER_CONSTANTS = {
+              'SICRdiscreteNwk':{'cons1':1, 'cons2':5},
+              'SICRdiscrete1Nwk':{'cons1':2, 'cons2':4},
+              'SICRdiscrete2Nwk':{'cons1':2, 'cons2':4},
+              'SICRdiscrete3Nwk':{'cons1':3, 'cons2':3},
+              'SICRdiscrete4Nwk':{'cons1':2, 'cons2':4},
+              'SICRdiscrete5Nwk':{'cons1':1, 'cons2':5},
+              'SICRdiscrete6Nwk':{'cons1':3, 'cons2':3}
+              }
 
 def get_rhat(fit) -> float:
     """Get `rhat` for the log-probability of a fit.
@@ -138,6 +147,17 @@ def getllxtensor_singleroi(roi: str, data_path: str, fits_path: str,
         print('--')
     return llx
 
+def get_aic(d):
+    """Calculate AIC, add to table, reweight stats. """
+    model = d['model']
+    num_weeks = d['num weeks']
+    if model == 'SICRdiscrete4Nwk':
+        n_blocks = int(np.floor((int(num_weeks)-1)/9)) # calculate n_blocks
+        num_weeks = n_blocks
+    d['num_params'] = MODEL_PARAMETER_CONSTANTS[model]['cons1'] + MODEL_PARAMETER_CONSTANTS[model]['cons2']*num_weeks
+    d['aic'] = d['ll_'] + 2*d['num_params']
+    return d
+
 def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
                     loo_se_vals: np.array = None) -> float:
     """Get weighted means of a stat (across models),
@@ -175,6 +195,14 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     """
     df = pd.read_csv(raw_table_path, index_col=['model', 'roi', 'quantile'])
     df = df[~df.index.duplicated(keep='last')]
+
+    df['ll_'] = df['ll_'] * -2 # first calculate ll (ll * -2)
+    df.reset_index(inplace=True)
+    df = df.apply(get_aic, axis=1)
+    df = df.set_index(['model', 'roi', 'quantile']).sort_index()
+    df.to_csv(raw_table_path)
+
+
     df.columns.name = 'param'
     df = df.stack('param').unstack(['roi', 'quantile', 'param']).T
     rois = df.index.get_level_values('roi').unique()
@@ -182,19 +210,18 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
 
     if first is not None:
         rois = rois[:first]
-
     for roi in tqdm(rois):
         try: # catch nan instances
             loo = df.loc[(roi, 'mean', 'loo')]
             loo_se = df.loc[(roi, 'std', 'loo')]
         except:
             break
-
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
         result[chunk] = df[chunk].apply(lambda x:
                                         reweighted_stat(x, loo, loo_se),
                                         axis=1)
+
     result = result.unstack(['param'])
     result = result[~result.index.get_level_values('quantile')
                            .isin(['min', 'max'])]  # Remove min and max

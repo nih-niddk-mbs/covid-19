@@ -84,7 +84,6 @@ if not args.average_only:
     assert len(combos), "No combinations of models and ROIs found"
     print("There are %d combinations of models and ROIs" % len(combos))
 
-
 def roi_df(args, model_name, roi):
     if args.fixed_t:
         args.roi = roi  # Temporary
@@ -92,9 +91,9 @@ def roi_df(args, model_name, roi):
         csv = csv.resolve()
         assert csv.exists(), "No such csv file: %s" % csv
         if not args.totwk:
-            stan_data, t0 = ncs.get_stan_data(csv, args)
+            stan_data, t0, num_weeks = ncs.get_stan_data(csv, args)
         if args.totwk:
-            stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
+            stan_data, t0, num_weeks = ncs.get_stan_data_weekly_total(csv, args)
 
         global_start = datetime.strptime('01/22/20', '%m/%d/%y')
         frame_start = datetime.strptime(t0, '%m/%d/%y')
@@ -171,6 +170,14 @@ df = df[sorted(df.columns)]
 
 # Remove duplicate model/region combinations (keep most recent)
 df = df[~df.index.duplicated(keep='last')]
+
+# add number of weeks of data per roi to big table
+rois = df.index.get_level_values('roi').unique()
+df_numweek = ncs.get_weeks(args, rois)
+df = df.reset_index()
+df = pd.merge(df, df_numweek, on='roi')
+df = df.set_index(['model', 'roi', 'quantile']).sort_index()
+# calculate AIC and add to table
 
 # Export the CSV file for the big table
 df.to_csv(out)

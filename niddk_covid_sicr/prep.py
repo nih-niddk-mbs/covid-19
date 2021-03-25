@@ -50,7 +50,7 @@ def get_stan_data(full_data_path, args):
         offset = (frame_start - global_start).days
         stan_data['tm'] += offset
         stan_data['ts'] += offset
-    return stan_data, df['dates2'][t0]
+    return stan_data, df['dates2'][t0], stan_data['n_weeks']
 
 def get_stan_data_weekly_total(full_data_path, args):
     """ Get weekly totals for new cases, recoveries,
@@ -158,7 +158,7 @@ def get_stan_data_weekly_total(full_data_path, args):
         offset = math.floor((frame_start - global_start).days/7)
         stan_data['tm'] += offset
         stan_data['ts'] += offset
-    return stan_data, df['dates2'][t0]
+    return stan_data, df['dates2'][t0], stan_data['n_weeks']
 
 def get_sunday(df, t0_date):
     """ Calculate Sunday prior to t0 (where new cases > 0).
