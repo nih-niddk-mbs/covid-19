@@ -72,9 +72,9 @@ csv = csv.resolve()
 assert csv.exists(), "No such csv file: %s" % csv
 
 if not args.totwk:
-    stan_data, t0 = ncs.get_stan_data(csv, args)
+    stan_data, t0, num_weeks  = ncs.get_stan_data(csv, args)
 if args.totwk:
-    stan_data, t0 = ncs.get_stan_data_weekly_total(csv, args)
+    stan_data, t0, num_weeks = ncs.get_stan_data_weekly_total(csv, args)
 if stan_data is None:
     print("No data for %s; skipping fit." % args.roi)
     sys.exit(0)
