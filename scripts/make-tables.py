@@ -57,6 +57,8 @@ parser.add_argument('-ao', '--average-only', type=int, default=0,
                           'the concatenated (raw) and reweighted tables'))
 parser.add_argument('-tw', '--totwk', type=int, default=1,
                    help=('Use weekly totals for new cases, recoveries and deaths'))
+parser.add_argument('-ac', '--aic-weight', type=int, default=0,
+                   help=('Weight by lowest AIC. Default is weight by LOO, 0.'))
 args = parser.parse_args()
 
 # Max jobs
@@ -188,7 +190,7 @@ if n_data_path.resolve().is_file():
     extra = pd.read_csv(n_data_path).set_index('roi')
     extra['t0'] = extra['t0'].fillna('2020-01-23').astype('datetime64').apply(lambda x: x.weekofyear).astype(int)
     # Model-averaged table
-    ncs.reweighted_stats(out, extra=extra, dates=args.dates)
+    ncs.reweighted_stats(args, out, extra=extra, dates=args.dates)
 else:
     print("No sample size file found at %s; unable to compute global average" % n_data_path.resolve())
 # try:

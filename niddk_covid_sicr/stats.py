@@ -158,28 +158,25 @@ def get_aic(d):
     d['aic'] = d['ll_'] + 2*d['num_params']
     return d
 
-def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
-                    loo_se_vals: np.array = None) -> float:
+def reweighted_stat(stat_vals: np.array, pred_acc_stat: np.array) -> float:
     """Get weighted means of a stat (across models),
     where the weights are related to the LOO's of model/
 
     Args:
         stat_vals (np.array): Values (across models) of some statistic.
-        loo_vals (np.array): Values (across models) of LOO.
-        loo_se_vals (np.array, optional): Values (across models) of se of LOO.
-            Defaults to None.
+        pred_acc_stat (np.array): Values (across models) of LOO or AIC. Variable
+                                  stands for "predictive accuracy statistic".
 
     Returns:
         float: A new average value for the statistic, weighted across models.
     """
-
     # Assume that loo is on a deviance scale (lower is better)
-    min_loo = min(loo_vals)
-    weights = np.exp(-0.5*(loo_vals-min_loo))
+    min_pred_acc_stat = min(pred_acc_stat)
+    weights = np.exp(-0.5*(pred_acc_stat-min_pred_acc_stat))
     weights = weights/np.sum(weights)
     return np.sum(stat_vals * weights)
 
-def reweighted_stats(raw_table_path: str, save: bool = True,
+def reweighted_stats(args, raw_table_path: str, save: bool = True,
                      roi_weight='n_data_pts', extra=None, first=None, dates=None) -> pd.DataFrame:
     """Reweight all statistics (across models) according to the LOO
     of each of the models.
@@ -202,7 +199,6 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     df = df.set_index(['model', 'roi', 'quantile']).sort_index()
     df.to_csv(raw_table_path)
 
-
     df.columns.name = 'param'
     df = df.stack('param').unstack(['roi', 'quantile', 'param']).T
     rois = df.index.get_level_values('roi').unique()
@@ -212,15 +208,15 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
         rois = rois[:first]
     for roi in tqdm(rois):
         try: # catch nan instances
-            loo = df.loc[(roi, 'mean', 'loo')]
-            loo_se = df.loc[(roi, 'std', 'loo')]
+            if args.aic_weight:
+                pred_acc_stat = df.loc[(roi, 'mean', 'aic')]
+            else:
+                pred_acc_stat = df.loc[(roi, 'mean', 'loo')]
         except:
             break
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
-        result[chunk] = df[chunk].apply(lambda x:
-                                        reweighted_stat(x, loo, loo_se),
-                                        axis=1)
+        result[chunk] = df[chunk].apply(lambda x: reweighted_stat(x, pred_acc_stat), axis=1)
 
     result = result.unstack(['param'])
     result = result[~result.index.get_level_values('quantile')
