@@ -108,13 +108,8 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
 
             # Fill NaN with 0 and convert to int
             dfs[country] = df.set_index('dates2').fillna(0).astype(int)
-
-            if country == "Cote d'Ivoire":
-                dfs[country].to_csv(data_path /
-                                    ('covidtimeseries_%s.csv' % "Cote d Ivoire"))
-            else:
-                dfs[country].to_csv(data_path /
-                                    ('covidtimeseries_%s.csv' % country))
+            dfs[country].to_csv(data_path / ('covidtimeseries_%s.csv' % country))
+            
         else:
             print("No data for %s" % country)
 
@@ -515,7 +510,7 @@ def remove_old_rois(data_path: str):
 
     csvs = [x for x in data_path.iterdir() if 'covidtimeseries' in str(x)]
     rois_to_remove = ['Diamond Princess', 'MS Zaandam', 'Samoa', 'Vanuatu',
-                        'Marshall Islands', 'US', 'US_AS', 'Micronesia', "Cote d'Ivoire"]
+                        'Marshall Islands', 'US', 'US_AS', 'Micronesia']
     for csv in csvs:
         roi = str(csv).split('.')[0].split('_', 1)[-1]
         if roi in rois_to_remove:
