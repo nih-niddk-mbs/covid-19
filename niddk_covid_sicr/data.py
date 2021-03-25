@@ -468,7 +468,7 @@ def remove_old_rois(data_path: str):
 
     csvs = [x for x in data_path.iterdir() if 'covidtimeseries' in str(x)]
     rois_to_remove = ['Diamond Princess', 'MS Zaandam', 'Samoa', 'Vanuatu',
-                        'Marshall Islands', 'US', 'US_AS', 'Micronesia']
+                        'Marshall Islands', 'US', 'US_AS', 'Micronesia', "Cote d'Ivoire"]
     for csv in csvs:
         roi = str(csv).split('.')[0].split('_', 1)[-1]
         if roi in rois_to_remove:
