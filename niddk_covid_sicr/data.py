@@ -205,11 +205,6 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
         else:
             print("No data for %s" % state)
 
-def combine_recovery(jhu_df, ctp_df):
-    """ Take recovery data from Covid Tracking Project for the US and combine
-        with JHU US State. """
-
-
 def fix_jhu_dates(x):
     y = datetime.strptime(x, '%m/%d/%y')
     return datetime.strftime(y, '%m/%d/%y')
