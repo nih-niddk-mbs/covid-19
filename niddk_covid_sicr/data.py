@@ -520,7 +520,6 @@ def negify_missing(data_path: str) -> None:
     for csv in tqdm(csvs, desc="Regions"):
         roi = str(csv).split('.')[0].split('_')[-1]
         df = pd.read_csv(csv)
-        print(csv)
         for kind in ['cases', 'deaths', 'recover']:
             if df['cum_%s' % kind].sum() == 0:
                 print("Negifying 'new_%s' for %s" % (kind, roi))
@@ -539,7 +538,6 @@ def remove_old_rois(data_path: str):
     for csv in csvs:
         roi = str(csv).split('.')[0].split('_', 1)[-1]
         if roi in rois_to_remove:
-            print(roi)
             try:
                 if os.path.exists(csv):
                     print("Removing {} from data_path".format(roi))
