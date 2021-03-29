@@ -173,7 +173,6 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     source = dfs['US']
     states = source['confirmed'].index.tolist()
     us_recovery_data = covid_tracking_recovery(data_path)
-    states = ['US_NY', 'US_MA', 'US_AK']
     for state in tqdm(states, desc='US States'):  # For each country
         if state in ['Diamond Princess', 'Grand Princess', 'MS Zaandam', 'US_AS']:
             print("Skipping {}".format(state))
