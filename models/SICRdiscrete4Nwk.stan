@@ -98,7 +98,8 @@ transformed parameters {
     Dcum += dD[i];
 
     S[i] = s*Nt;
-    Z += I0 - s*Nt;
+    //Z += I0 - s*Nt;
+    Z = Nt-S[i];
     ir[i] = 1-s;
     ar[i] = N*ir[i]/S[i];
     car[i] = Ccum/Z;
