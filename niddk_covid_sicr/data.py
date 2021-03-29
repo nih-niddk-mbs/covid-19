@@ -271,7 +271,7 @@ def covid_tracking_recovery(data_path: str):
     df_raw = pd.read_csv(archived_data)
     states = df_raw['state'].unique()
     ctp_dfs = {}
-    for state in tqdm(states, desc='US States'): # For each country
+    for state in states: # For each country
         source = df_raw[df_raw['state'] == state] # Only the given state
         df = pd.DataFrame(columns=['dates2','cum_recover','new_recover'])
         df['dates2'] = source['date'].apply(fix_ct_dates) # Convert date format
