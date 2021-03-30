@@ -97,31 +97,36 @@ def get_stan_data_weekly_total(full_data_path, args):
 
     n_proj = 0
     stan_data = {}
+    for kind in ['cases', 'deaths', 'recover']: # find where missing data crops
+                                    # up in cumulative values and set to -1
+        start_data = np.where(df["cum_%s" % kind].values > 0)[0][0]
+        df['new_%s' % kind] = np.where(((df['cum_%s' % kind] == 0) & ((df.index > start_data))), -1, df['new_%s' % kind])
 
-    # calculate t0 where new cases > 0
-    t0 = np.where(df["new_cases"].values > 0)[0][0] # gives index position
-    df['Date'] = pd.to_datetime(df.loc[:, 'dates2']) # used to calculate leading week
-    df.set_index('Date', inplace=True) # need this for df.resample()
+    df['Datetime'] = pd.to_datetime(df.loc[:, 'dates2']) # used to calculate leading week
+    df.set_index('Datetime', inplace=True) # need this for df.resample()
 
-    t0_date = df.index[t0] # get date where new_cases > 0
-    df = get_sunday(df, t0_date) # get dataframe with Sunday as beginning day
-                                # so we can sample for weekly totals by Sundays
+    df = df.replace(-1, np.nan)# Set -1 to NaNs to handle no data during summing
     df['weeklytotal_new_cases'] = df.new_cases.resample('W-SAT').sum()
     df['weeklytotal_new_recover'] = df.new_recover.resample('W-SAT').sum()
     df['weeklytotal_new_deaths'] = df.new_deaths.resample('W-SAT').sum()
-    df.dropna(inplace=True) # drop last rows if they spill over weekly chunks and present NAs
-        # will also remove non-weekly dates so each element is by weekly amount
+
+    # Create datetime index with range to exclude days that spill over weekly chunks
+    weekly_index = pd.date_range(start=df.index[0], end=df.index[-1], freq='W-SAT')
+    df = df.reindex(weekly_index)
 
     df.weeklytotal_new_cases = df.weeklytotal_new_cases.astype(int) # convert float to int
     df.weeklytotal_new_recover = df.weeklytotal_new_recover.astype(int)
     df.weeklytotal_new_deaths = df.weeklytotal_new_deaths.astype(int)
 
-    # handle negatives by setting to 0
-    df['weeklytotal_new_cases'] = df['weeklytotal_new_cases'].clip(lower=0)
-    df['weeklytotal_new_recover'] = df['weeklytotal_new_recover'].clip(lower=0)
-    df['weeklytotal_new_deaths'] = df['weeklytotal_new_deaths'].clip(lower=0)
+    df = df.replace({'weeklytotal_new_recover': 0}, -1) # NaNs became zeros
+    # handle negatives by setting to -1
+    df['weeklytotal_new_cases'] = df['weeklytotal_new_cases'].clip(lower=-1)
+    df['weeklytotal_new_recover'] = df['weeklytotal_new_recover'].clip(lower=-1)
+    df['weeklytotal_new_deaths'] = df['weeklytotal_new_deaths'].clip(lower=-1)
+
     df.reset_index(inplace=True) # reset index
     t0 = np.where(df["weeklytotal_new_cases"].values > 0)[0][0]
+
     if df.loc[0 ,"dates2"] == 0: # handle cases where this did not get removed
         df.drop([0], inplace=True)
         df.reset_index(inplace=True)
@@ -160,44 +165,11 @@ def get_stan_data_weekly_total(full_data_path, args):
         stan_data['ts'] += offset
     return stan_data, df['dates2'][t0], stan_data['n_weeks']
 
-def get_sunday(df, t0_date):
-    """ Calculate Sunday prior to t0 (where new cases > 0).
-        If Sunday is not present in dataframe (ie timeseries starts on a
-        Tuesday and new cases > 0 occurs between that Tuesday and upcoming Sunday),
-        expand entries to previous Sunday and backfill dataframe with zeros to
-        enable weekly resampling that starts on Sundays prior to t0.
-
-        Args:
-            df (pd.DataFrame): Dataframe from timeseries csv.
-            t0 (int): Index value where daily new cases > 0.
-        Returns:
-            df (pd.DataFrame): Dataframe with backfill to Sunday prior if
-                               t0 is not already Sunday. """
-
-    if t0_date.weekday() == 6: # handle cases where t0_date is already a Sunday
-        return df
-
-    offset = (t0_date.weekday() - 6) % 7 # calculate previous Sunday
-    last_sunday = t0_date - timedelta(days=offset)
-
-    if last_sunday in df.index: # is last Sunday leading up to t0 present?
-        return df
-
-    else: # backfill to last_sunday if Sunday prior to t0 not present
-        end_date = df.index[-1]
-        dates_index = pd.date_range(last_sunday, end_date)
-        df2 = pd.DataFrame(index = dates_index)
-        # merge dataframes to get previous Sunday and days leading to this
-        df_bf = df.merge(df2, how='outer', left_index=True, right_index=True)
-        df_bf.fillna(0, inplace=True) # df_bf stands for df_backfilled
-        return df_bf
-
 def get_n_data(stan_data):
     if stan_data:
         return (stan_data['y'] > 0).ravel().sum()
     else:
         return 0
-
 
 # functions used to initialize parameters
 def get_init_fun(args, stan_data, force_fresh=False):

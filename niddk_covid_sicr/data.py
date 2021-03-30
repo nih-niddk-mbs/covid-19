@@ -172,26 +172,31 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
 
     source = dfs['US']
     states = source['confirmed'].index.tolist()
+    
+    us_recovery_data = covid_tracking_recovery(data_path)
     for state in tqdm(states, desc='US States'):  # For each country
-        if state in ['Diamond Princess', 'MS Zaandam', 'US_AS']:
+        if state in ['Diamond Princess', 'Grand Princess', 'MS Zaandam', 'US_AS']:
             print("Skipping {}".format(state))
             continue
         # If we have data in the downloaded JHU files for that country
         if state in source['confirmed'].index:
             df = pd.DataFrame(columns=['dates2', 'cum_cases', 'cum_deaths',
-                                       'cum_recover', 'new_cases',
-                                       'new_deaths', 'new_recover',
-                                       'new_uninfected'])
+                                       'new_cases','new_deaths','new_uninfected'])
             df['dates2'] = source['confirmed'].columns
             df['dates2'] = df['dates2'].apply(fix_jhu_dates)
             df['cum_cases'] = source['confirmed'].loc[state].values
             df['cum_deaths'] = source['deaths'].loc[state].values
-            df['cum_recover'] = 0
-            df['new_recover'] = 0
 
-            df[['new_cases', 'new_deaths']] = \
-                df[['cum_cases', 'cum_deaths']].diff()
-            df['new_uninfected'] = df['new_recover'] + df['new_deaths']
+            df[['new_cases', 'new_deaths']] = df[['cum_cases', 'cum_deaths']].diff()
+
+            # add recovery data
+            df.set_index('dates2', inplace=True)
+            df = df.merge(us_recovery_data[state], on='dates2', how='left')
+
+            df['tmp_new_recover'] = df['new_recover'].fillna(0).astype(int) # create temp new recover for
+            df['new_uninfected'] = df['tmp_new_recover'] + df['new_deaths'] # new uninfected calculation
+            df = df.fillna(-1).astype(int)
+            df = df.drop(['tmp_new_recover'], axis=1)
 
             try:
                 population = get_population_count(data_path, state)
@@ -199,14 +204,11 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
             except:
                 pass
 
-            # Fill NaN with 0 and convert to int
-            dfs[state] = df.set_index('dates2').fillna(0).astype(int)
-
+            dfs[state] = df
             dfs[state].to_csv(data_path /
                                 ('covidtimeseries_%s.csv' % state))
         else:
             print("No data for %s" % state)
-
 
 def fix_jhu_dates(x):
     y = datetime.strptime(x, '%m/%d/%y')
@@ -258,73 +260,43 @@ def get_population_count(data_path:str, roi):
         print("{} population estimate not found in population_estimates.csv".format(args.roi))
 
     return int(population)
-    # check if roi is in it
-    # get population count for roi
-def get_covid_tracking(data_path: str, filter_: Union[dict, bool] = True,
-                       fixes: bool = False) -> None:
-    """Gets data from The COVID Tracking Project (US states only).
 
+def covid_tracking_recovery(data_path: str):
+    """Gets archived US recovery data from The COVID Tracking Project.
     https://covidtracking.com
 
     Args:
         data_path (str): Full path to data directory.
 
     Returns:
-        None
+        ctp_dfs (dict): Dictionary containing US States (keys) and dataframes
+        containing dates, recovery data (values).
     """
-    url = ("https://raw.githubusercontent.com/COVID19Tracking/"
-           "covid-tracking-data/master/data/states_daily_4pm_et.csv")
-    df_raw = pd.read_csv(url)
-
+    archived_data = data_path / 'covid-tracking-project-recovery.csv'
+    df_raw = pd.read_csv(archived_data)
     states = df_raw['state'].unique()
+    ctp_dfs = {}
+    for state in states: # For each country
+        source = df_raw[df_raw['state'] == state] # Only the given state
+        df = pd.DataFrame(columns=['dates2','cum_recover','new_recover'])
+        df['dates2'] = source['date'].apply(fix_ct_dates) # Convert date format
+        # first check if roi reports recovery data as recovered
+        if source['recovered'].isnull().all() == False:
+            df['cum_recover'] = source['recovered'].values
+        # check if roi reports recovery data as hospitalizedDischarged
+        elif source['hospitalizedDischarged'].isnull().all() == False:
+            df['cum_recover'] = source['hospitalizedDischarged'].values
+        else:
+            df['cum_recover'] = np.NaN
 
-    if filter_ and not isinstance(filter_, dict):
-        filter_ = COVIDTRACKER_FILTER_DEFAULTS
-    good = []
-    bad = []
-    for state in tqdm(states, desc='US States'): # For each country
-        if state in ['AS']:
-            print("Skipping {}".format(state))
-            continue
-        source = df_raw[df_raw['state'] == state]  # Only the given state
-        # If we have data in the downloaded file for that state
-        df = pd.DataFrame(columns=['dates2', 'cum_cases', 'cum_deaths',
-                                       'cum_recover', 'new_cases',
-                                       'new_deaths', 'new_recover',
-                                       'new_uninfected'])
-
-        # Convert date format
-        df['dates2'] = source['date'].apply(fix_ct_dates)
-        df['cum_cases'] = source['positive'].values
-        df['cum_deaths'] = source['death'].values
-        df['cum_recover'] = source['recovered'].values
-        # Fill NaN with 0 and convert to int
         df.sort_values(by=['dates2'], inplace=True) # sort by datetime obj before converting to string
         df['dates2'] = pd.to_datetime(df['dates2']).dt.strftime('%m/%d/%y') # convert dates to string
-        df = df.set_index('dates2').fillna(0).astype(int)
-        enough = True
-        if filter_:
-            for key, minimum in filter_.items():
-                enough *= (df[key].max() >= minimum)
-        if not enough:
-            bad.append(state)
-        else:
-            df[['new_cases', 'new_deaths', 'new_recover']] = \
-            df[['cum_cases', 'cum_deaths', 'cum_recover']].diff()
-            df['new_uninfected'] = df['new_recover'] + df['new_deaths']
+        df = df.set_index('dates2') # Convert to int
+        df['new_recover'] = df['cum_recover'].diff()
+        
+        ctp_dfs['US_'+state] = df
+    return ctp_dfs
 
-            try:
-                population = get_population_count(data_path, 'US_' + state)
-                df['population'] = population
-            except:
-                pass
-
-            df = df.fillna(0).astype(int)
-            # Overwrite old data
-            df.to_csv(data_path / ('covidtimeseries_US_%s.csv' % state))
-            good.append(state)
-    # print("COVID Tracking data acceptable for %s" % ','.join(good))
-    # print("COVID Tracking data not acceptable for %s" % ','.join(bad))
 
 def get_canada(data_path: str, filter_: Union[dict, bool] = True,
                        fixes: bool = False) -> None:
@@ -571,7 +543,6 @@ def remove_old_rois(data_path: str):
     for csv in csvs:
         roi = str(csv).split('.')[0].split('_', 1)[-1]
         if roi in rois_to_remove:
-            print(roi)
             try:
                 if os.path.exists(csv):
                     print("Removing {} from data_path".format(roi))
