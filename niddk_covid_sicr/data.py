@@ -172,6 +172,7 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
 
     source = dfs['US']
     states = source['confirmed'].index.tolist()
+    
     us_recovery_data = covid_tracking_recovery(data_path)
     for state in tqdm(states, desc='US States'):  # For each country
         if state in ['Diamond Princess', 'Grand Princess', 'MS Zaandam', 'US_AS']:
@@ -191,15 +192,19 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
             # add recovery data
             df.set_index('dates2', inplace=True)
             df = df.merge(us_recovery_data[state], on='dates2', how='left')
-            df['new_uninfected'] = df['new_recover'] + df['new_deaths']
+
+            df['tmp_new_recover'] = df['new_recover'].fillna(0).astype(int) # create temp new recover for
+            df['new_uninfected'] = df['tmp_new_recover'] + df['new_deaths'] # new uninfected calculation
+            df = df.fillna(-1).astype(int)
+            df = df.drop(['tmp_new_recover'], axis=1)
 
             try:
                 population = get_population_count(data_path, state)
                 df['population'] = population
             except:
                 pass
-            # Fill NaN with 0 and convert to int
-            dfs[state] = df.fillna(0).astype(int)
+
+            dfs[state] = df
             dfs[state].to_csv(data_path /
                                 ('covidtimeseries_%s.csv' % state))
         else:
@@ -286,9 +291,9 @@ def covid_tracking_recovery(data_path: str):
 
         df.sort_values(by=['dates2'], inplace=True) # sort by datetime obj before converting to string
         df['dates2'] = pd.to_datetime(df['dates2']).dt.strftime('%m/%d/%y') # convert dates to string
-        df = df.set_index('dates2').fillna(0).astype(int) # Fill NaN with 0 and convert to int
-        df[['new_recover']] = df[['cum_recover']].diff()
-        df = df.fillna(0).astype(int)
+        df = df.set_index('dates2') # Convert to int
+        df['new_recover'] = df['cum_recover'].diff()
+        
         ctp_dfs['US_'+state] = df
     return ctp_dfs
 
