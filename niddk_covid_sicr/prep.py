@@ -99,8 +99,11 @@ def get_stan_data_weekly_total(full_data_path, args):
     stan_data = {}
     for kind in ['cases', 'deaths', 'recover']: # find where missing data crops
                                     # up in cumulative values and set to -1
-        start_data = np.where(df["cum_%s" % kind].values > 0)[0][0]
-        df['new_%s' % kind] = np.where(((df['cum_%s' % kind] == 0) & ((df.index > start_data))), -1, df['new_%s' % kind])
+        try:
+            start_data = np.where(df["cum_%s" % kind].values > 0)[0][0]
+            df['new_%s' % kind] = np.where(((df['cum_%s' % kind] == 0) & ((df.index > start_data))), -1, df['new_%s' % kind])
+        except: # if data is preset to -1 indicating no data already (from CTP archived data)
+            df['new_%s' % kind] = -1 # keep it at -1
 
     df['Datetime'] = pd.to_datetime(df.loc[:, 'dates2']) # used to calculate leading week
     df.set_index('Datetime', inplace=True) # need this for df.resample()
