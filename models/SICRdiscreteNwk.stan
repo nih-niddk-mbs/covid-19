@@ -90,10 +90,12 @@ model {
       sigd[i] ~ exponential(5.);
       sigc[i] ~ exponential(1.);
       sigr[i] ~ exponential(2.);
-      target += poisson_lpmf(y[i,1] | dC[i]);
+      if (y[i,1] > -1)
+        target += poisson_lpmf(y[i,1] | dC[i]);
       if (y[i,2] > -1)
         target += poisson_lpmf(y[i,2] | dR[i]);
-      target += poisson_lpmf(y[i,3] | dD[i]);
+      if (y[i,3] > -1)
+        target += poisson_lpmf(y[i,3] | dD[i]);
     }
     target += normal_lpdf(beta[2]-beta[1] | 0, .1);
     target += normal_lpdf(alpha[2]-alpha[1] | 0, .1);
