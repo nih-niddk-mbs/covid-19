@@ -9,6 +9,8 @@ import sys
 import os
 from cmdstanpy.model import CmdStanModel # Testing for ADVI
 from cmdstanpy.utils import cmdstan_path
+import cmdstanpy
+cmdstanpy.install_cmdstan()
 
 import niddk_covid_sicr as ncs
 
