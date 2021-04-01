@@ -130,9 +130,10 @@ if not args.advi:
 else:
     # STAN_MPI=true
     # CXX=mpicxx
-    TBB_CXX_TYPE='gcc'
+    # TBB_CXX_TYPE='gcc'
     # instantiate, compile model
-    model_path = os.path.join(cmdstan_path(), 'models', args.model_name + '.stan')
+    # model_path = os.path.join(cmdstan_path(), 'models', args.model_name + '.stan')
+    model_path = Path(args.models_path) / ('%s.stan' % args.model_name)
     sicr_model = CmdStanModel(stan_file=model_path)
 
     # run CmdStan's variational inference method, returns object `CmdStanVB`
