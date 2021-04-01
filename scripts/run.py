@@ -7,10 +7,6 @@ from pathlib import Path
 import pickle
 import sys
 import os
-from cmdstanpy.model import CmdStanModel # Testing for ADVI
-from cmdstanpy.utils import cmdstan_path
-import cmdstanpy
-cmdstanpy.install_cmdstan()
 
 import niddk_covid_sicr as ncs
 
@@ -128,11 +124,13 @@ if not args.advi:
     print("Finished %s" % args.roi)
 
 else:
-    # STAN_MPI=true
-    # CXX=mpicxx
-    # TBB_CXX_TYPE='gcc'
+    from cmdstanpy.model import CmdStanModel # Testing for ADVI
+    from cmdstanpy.utils import cmdstan_path
+    import cmdstanpy
+    
+    cmdstanpy.install_cmdstan()
+
     # instantiate, compile model
-    # model_path = os.path.join(cmdstan_path(), 'models', args.model_name + '.stan')
     model_path = Path(args.models_path) / ('%s.stan' % args.model_name)
     sicr_model = CmdStanModel(stan_file=model_path)
 
