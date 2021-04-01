@@ -9,8 +9,8 @@ import sys
 import os
 from cmdstanpy.model import CmdStanModel # Testing for ADVI
 from cmdstanpy.utils import cmdstan_path
-import cmdstanpy
-cmdstanpy.install_cmdstan()
+# import cmdstanpy
+# cmdstanpy.install_cmdstan()
 
 import niddk_covid_sicr as ncs
 
@@ -128,8 +128,8 @@ if not args.advi:
     print("Finished %s" % args.roi)
 
 else:
-    STAN_MPI=true
-    CXX=mpicxx
+    # STAN_MPI=true
+    # CXX=mpicxx
     TBB_CXX_TYPE=gcc
     # instantiate, compile model
     model_path = os.path.join(cmdstan_path(), 'models', args.model_name + '.stan')
