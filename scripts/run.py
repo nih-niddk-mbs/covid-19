@@ -6,6 +6,7 @@ import numpy as np
 from pathlib import Path
 import pickle
 import sys
+import os
 from cmdstanpy.model import CmdStanModel # Testing for ADVI
 from cmdstanpy.utils import cmdstan_path
 
