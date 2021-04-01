@@ -130,7 +130,7 @@ if not args.advi:
 else:
     # STAN_MPI=true
     # CXX=mpicxx
-    TBB_CXX_TYPE=gcc
+    TBB_CXX_TYPE='gcc'
     # instantiate, compile model
     model_path = os.path.join(cmdstan_path(), 'models', args.model_name + '.stan')
     sicr_model = CmdStanModel(stan_file=model_path)
