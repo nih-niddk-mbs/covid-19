@@ -139,6 +139,11 @@ else:
                                            elbo_samples=4000,
                                            output_dir=args.fits_path)
                                            # inits=init_fun,
-    print(sicr_model_vb.column_names)
     print(sicr_model_vb.variational_params_dict)
     sicr_model_vb.variational_sample.shape
+
+    vb_results = sicr_model_vb.variational_params_dict
+    vb_df = pd.DataFrame.from_dict(vb_results, orient="index")
+    print(vb_df)
+    save_path = save_dir / ("%s_%s_ADVI.csv" % (args.model_name, args.roi))
+    vb_df.to_csv(save_path)
