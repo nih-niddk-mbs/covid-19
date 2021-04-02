@@ -146,5 +146,7 @@ else:
     vb_results = sicr_model_vb.variational_params_dict
     vb_df = pd.DataFrame.from_dict(vb_results, orient="index")
     print(vb_df)
+    save_dir = Path(args.fits_path)
+    save_dir.mkdir(parents=True, exist_ok=True)
     save_path = save_dir / ("%s_%s_ADVI.csv" % (args.model_name, args.roi))
     vb_df.to_csv(save_path)
