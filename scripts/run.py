@@ -65,6 +65,7 @@ parser.add_argument('-tw', '--totwk', type=int, default=1,
 parser.add_argument('-vb', '--advi', type=int, default=0,
                    help=('Run Variational Bayes / Automatic Differentiation '
                    'Variational Inference (ADVI) algorithm. '))
+
 args = parser.parse_args()
 
 if args.n_threads == 0:
@@ -143,9 +144,8 @@ else:
     output_dir.mkdir(parents=True, exist_ok=True)
     # run CmdStan's variational inference method, returns object `CmdStanVB`
     sicr_model_vb = sicr_model.variational(data=stan_data, grad_samples=4000,
-                                           elbo_samples=4000,
+                                           elbo_samples=4000,output_samples=1000,
                                            output_dir=output_dir)
-                                           # inits=init_fun,
     print(sicr_model_vb.variational_params_dict)
     sicr_model_vb.variational_sample.shape
 
