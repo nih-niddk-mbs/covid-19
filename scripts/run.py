@@ -135,8 +135,8 @@ else:
     sicr_model = CmdStanModel(stan_file=model_path)
 
     # run CmdStan's variational inference method, returns object `CmdStanVB`
-    sicr_model_vb = sicr_model.variational(data=stan_data, chains=8,
-                                          warmup=args.n_warmups, iter=args.n_iter)
+    sicr_model_vb = sicr_model.variational(data=stan_data, grad_samples=4000,
+                                           elbo_samples=4000, inits=init_fun)
     print(sicr_model_vb.column_names)
     print(sicr_model_vb.variational_params_dict)
     sicr_model_vb.variational_sample.shape
