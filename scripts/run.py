@@ -7,6 +7,7 @@ from pathlib import Path
 import pickle
 import sys
 import os
+import pandas as pd
 
 import niddk_covid_sicr as ncs
 
