@@ -127,7 +127,7 @@ else:
     from cmdstanpy.model import CmdStanModel # Testing for ADVI
     from cmdstanpy.utils import cmdstan_path
     import cmdstanpy
-    
+
     cmdstanpy.install_cmdstan()
 
     # instantiate, compile model
@@ -135,7 +135,8 @@ else:
     sicr_model = CmdStanModel(stan_file=model_path)
 
     # run CmdStan's variational inference method, returns object `CmdStanVB`
-    sicr_model_vb = sicr_model.variational(data=stan_data)
+    sicr_model_vb = sicr_model.variational(data=stan_data, chains=8,
+                                          warmup=args.n_warmups, iter=args.n_iter)
     print(sicr_model_vb.column_names)
     print(sicr_model_vb.variational_params_dict)
     sicr_model_vb.variational_sample.shape
