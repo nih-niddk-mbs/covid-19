@@ -135,10 +135,16 @@ else:
     model_path = Path(args.models_path) / ('%s.stan' % args.model_name)
     sicr_model = CmdStanModel(stan_file=model_path)
 
+    # create output directory for std out files cmdstan produces
+    save_dir = Path(args.fits_path)
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    output_dir = save_dir / 'std_out'
+    output_dir.mkdir(parents=True, exist_ok=True)
     # run CmdStan's variational inference method, returns object `CmdStanVB`
     sicr_model_vb = sicr_model.variational(data=stan_data, grad_samples=4000,
                                            elbo_samples=4000,
-                                           output_dir=args.fits_path)
+                                           output_dir=output_dir)
                                            # inits=init_fun,
     print(sicr_model_vb.variational_params_dict)
     sicr_model_vb.variational_sample.shape
@@ -146,7 +152,5 @@ else:
     vb_results = sicr_model_vb.variational_params_dict
     vb_df = pd.DataFrame.from_dict(vb_results, orient="index")
     print(vb_df)
-    save_dir = Path(args.fits_path)
-    save_dir.mkdir(parents=True, exist_ok=True)
     save_path = save_dir / ("%s_%s_ADVI.csv" % (args.model_name, args.roi))
     vb_df.to_csv(save_path)
