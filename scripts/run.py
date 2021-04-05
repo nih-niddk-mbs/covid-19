@@ -144,13 +144,12 @@ else:
     output_dir.mkdir(parents=True, exist_ok=True)
     # run CmdStan's variational inference method, returns object `CmdStanVB`
     sicr_model_vb = sicr_model.variational(data=stan_data, grad_samples=4000,
-                                           elbo_samples=4000,output_samples=1000,
+                                           elbo_samples=4000,output_samples=4000,
                                            output_dir=output_dir)
-    print(sicr_model_vb.variational_params_dict)
     sicr_model_vb.variational_sample.shape
 
-    vb_results = sicr_model_vb.variational_params_dict
+    vb_results = sicr_model_vb.variational_params_dict # only gives means
     vb_df = pd.DataFrame.from_dict(vb_results, orient="index")
     print(vb_df)
-    save_path = save_dir / ("%s_%s_ADVI.csv" % (args.model_name, args.roi))
-    vb_df.to_csv(save_path)
+    # save_path = save_dir / ("%s_%s_ADVI_means.csv" % (args.model_name, args.roi))
+    # vb_df.to_csv(save_path)
