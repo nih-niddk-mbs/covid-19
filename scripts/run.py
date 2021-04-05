@@ -68,7 +68,7 @@ parser.add_argument('-vb', '--advi', type=int, default=0,
 parser.add_argument('-vba', '--advi-algorithm', type=str, default='meanfield',
                    help=('Algorithm to run with AVDI ("meanfield" or "fullrank"). '
                    'Default is "meanfield".'))
-parser.add_argument('-vbe', '--advi-eta', type=int, default=0,
+parser.add_argument('-vbe', '--advi-eta', type=float, default=0,
                    help=('Stepsize scaling parameter (ADVI).'))
 parser.add_argument('-vbai', '--advi-adapt-iter', type=int, default=0,
                    help=('Number of iterations for eta adaptation (ADVI).'))
