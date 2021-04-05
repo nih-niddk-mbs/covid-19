@@ -146,7 +146,6 @@ else:
     output_dir = save_dir / 'std_out'
     output_dir.mkdir(parents=True, exist_ok=True)
     # run CmdStan's variational inference method, returns object `CmdStanVB`
-    algorithm: Algorithm to use. One of: “meanfield”, “fullrank”.
 
     sicr_model_vb = sicr_model.variational(data=stan_data,
                                            algorithm=args.advi_algorithm,
