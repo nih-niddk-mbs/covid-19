@@ -65,6 +65,9 @@ parser.add_argument('-tw', '--totwk', type=int, default=1,
 parser.add_argument('-vb', '--advi', type=int, default=0,
                    help=('Run Variational Bayes / Automatic Differentiation '
                    'Variational Inference (ADVI) algorithm. '))
+parser.add_argument('-vba', '--advi-algorithm', type=str, default='meanfield',
+                   help=('Algorithm to run with AVDI ("meanfield" or "fullrank"). '
+                   'Default is "meanfield"'.))
 
 args = parser.parse_args()
 
@@ -143,8 +146,13 @@ else:
     output_dir = save_dir / 'std_out'
     output_dir.mkdir(parents=True, exist_ok=True)
     # run CmdStan's variational inference method, returns object `CmdStanVB`
-    sicr_model_vb = sicr_model.variational(data=stan_data, grad_samples=4000,
-                                           elbo_samples=4000,output_samples=4000,
+    algorithm: Algorithm to use. One of: “meanfield”, “fullrank”.
+
+    sicr_model_vb = sicr_model.variational(data=stan_data,
+                                           algorithm=args.advi_algorithm,
+                                           grad_samples=4000,
+                                           elbo_samples=4000,
+                                           output_samples=4000,
                                            output_dir=output_dir)
     sicr_model_vb.variational_sample.shape
 
