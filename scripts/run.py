@@ -67,7 +67,7 @@ parser.add_argument('-vb', '--advi', type=int, default=0,
                    'Variational Inference (ADVI) algorithm. '))
 parser.add_argument('-vba', '--advi-algorithm', type=str, default='meanfield',
                    help=('Algorithm to run with AVDI ("meanfield" or "fullrank"). '
-                   'Default is "meanfield"'.))
+                   'Default is "meanfield".'))
 
 args = parser.parse_args()
 
