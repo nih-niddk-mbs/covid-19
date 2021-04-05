@@ -68,6 +68,11 @@ parser.add_argument('-vb', '--advi', type=int, default=0,
 parser.add_argument('-vba', '--advi-algorithm', type=str, default='meanfield',
                    help=('Algorithm to run with AVDI ("meanfield" or "fullrank"). '
                    'Default is "meanfield".'))
+parser.add_argument('-vbe', '--advi-eta', type=int, default=0,
+                   help=('Stepsize scaling parameter (ADVI).'))
+parser.add_argument('-vbai', '--advi-adapt-iter', type=int, default=0,
+                   help=('Number of iterations for eta adaptation (ADVI).'))
+
 
 args = parser.parse_args()
 
@@ -152,6 +157,8 @@ else:
                                            grad_samples=4000,
                                            elbo_samples=4000,
                                            output_samples=4000,
+                                           eta=args.advi_eta,
+                                           adapt_iter=args.advi_adapt_iter,
                                            output_dir=output_dir)
     sicr_model_vb.variational_sample.shape
 
