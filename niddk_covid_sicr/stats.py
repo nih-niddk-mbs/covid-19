@@ -19,7 +19,8 @@ MODEL_PARAMETER_CONSTANTS = {
               'SICRdiscrete3Nwk':{'cons1':3, 'cons2':3},
               'SICRdiscrete4Nwk':{'cons1':2, 'cons2':4},
               'SICRdiscrete5Nwk':{'cons1':1, 'cons2':5},
-              'SICRdiscrete6Nwk':{'cons1':3, 'cons2':3}
+              'SICRdiscrete6Nwk':{'cons1':3, 'cons2':3},
+              'SICRdiscrete7Nwk':{'cons1':2, 'cons2':4}
               }
 
 def get_rhat(fit) -> float:
@@ -151,7 +152,7 @@ def get_aic(d):
     """Calculate AIC, add to table, reweight stats. """
     model = d['model']
     num_weeks = d['num weeks']
-    if model == 'SICRdiscrete4Nwk':
+    if model == 'SICRdiscrete4Nwk' or 'SICRdiscrete7Nwk':
         n_blocks = int(np.floor((int(num_weeks)-1)/9)) # calculate n_blocks
         num_weeks = n_blocks
     d['num_params'] = MODEL_PARAMETER_CONSTANTS[model]['cons1'] + MODEL_PARAMETER_CONSTANTS[model]['cons2']*num_weeks
