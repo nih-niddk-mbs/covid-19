@@ -90,6 +90,11 @@ transformed parameters {
     C += dC[i];
     C *= exp(-(sigmar[i]+sigmad[i]));
 
+    if (i <= delay) {
+      dR[i] = 0.001;
+      dD[i] = 0.001;
+    }
+    Cd[i] = C;
     if (i > delay){
       dR[i] = sigmar[i]*Cd[i-delay];
       dD[i] = sigmad[i]*Cd[i-delay];
