@@ -153,7 +153,7 @@ def get_aic(d):
     """Calculate AIC, add to table, reweight stats. """
     model = d['model']
     num_weeks = d['num weeks']
-    if model == 'SICRdiscrete4Nwk' or 'SICRdiscrete7Nwk':
+    if model == 'SICRdiscrete4Nwk' or model == 'SICRdiscrete7Nwk':
         n_blocks = int(np.floor((int(num_weeks)-1)/9)) # calculate n_blocks
         num_weeks = n_blocks
     if model == 'SICRdiscrete8Nwk': # reduced block size
