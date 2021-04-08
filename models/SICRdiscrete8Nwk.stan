@@ -15,7 +15,7 @@ data {
 
 transformed data {
 
-  int seg  = 12;
+  int seg  = 4;
   int n_blocks = (n_weeks-1)/seg + 1;
 
 }
