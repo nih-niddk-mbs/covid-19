@@ -155,6 +155,9 @@ def get_aic(d):
     if model == 'SICRdiscrete4Nwk' or 'SICRdiscrete7Nwk':
         n_blocks = int(np.floor((int(num_weeks)-1)/9)) # calculate n_blocks
         num_weeks = n_blocks
+    if model == 'SICRdiscrete8Nwk': # reduced block size
+        n_blocks = int(np.floor((int(num_weeks)-1)/5)) # calculate n_blocks
+        num_weeks = n_blocks
     d['num_params'] = MODEL_PARAMETER_CONSTANTS[model]['cons1'] + MODEL_PARAMETER_CONSTANTS[model]['cons2']*num_weeks
     d['aic'] = d['ll_'] + 2*d['num_params']
     return d
