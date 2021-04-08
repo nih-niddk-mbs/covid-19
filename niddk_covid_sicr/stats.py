@@ -20,7 +20,8 @@ MODEL_PARAMETER_CONSTANTS = {
               'SICRdiscrete4Nwk':{'cons1':2, 'cons2':4},
               'SICRdiscrete5Nwk':{'cons1':1, 'cons2':5},
               'SICRdiscrete6Nwk':{'cons1':3, 'cons2':3},
-              'SICRdiscrete7Nwk':{'cons1':2, 'cons2':4}
+              'SICRdiscrete7Nwk':{'cons1':2, 'cons2':4},
+              'SICRdiscrete8Nwk':{'cons1':1, 'cons2':5}
               }
 
 def get_rhat(fit) -> float:
