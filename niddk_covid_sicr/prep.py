@@ -188,27 +188,14 @@ def get_init_fun(args, stan_data, force_fresh=False):
             print("Using last sample from previous fit to initialize")
     else:
         print("Using default values to initialize fit")
-        result = {'f1': gamma(2., 10.),
-                  'f2': gamma(40., 1/100.),
-                  'sigmar': gamma(20, 1/120.),
-                  'sigmad': gamma(20, 1/120),
-                  'sigmau': gamma(2., 1/20.),
-                  'q': exponential(.1),
-                  'mbase': gamma(2., .1/2.),
-                  # 'mlocation': lognormal(np.log(stan_data['tm']), 1.),
-                  'mlocation': normal(stan_data['tm'], 4.),
-                  'extra_std': exponential(.5),
-                  'extra_std_R': exponential(.5),
-                  'extra_std_D': exponential(.5),
-                  'cbase': gamma(1., 1.),
-                  # 'clocation': lognormal(np.log(20.), 1.),
-                  'clocation': normal(50., 1.),
-                  'ctransition': normal(10., 1.),
-                  # 'n_pop': lognormal(np.log(1e5), 1.),
-                  'n_pop': normal(1e6, 1e4),
-                  'sigmar1': gamma(2., .01),
-                  'sigmad1': gamma(2., .01),
-                  'trelax': normal(50.,5.)
+        result = {
+                    'sigmau': exponential(1.)
+                  # 'beta': normal(1.,.5),
+                  # 'sigr': exponential(.5),
+                  # 'sigd': exponential(.2),
+                  # 'sigmau': exponential(1.),
+                  # 'sigc': exponential(1.),
+                  # 'alpha': exponential(1.)
                   }
 
     def init_fun():
