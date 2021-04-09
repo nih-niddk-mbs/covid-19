@@ -18,12 +18,13 @@ transformed data {
 }
 
 parameters {
-real<lower=0> beta[n_weeks];             // infection rate
-real<lower=0> alpha;
-real<lower=0> sigd[n_weeks];
-real<lower=0> sigc[n_weeks];
-real<lower=0> sigr[n_weeks];
-real<lower=0> sigmau;             // uninfected rate
+real<lower=0,upper=50> alpha;
+real<lower=0,upper=10> beta[n_weeks];             // infection rate
+real<lower=0,upper=5> sigd[n_weeks];
+real<lower=0,upper=5> sigc[n_weeks];
+real<lower=0,upper=5> sigr[n_weeks];
+real<lower=0,upper=5> sigmau;             // uninfected rate
+
 
 }
 
@@ -114,7 +115,7 @@ transformed parameters {
 model {
 
     sigmau ~ exponential(1.);
-    alpha ~ exponential(10.);
+    alpha ~ exponential(1.);
     beta ~ normal(1.,.5);
     sigd ~ exponential(5.);
     sigc ~ exponential(1.);
