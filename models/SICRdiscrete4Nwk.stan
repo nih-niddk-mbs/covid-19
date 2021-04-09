@@ -22,12 +22,12 @@ transformed data {
 
 parameters {
 
-real<lower=0> alpha;
-real<lower=0> beta[n_blocks];             // infection rate
-real<lower=0> sigd[n_blocks];
-real<lower=0> sigc[n_blocks];
-real<lower=0> sigr[n_blocks];
-real<lower=0> sigmau;             // uninfected rate
+real<lower=0,upper=200> alpha;
+real<lower=0,upper=10> beta[n_blocks];             // infection rate
+real<lower=0,upper=5> sigd[n_blocks];
+real<lower=0,upper=5> sigc[n_blocks];
+real<lower=0,upper=5> sigr[n_blocks];
+real<lower=0,upper=5> sigmau;             // uninfected rate
 
 }
 

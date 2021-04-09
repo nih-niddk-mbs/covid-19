@@ -18,12 +18,13 @@ transformed data {
 }
 
 parameters {
-real<lower=0> beta[n_weeks];             // infection rate
-real<lower=0> alpha[n_weeks];
-real<lower=0> sigd;
-real<lower=0> sigc[n_weeks];
-real<lower=0> sigr[n_weeks];
-real<lower=0> sigmau;             // uninfected rate
+
+real<lower=0,upper=50> alpha[n_weeks];
+real<lower=0,upper=10> beta[n_weeks];             // infection rate
+real<lower=0,upper=5> sigd;
+real<lower=0,upper=5> sigc[n_weeks];
+real<lower=0,upper=5> sigr[n_weeks];
+real<lower=0,upper=5> sigmau;             // uninfected rate
 
 }
 
