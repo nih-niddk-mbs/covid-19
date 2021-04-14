@@ -137,7 +137,7 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     # reformat and save that data in its own .csv file.
     source = dfs['global']
     for country in tqdm(good_countries, desc='Countries'):  # For each country
-        if country in ['Diamond Princess', 'MS Zaandam', 'Samoa',
+        if country in ['Diamond Princess', 'Grand Princess', 'MS Zaandam', 'Samoa',
                        'Vanuatu', 'Marshall Islands', 'US', 'Micronesia']:
             print("Skipping {}".format(country))
             continue
@@ -172,7 +172,7 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
 
     source = dfs['US']
     states = source['confirmed'].index.tolist()
-    
+
     us_recovery_data = covid_tracking_recovery(data_path)
     for state in tqdm(states, desc='US States'):  # For each country
         if state in ['Diamond Princess', 'Grand Princess', 'MS Zaandam', 'US_AS']:
@@ -293,7 +293,7 @@ def covid_tracking_recovery(data_path: str):
         df['dates2'] = pd.to_datetime(df['dates2']).dt.strftime('%m/%d/%y') # convert dates to string
         df = df.set_index('dates2') # Convert to int
         df['new_recover'] = df['cum_recover'].diff()
-        
+
         ctp_dfs['US_'+state] = df
     return ctp_dfs
 
@@ -538,7 +538,7 @@ def remove_old_rois(data_path: str):
      US, US_AS (American Somoa)"""
 
     csvs = [x for x in data_path.iterdir() if 'covidtimeseries' in str(x)]
-    rois_to_remove = ['Diamond Princess', 'MS Zaandam', 'Samoa', 'Vanuatu',
+    rois_to_remove = ['Diamond Princess', 'Grand Princess', 'MS Zaandam', 'Samoa', 'Vanuatu',
                         'Marshall Islands', 'US', 'US_AS', 'Micronesia']
     for csv in csvs:
         roi = str(csv).split('.')[0].split('_', 1)[-1]
