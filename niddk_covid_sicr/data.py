@@ -410,6 +410,141 @@ def get_brazil(data_path: str, filter_: Union[dict, bool] = True,
         df = df.set_index('dates2').fillna(0).astype(int) # Fill NaN with 0 and convert to int
         df.to_csv(data_path / ('covidtimeseries_BR_%s.csv' % state_code[state]))
 
+def get_data_hub(data_path: str, filter_: Union[dict, bool] = False) -> None:
+    """ Gets country-level data from COVID-19 Data Hub and
+    adds it to CSV files for global ROIs that were gathered
+    by get_jhu(). Data Hub data gets prefixed by 'dh_' in timeseries files.
+
+    https://github.com/covid19datahub/COVID19/
+    Args:
+        data_path (str): Full path to data directory.
+    Returns:
+        None
+    """
+    # Following lines are just to build a list of 3-letter country codes for
+    # countries we scraped with get_jhu() so we can append Data Hub data to these
+    good_jhu_rois = pd.read_csv(data_path / 'timeseries_countries.csv')
+    all_jhu_rois = pd.read_csv('niddk_covid_sicr/all_jhu_rois.csv')
+
+    good_jhu_rois = good_jhu_rois.merge(all_jhu_rois, on='Countries', how='left')
+    good_jhu_rois.rename(columns={'Alpha-3 code':'iso_alpha_3'}, inplace=True)
+
+    url = 'https://raw.githubusercontent.com/covid19datahub/COVID19/master/inst/extdata/src.csv'
+    dh_rois = pd.read_csv(url) # url for Data Hub's 3 letter codes per ROI
+    dh_rois.drop_duplicates(subset='iso_alpha_3', inplace=True)
+
+    roi_codes = good_jhu_rois.merge(dh_rois, on='iso_alpha_3', how='inner')
+    roi_codes = roi_codes[roi_codes['iso_alpha_3'].notna()]
+
+    df, src = covid19(roi_codes['iso_alpha_3'].tolist(), verbose = False)
+
+    # Merge below to add countries column to Data Hub df so later we can sort by rois that match files
+    df_datahub_src = df.merge(roi_codes, on='iso_alpha_3', how='outer')
+
+    df_datahub = pd.DataFrame(columns=['Countries','dates2', 'dh_deaths',
+            'dh_confirmed', 'dh_tests', 'dh_recovered', 'dh_hosp', 'dh_icu',
+            'dh_vent', 'dh_population', 'dh_school_closing', 'dh_workplace_closing',
+            'dh_cancel_events', 'dh_gatherings_restrictions', 'dh_transport_closing',
+            'dh_stay_home_restrictions', 'dh_internal_movement_restrictions',
+            'dh_international_movement_restrictions', 'dh_information_campaigns',
+            'dh_testing_policy', 'dh_contact_tracing', 'dh_stringency_index'])
+
+    df_datahub['Countries'] = df_datahub_src['Countries'].values
+    df_datahub['dates2'] = df_datahub_src['date'].apply(fix_delphi_dates).values # fix dates
+    df_datahub['dh_deaths'] = df_datahub_src['deaths'].values
+    df_datahub['dh_confirmed'] = df_datahub_src['confirmed'].values
+    df_datahub['dh_tests'] = df_datahub_src['tests'].values
+    df_datahub['dh_recovered'] = df_datahub_src['recovered'].values
+    df_datahub['dh_hosp'] = df_datahub_src['hosp'].values
+    df_datahub['dh_icu'] = df_datahub_src['icu'].values
+    df_datahub['dh_vent'] = df_datahub_src['vent'].values
+    df_datahub['dh_population'] = df_datahub_src['population'].values
+    df_datahub['dh_school_closing'] = df_datahub_src['school_closing'].values
+    df_datahub['dh_workplace_closing'] = df_datahub_src['workplace_closing'].values
+    df_datahub['dh_cancel_events'] = df_datahub_src['cancel_events'].values
+    df_datahub['dh_gatherings_restrictions'] = df_datahub_src['gatherings_restrictions'].values
+    df_datahub['dh_transport_closing'] = df_datahub_src['transport_closing'].values
+    df_datahub['dh_stay_home_restrictions'] = df_datahub_src['stay_home_restrictions'].values
+    df_datahub['dh_internal_movement_restrictions'] = df_datahub_src['internal_movement_restrictions'].values
+    df_datahub['dh_international_movement_restrictions'] = df_datahub_src['international_movement_restrictions'].values
+    df_datahub['dh_information_campaigns'] = df_datahub_src['information_campaigns'].values
+    df_datahub['dh_testing_policy'] = df_datahub_src['testing_policy'].values
+    df_datahub['dh_contact_tracing'] = df_datahub_src['contact_tracing'].values
+    df_datahub['dh_stringency_index'] = df_datahub_src['stringency_index'].values
+    df_datahub.set_index('Countries', inplace=True)
+
+    merge_data_hub(data_path, df_datahub) # merge global data hub data with time-series
+    print("Getting Data Hub results for states...")
+    get_data_hub_states(data_path) # merge US state data hub data with time-series
+
+def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
+    """ Take df_datahub DataFrame we created for global timeseries files we
+    have and merge country-level data with each file that it matches.
+    Args:
+        data_path (str): Full path to data directory.
+        df_datahub (pd.DataFrame): DataFrame containing COVID Data Hub data
+                                   for global ROIs in ./data.
+    Returns:
+        None
+    """
+    rois = df_datahub.index.unique() # get list of countries we scraped data for
+
+    for roi in tqdm(rois, desc='countries'): #  If ROI time-series exists, open as df and merge data hub data
+        try:
+            timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi)
+            df_timeseries = pd.read_csv(timeseries_path)
+            # df_timeseries.reset_index(drop=True)
+        except FileNotFoundError as fnf_error:
+            print(fnf_error, 'Could not add Data Hub data.')
+            pass
+
+        for i in df_timeseries.columns: # Check if Delphi data already included
+            if 'dh_' in i: # prefix 'd_' is Data Hub indicator
+                df_timeseries.drop([i], axis=1, inplace=True)
+
+        df_datahub_roi = df_datahub[df_datahub.index == roi] # filter delphi rows that match roi
+        df_combined = df_timeseries.merge(df_datahub_roi, how='left', on='dates2')
+        df_combined.fillna(-1, inplace=True) # fill empty rows with -1
+        df_combined.sort_values(by=['dates2'], inplace=True)
+        df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
+        df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
+
+def get_data_hub_states(data_path: str):
+    """ Get COVID Data Hub data for US states (tests, population).
+        Args:
+            data_path (str)
+        Returns:
+            None
+    """
+    states, src = covid19("USA", level = 2, verbose = False)
+    # states = pd.read_csv('/Users/schwartzao/Desktop/dh_states.csv')
+    dhstates = pd.DataFrame(columns=['roi','dates2','dh_tests','dh_population'])
+    dhstates['roi'] = states['key_alpha_2'].values
+    dhstates['dates2'] = states['date'].apply(fix_delphi_dates).values
+    dhstates['dh_tests'] = states['tests'].values
+    dhstates['dh_population'] = states['population'].values
+    dhstates.set_index('roi', inplace=True)
+    rois = states['key_alpha_2'].unique()
+
+    for roi in tqdm(rois, desc="US states"): #  If ROI time-series exists, open as df and merge data hub
+        try:
+            timeseries_path = Path(data_path) / ('covidtimeseries_US_%s.csv' % roi)
+            df_timeseries = pd.read_csv(timeseries_path)
+        except FileNotFoundError as fnf_error:
+            print(fnf_error, 'Could not add US state-level Data Hub data.')
+            pass
+
+        for i in df_timeseries.columns: # Check if Data Hub data already included
+            if 'dh_' in i: # prefix 'dh_' is Data Hub indicator
+                df_timeseries.drop([i], axis=1, inplace=True)
+
+        df_datahub_roi = dhstates[dhstates.index == roi] # filter data hub rows that match roi
+        df_combined = df_timeseries.merge(df_datahub_roi, how='outer', on='dates2')
+        df_combined.fillna(-1, inplace=True) # fill empty rows with -1
+        df_combined.sort_values(by=['dates2'], inplace=True)
+        df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
+        df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
+
 def fix_negatives(data_path: str, plot: bool = False) -> None:
     """Fix negative values in daily data.
 
