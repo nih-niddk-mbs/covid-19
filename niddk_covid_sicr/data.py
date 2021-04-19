@@ -424,7 +424,7 @@ def get_data_hub(data_path: str, filter_: Union[dict, bool] = False) -> None:
     # Following lines are just to build a list of 3-letter country codes for
     # countries we scraped with get_jhu() so we can append Data Hub data to these
     good_jhu_rois = pd.read_csv(data_path / 'timeseries_countries.csv')
-    all_jhu_rois = pd.read_csv('niddk_covid_sicr/all_jhu_rois.csv')
+    all_jhu_rois = pd.read_csv(data_path / 'all_jhu_rois.csv')
 
     good_jhu_rois = good_jhu_rois.merge(all_jhu_rois, on='Countries', how='left')
     good_jhu_rois.rename(columns={'Alpha-3 code':'iso_alpha_3'}, inplace=True)
@@ -441,38 +441,14 @@ def get_data_hub(data_path: str, filter_: Union[dict, bool] = False) -> None:
     # Merge below to add countries column to Data Hub df so later we can sort by rois that match files
     df_datahub_src = df.merge(roi_codes, on='iso_alpha_3', how='outer')
 
-    df_datahub = pd.DataFrame(columns=['Countries','dates2', 'dh_deaths',
-            'dh_confirmed', 'dh_tests', 'dh_recovered', 'dh_hosp', 'dh_icu',
-            'dh_vent', 'dh_population', 'dh_school_closing', 'dh_workplace_closing',
-            'dh_cancel_events', 'dh_gatherings_restrictions', 'dh_transport_closing',
-            'dh_stay_home_restrictions', 'dh_internal_movement_restrictions',
-            'dh_international_movement_restrictions', 'dh_information_campaigns',
-            'dh_testing_policy', 'dh_contact_tracing', 'dh_stringency_index'])
+    df_datahub = pd.DataFrame(columns=['Countries','dates2', 'vaccines'])
 
     df_datahub['Countries'] = df_datahub_src['Countries'].values
     df_datahub['dates2'] = df_datahub_src['date'].apply(fix_delphi_dates).values # fix dates
-    df_datahub['dh_deaths'] = df_datahub_src['deaths'].values
-    df_datahub['dh_confirmed'] = df_datahub_src['confirmed'].values
-    df_datahub['dh_tests'] = df_datahub_src['tests'].values
-    df_datahub['dh_recovered'] = df_datahub_src['recovered'].values
-    df_datahub['dh_hosp'] = df_datahub_src['hosp'].values
-    df_datahub['dh_icu'] = df_datahub_src['icu'].values
-    df_datahub['dh_vent'] = df_datahub_src['vent'].values
-    df_datahub['dh_population'] = df_datahub_src['population'].values
-    df_datahub['dh_school_closing'] = df_datahub_src['school_closing'].values
-    df_datahub['dh_workplace_closing'] = df_datahub_src['workplace_closing'].values
-    df_datahub['dh_cancel_events'] = df_datahub_src['cancel_events'].values
-    df_datahub['dh_gatherings_restrictions'] = df_datahub_src['gatherings_restrictions'].values
-    df_datahub['dh_transport_closing'] = df_datahub_src['transport_closing'].values
-    df_datahub['dh_stay_home_restrictions'] = df_datahub_src['stay_home_restrictions'].values
-    df_datahub['dh_internal_movement_restrictions'] = df_datahub_src['internal_movement_restrictions'].values
-    df_datahub['dh_international_movement_restrictions'] = df_datahub_src['international_movement_restrictions'].values
-    df_datahub['dh_information_campaigns'] = df_datahub_src['information_campaigns'].values
-    df_datahub['dh_testing_policy'] = df_datahub_src['testing_policy'].values
-    df_datahub['dh_contact_tracing'] = df_datahub_src['contact_tracing'].values
-    df_datahub['dh_stringency_index'] = df_datahub_src['stringency_index'].values
+    df_datahub['vaccines'] = df_datahub_src['vaccines'].values
     df_datahub.set_index('Countries', inplace=True)
-
+    print(df_datahub)
+    exit()
     merge_data_hub(data_path, df_datahub) # merge global data hub data with time-series
     print("Getting Data Hub results for states...")
     get_data_hub_states(data_path) # merge US state data hub data with time-series
