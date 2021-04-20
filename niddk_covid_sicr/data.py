@@ -451,13 +451,13 @@ def get_data_hub(data_path: str, filter_: Union[dict, bool] = False) -> None:
 
     df_datahub['Countries'] = df_datahub_src['Countries'].values
     df_datahub['dates2'] = df_datahub_src['date'].apply(fix_dh_dates).values # fix dates
-    # df_datahub['cum_vaccines'] = df_datahub_src['vaccines'].values
-    #
-    df_datahub['cum_vaccines'] = df_datahub['cum_vaccines'].values
-    df_datahub.set_index('dates2', inplace=True)
+    df_datahub['cum_vaccines'] = df_datahub_src['vaccines'].values
+    df_datahub.dropna(inplace=True) # handle NaN values present by dropping them
+    df_datahub['cum_vaccines'] = df_datahub['cum_vaccines'].astype(int) # convert float to int
 
     merge_data_hub(data_path, df_datahub) # merge global data hub data with time-series
-    print("Getting Data Hub results for states...")
+    exit()
+    print("Getting Data Hub results for US states...")
     get_data_hub_states(data_path) # merge US state data hub data with time-series
 
 def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
@@ -470,38 +470,31 @@ def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
     Returns:
         None
     """
-    # rois = df_datahub.index.unique() # get list of countries we scraped data for
     rois = df_datahub['Countries'].unique() # get list of countries we scraped data for
 
     for roi in tqdm(rois, desc='countries'): #  If ROI time-series exists, open as df and merge data hub data
         try:
             timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi)
-            df_timeseries = pd.read_csv(timeseries_path)
-            # df_timeseries.reset_index(drop=True)
+            df_timeseries = pd.read_csv(timeseries_path, index_col='dates2')
         except FileNotFoundError as fnf_error:
             print(fnf_error, 'Could not add Data Hub data.')
             pass
 
-        # for i in df_timeseries.columns: # Check if Delphi data already included
-        #     if 'dh_' in i: # prefix 'd_' is Data Hub indicator
-        #         df_timeseries.drop([i], axis=1, inplace=True)
+        for i in df_timeseries.columns: # Check if Delphi data already included
+            if 'vaccines' in i: # prefix 'd_' is Data Hub indicator
+                df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
 
-        # use data-time index for both dfs and merge on dates
-        # df_timeseries.set_index('Datetime', inplace=True)
         df_datahub_roi = df_datahub[df_datahub.Countries == roi] # filter delphi rows that match roi
-        print(roi)
-        print(df_timeseries)
-        print(df_datahub_roi)
+        df_datahub_roi.set_index("dates2", inplace=True)
 
-        # df_combined = df_timeseries.merge(df_datahub_roi, how='left', on='dates2')
-        df_combined = df_timeseries.join(df_datahub_roi[['cum_vaccines']], how='left')
-        print(df_combined)
-        exit()
-
+        df_combined = df_timeseries.merge(df_datahub_roi[['cum_vaccines']], how='left', on='dates2')
+        df_combined["new_vaccines"] = df_combined[['cum_vaccines']].diff()
         df_combined.fillna(-1, inplace=True) # fill empty rows with -1
-        df_combined.sort_values(by=['dates2'], inplace=True)
+        df_combined = df_combined.astype(int)
+
+
         df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
-        # df_combined.to_csv(timeseries_path, index=False) # overwrite timeseries CSV
+        df_combined.to_csv(timeseries_path) # overwrite timeseries CSV
 
 def get_data_hub_states(data_path: str):
     """ Get COVID Data Hub data for US states (tests, population).
