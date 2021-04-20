@@ -12,12 +12,14 @@ from urllib.error import HTTPError
 import urllib.request, json
 import os
 from pathlib import Path
-from covid19dh import covid19 # mod for COVID-19 Data Hub (https://covid19datahub.io/articles/api/python.html)
+from covid19dh import covid19 # module for COVID-19 Data Hub
+import subprocess
+import sys
 
 JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
 COVIDTRACKER_FILTER_DEFAULTS = {'cum_cases': 5, 'cum_recover': 1, 'cum_deaths': 0}
 
-us_state_abbrev = {
+us_state_abbrev = { # used for aggregating JHU US counties into states
     'Alabama': 'AL',
     'Alaska': 'AK',
     'American Samoa': 'AS',
@@ -426,26 +428,26 @@ def get_data_hub(data_path: str, filter_: Union[dict, bool] = False) -> None:
     Returns:
         None
     """
+
+    print("Covid19 DataHub package is regularly updated for new data. Installing updates.")
+    install("covid19dh")
+
     # Following lines are just to build a list of 3-letter country codes for
     # countries we scraped with get_jhu() so we can append Data Hub data to these
     good_jhu_rois = pd.read_csv(data_path / 'timeseries_countries.csv')
     all_jhu_rois = pd.read_csv(data_path / 'all_jhu_rois.csv')
-
     good_jhu_rois = good_jhu_rois.merge(all_jhu_rois, on='Countries', how='left')
     good_jhu_rois.rename(columns={'Alpha-3 code':'iso_alpha_3'}, inplace=True)
 
     url = 'https://raw.githubusercontent.com/covid19datahub/COVID19/master/inst/extdata/src.csv'
     dh_rois = pd.read_csv(url) # url for Data Hub's 3 letter codes per ROI
     dh_rois.drop_duplicates(subset='iso_alpha_3', inplace=True)
-
     roi_codes = good_jhu_rois.merge(dh_rois, on='iso_alpha_3', how='inner')
     roi_codes = roi_codes[roi_codes['iso_alpha_3'].notna()]
-
     df, src = covid19(roi_codes['iso_alpha_3'].tolist(), verbose = False)
 
     # Merge below to add countries column to Data Hub df so later we can sort by rois that match files
     df_datahub_src = df.merge(roi_codes, on='iso_alpha_3', how='outer')
-
     df_datahub = pd.DataFrame(columns=['Countries','dates2', 'cum_vaccines'])
 
     df_datahub['Countries'] = df_datahub_src['Countries'].values
@@ -471,6 +473,8 @@ def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
     rois = df_datahub['Countries'].unique() # get list of countries we scraped data for
 
     for roi in tqdm(rois, desc='countries'): #  If ROI time-series exists, open as df and merge data hub data
+        if roi == "US": # skipping US because we use state-level data for this
+            continue
         try:
             timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi)
             df_timeseries = pd.read_csv(timeseries_path, index_col='dates2')
@@ -488,7 +492,6 @@ def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
         df_combined["new_vaccines"] = df_combined[['cum_vaccines']].diff()
         df_combined.fillna(-1, inplace=True) # fill empty rows after merge with -1
         df_combined = df_combined.astype(int)
-
 
         df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
         df_combined.to_csv(timeseries_path) # overwrite timeseries CSV
@@ -510,6 +513,8 @@ def get_data_hub_states(data_path: str):
     rois = states['key_alpha_2'].unique()
 
     for roi in tqdm(rois, desc="US states"): #  If ROI time-series exists, open as df and merge data hub
+        if roi == "AS": # skipping US_AS because we use state-level data for this
+            continue
         try:
             timeseries_path = Path(data_path) / ('covidtimeseries_US_%s.csv' % roi)
             df_timeseries = pd.read_csv(timeseries_path)
@@ -531,6 +536,8 @@ def get_data_hub_states(data_path: str):
         df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
         df_combined.to_csv(timeseries_path) # overwrite timeseries CSV
 
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", package])
 
 def fix_dh_dates(x):
     y = datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S')
