@@ -448,13 +448,13 @@ def get_data_hub(data_path: str, filter_: Union[dict, bool] = False) -> None:
 
     # Merge below to add countries column to Data Hub df so later we can sort by rois that match files
     df_datahub_src = df.merge(roi_codes, on='iso_alpha_3', how='outer')
-    df_datahub = pd.DataFrame(columns=['Countries','dates2', 'cum_vaccines'])
+    df_datahub = pd.DataFrame(columns=['Countries','dates2', 'cum_tests'])
 
     df_datahub['Countries'] = df_datahub_src['Countries'].values
     df_datahub['dates2'] = df_datahub_src['date'].apply(fix_dh_dates).values # fix dates
-    df_datahub['cum_vaccines'] = df_datahub_src['vaccines'].values
+    df_datahub['cum_tests'] = df_datahub_src['tests'].values
     df_datahub.dropna(inplace=True) # handle NaN values present by dropping them
-    df_datahub['cum_vaccines'] = df_datahub['cum_vaccines'].astype(int) # convert float to int
+    df_datahub['cum_tests'] = df_datahub['cum_tests'].astype(int) # convert float to int
     merge_data_hub(data_path, df_datahub) # merge global data hub data with time-series
 
     print("Getting Data Hub results for US states...")
@@ -483,13 +483,13 @@ def merge_data_hub(data_path:str, df_datahub: pd.DataFrame):
             pass
 
         for i in df_timeseries.columns: # Check if Delphi data already included
-            if 'vaccines' in i: # prefix 'd_' is Data Hub indicator
+            if 'tests' in i: # prefix 'd_' is Data Hub indicator
                 df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
 
         df_datahub_roi = df_datahub[df_datahub.Countries == roi] # filter delphi rows that match roi
         df_datahub_roi.set_index("dates2", inplace=True)
-        df_combined = df_timeseries.merge(df_datahub_roi[['cum_vaccines']], how='left', on='dates2')
-        df_combined["new_vaccines"] = df_combined[['cum_vaccines']].diff()
+        df_combined = df_timeseries.merge(df_datahub_roi[['cum_tests']], how='left', on='dates2')
+        df_combined["new_tests"] = df_combined[['cum_tests']].diff()
         df_combined.fillna(-1, inplace=True) # fill empty rows after merge with -1
         df_combined = df_combined.astype(int)
 
@@ -504,12 +504,12 @@ def get_data_hub_states(data_path: str):
             None
     """
     states, src = covid19("USA", level = 2, verbose = False)
-    dhstates = pd.DataFrame(columns=['roi','dates2','cum_vaccines'])
+    dhstates = pd.DataFrame(columns=['roi','dates2','cum_tests'])
     dhstates['roi'] = states['key_alpha_2'].values
     dhstates['dates2'] = states['date'].apply(fix_dh_dates).values
-    dhstates['cum_vaccines'] = states['vaccines'].values
+    dhstates['cum_tests'] = states['tests'].values
     dhstates.dropna(inplace=True) # handle NaN values present by dropping them
-    dhstates['cum_vaccines'] = dhstates['cum_vaccines'].astype(int) # convert float to int
+    dhstates['cum_tests'] = dhstates['cum_tests'].astype(int) # convert float to int
     rois = states['key_alpha_2'].unique()
 
     for roi in tqdm(rois, desc="US states"): #  If ROI time-series exists, open as df and merge data hub
@@ -523,13 +523,13 @@ def get_data_hub_states(data_path: str):
             pass
 
         for i in df_timeseries.columns: # Check if Data Hub data already included
-            if 'vaccines' in i: # prefix 'dh_' is Data Hub indicator
+            if 'tests' in i: # prefix 'dh_' is Data Hub indicator
                 df_timeseries.drop([i], axis=1, inplace=True)
 
         df_datahub_roi = dhstates[dhstates.roi == roi] # filter data hub rows that match roi
         df_datahub_roi.set_index("dates2", inplace=True)
-        df_combined = df_timeseries.merge(df_datahub_roi[['cum_vaccines']], how='left', on='dates2')
-        df_combined["new_vaccines"] = df_combined[['cum_vaccines']].diff()
+        df_combined = df_timeseries.merge(df_datahub_roi[['cum_tests']], how='left', on='dates2')
+        df_combined["new_tests"] = df_combined[['cum_tests']].diff()
         df_combined.fillna(-1, inplace=True) # fill empty rows after merge with -1
         df_combined.set_index("dates2", inplace=True)
         df_combined = df_combined.astype(int)
