@@ -416,9 +416,7 @@ def get_owid(data_path: str, filter_: Union[dict, bool] = True,
         https://github.com/owid/covid-19-data
         Add columns cum_tests and new_tests to csvs in data_path. """
     url = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/testing/covid-testing-all-observations.csv'
-    # src = pd.read_csv(url)
-    # src.to_csv(data_path / 'owid_testing.csv')
-    src = pd.read_csv(data_path / 'owid_testing.csv') # FOR TESTING PURPOSES
+    src = pd.read_csv(url)
     roi_codes = pd.read_csv(data_path / 'country_iso_codes.csv')
     roi_codes_dict = pd.Series(roi_codes.Country.values,index=roi_codes['Alpha-3 code']).to_dict()
     # trim down source dataframe
@@ -446,7 +444,6 @@ def get_owid(data_path: str, filter_: Union[dict, bool] = True,
         for i in df_timeseries.columns: # Check if OWID testng data already included
             if 'tests' in i:
                 df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
-        # print(roi)
         src_roi = src_trim[src_trim['Alpha-3 code'] == roi] # filter delphi rows that match roi
 
         df_combined = df_timeseries.merge(src_roi[['cum_tests']], how='left', on='dates2')
