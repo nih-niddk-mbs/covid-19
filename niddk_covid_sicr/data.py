@@ -11,6 +11,7 @@ from typing import Union
 from urllib.error import HTTPError
 import urllib.request, json
 import os
+from datetime import timedelta, date
 
 JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
 COVIDTRACKER_FILTER_DEFAULTS = {'cum_cases': 5, 'cum_recover': 1, 'cum_deaths': 0}
@@ -460,6 +461,58 @@ def get_owid(data_path: str, filter_: Union[dict, bool] = True,
 
 def fix_owid_dates(x):
     y = datetime.strptime(x, '%Y-%m-%d')
+    return datetime.strftime(y, '%m/%d/%y')
+
+
+def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) -> None:
+    """ Scrape JHU for US State level test results. Data is stored as a collection of
+        CSVs per date containing states and test results.
+
+        Args:
+            data_path (str): Full path to data directory.
+        Returns:
+            None
+         """
+    url_template = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/%s.csv"
+    # generate a list of dates for scraping
+
+    start_dt = date(2020, 4, 12) # When JHU starts reporting
+    end_dt = date.today()
+    dates = []
+    for dt in daterange(start_dt, end_dt):
+        dates.append(dt.strftime("%m-%d-%Y"))
+    dfs = []
+    x = 0
+    for i in tqdm(dates, desc='Days of data'):
+        # if x == 2:
+        #     break
+        url = url_template % i
+        try:
+            df = pd.read_csv(url)
+            df_trim = pd.DataFrame(columns=['Province_State', 'new_tests', 'dates2'])
+            df_trim['Province_State'] = df['Province_State'].values
+            df_trim['new_tests'] = df['People_Tested'].fillna(-1).astype(int).values
+            df_trim['dates2'] = fix_jhu_testing_dates(i)
+        except HTTPError:
+            print("Could not download data for %s" % i)
+        dfs.append(df_trim)
+    df_combined = pd.concat(dfs)
+    df_combined.sort_values(by='Province_State', inplace=True)
+    # df_combined.to_csv(data_path / 'jhu_us_states_tests.csv', index=False)
+
+        # x+=1
+
+
+    exit()
+
+    # print(date_list)
+
+def daterange(date1, date2):
+    for n in range(int ((date2 - date1).days)+1):
+        yield date1 + timedelta(n)
+
+def fix_jhu_testing_dates(x):
+    y = datetime.strptime(x, '%m-%d-%Y')
     return datetime.strftime(y, '%m/%d/%y')
 
 def fix_negatives(data_path: str, plot: bool = False) -> None:
