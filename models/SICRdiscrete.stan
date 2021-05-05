@@ -60,9 +60,9 @@ transformed parameters {
   C = 0;
   I = 0;
   for (i in 1:n_weeks){
-    sigmac[i] = sigmac0 + (sigmac1)*i;
+    sigmac[i] = sigmac0;
     sigmad[i] = sigmad0/(sigmad2^2 + ((.1 + sigmad1)*i)^2);
-    sigmar[i] = sigmar0/(sigmar2^2 + ((.1 + sigmar1)*i)^2);
+    sigmar[i] = sigmar0;
     I += alpha[i];
     I *= exp(beta[i] - sigmac[i] - sigmau);
     dC[i] = sigmac[i]*I;
