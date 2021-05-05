@@ -132,7 +132,6 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     # Generate a list of countries that have "good" data,
     # according to these criteria:
     good_countries = get_countries(dfs['global'], filter_=filter_)
-
     # For each "good" country,
     # reformat and save that data in its own .csv file.
     source = dfs['global']
@@ -409,6 +408,62 @@ def get_brazil(data_path: str, filter_: Union[dict, bool] = True,
         df['dates2'] = pd.to_datetime(df['dates2']).dt.strftime('%m/%d/%y') # convert dates to string
         df = df.set_index('dates2').fillna(0).astype(int) # Fill NaN with 0 and convert to int
         df.to_csv(data_path / ('covidtimeseries_BR_%s.csv' % state_code[state]))
+
+
+def get_owid(data_path: str, filter_: Union[dict, bool] = True,
+                       fixes: bool = False) -> None:
+    """ Get testing data from Our World In Data
+        https://github.com/owid/covid-19-data
+        Add columns cum_tests and new_tests to csvs in data_path. """
+    url = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/testing/covid-testing-all-observations.csv'
+    # src = pd.read_csv(url)
+    # src.to_csv(data_path / 'owid_testing.csv')
+    src = pd.read_csv(data_path / 'owid_testing.csv') # FOR TESTING PURPOSES
+    roi_codes = pd.read_csv(data_path / 'country_iso_codes.csv')
+    roi_codes_dict = pd.Series(roi_codes.Country.values,index=roi_codes['Alpha-3 code']).to_dict()
+    # trim down source dataframe
+    src_trim = pd.DataFrame(columns=['dates2','Alpha-3 code','cum_tests'])
+    src_trim['dates2'] = src['Date'].apply(fix_owid_dates).values # fix dates
+    src_trim['Alpha-3 code'] = src['ISO code'].values
+    src_trim['cum_tests'] = src['Cumulative total'].fillna(-1).astype(int).values
+    src_trim.set_index('dates2',inplace=True, drop=True)
+
+    src_rois = src_trim['Alpha-3 code'].unique()
+    unavailable_testing_data = [] # for appending rois that don't have testing data
+    for roi in roi_codes_dict:
+        if roi not in src_rois:
+            unavailable_testing_data.append(roi)
+            continue
+        if roi_codes_dict[roi] in ["US", "Marshall Islands", "Micronesia", "Samoa", "Vanuatu"]: # skipping because bad data
+            continue
+        try:
+            timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi_codes_dict[roi])
+            df_timeseries = pd.read_csv(timeseries_path, index_col='dates2')
+        except FileNotFoundError as fnf_error:
+            print(fnf_error, 'Could not add OWID data.')
+            pass
+
+        for i in df_timeseries.columns: # Check if OWID testng data already included
+            if 'tests' in i:
+                df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
+        # print(roi)
+        src_roi = src_trim[src_trim['Alpha-3 code'] == roi] # filter delphi rows that match roi
+
+        df_combined = df_timeseries.merge(src_roi[['cum_tests']], how='left', on='dates2')
+        df_combined['new_tests'] = df_combined['cum_tests'].diff()
+        df_combined[['cum_tests', 'new_tests']] = df_combined[['cum_tests', 'new_tests']].fillna(-1).astype(int).values
+        df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
+        df_combined.to_csv(timeseries_path) # overwrite timeseries CSV
+
+    print("OWID test results missing for: ")
+    for roi in roi_codes_dict:
+        if roi in unavailable_testing_data:
+            print(roi_codes_dict[roi], end=" ")
+    print("")
+
+def fix_owid_dates(x):
+    y = datetime.strptime(x, '%Y-%m-%d')
+    return datetime.strftime(y, '%m/%d/%y')
 
 def fix_negatives(data_path: str, plot: bool = False) -> None:
     """Fix negative values in daily data.
