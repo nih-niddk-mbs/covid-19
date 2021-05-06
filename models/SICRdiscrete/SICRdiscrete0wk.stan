@@ -78,9 +78,9 @@ model {
 
     for (i in 1:n_weeks){
       alpha[i] ~ exponential(10.);
-      beta[i] ~ exponential(.5);
+      beta[i] ~ normal(1.,.5);
       sigd[i] ~ exponential(5.);
-      sigc[i] ~ exponential(2.);
+      sigc[i] ~ exponential(.5);
       sigr[i] ~ exponential(2.);
       target += poisson_lpmf(y[i,1] | dC[i]);
       target += poisson_lpmf(y[i,2] | dR[i]);
