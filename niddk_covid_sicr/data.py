@@ -479,28 +479,46 @@ def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) 
     start_dt = date(2020, 4, 12) # When JHU starts reporting
     end_dt = date.today()
     dates = []
-    for dt in daterange(start_dt, end_dt):
-        dates.append(dt.strftime("%m-%d-%Y"))
-    dfs = []
-    x = 0
-    for i in tqdm(dates, desc='Days of data'):
-        # if x == 2:
-        #     break
-        url = url_template % i
-        try:
-            df = pd.read_csv(url)
-            df_trim = pd.DataFrame(columns=['Province_State', 'new_tests', 'dates2'])
-            df_trim['Province_State'] = df['Province_State'].values
-            df_trim['new_tests'] = df['People_Tested'].fillna(-1).astype(int).values
-            df_trim['dates2'] = fix_jhu_testing_dates(i)
-        except HTTPError:
-            print("Could not download data for %s" % i)
-        dfs.append(df_trim)
-    df_combined = pd.concat(dfs)
-    df_combined.sort_values(by='Province_State', inplace=True)
-    # df_combined.to_csv(data_path / 'jhu_us_states_tests.csv', index=False)
+    delta = end_dt - start_dt
+    delta = delta.days
 
-        # x+=1
+    # for dt in daterange(start_dt, end_dt):
+    #     dates.append(dt.strftime("%m-%d-%Y"))
+    # dfs_new = [] # tests are named 'People_Tested' for first 200 ish days (new tests)
+    # dfs_cum = [] # then tests are named 'Total_Test_Results' after (cumulative tests)
+    # for i in tqdm(dates, desc=f'Scraping {delta} days of data'):
+    #     url = url_template % i
+    #     try:
+    #         df = pd.read_csv(url)
+    #         # handle cases where column is people_tested and then switches to Total_Test_Results
+    #         df_trim = pd.DataFrame(columns=['Province_State', 'cum_tests', 'new_tests', 'dates2'])
+    #         df_trim['Province_State'] = df['Province_State'].values
+    #         df_trim['dates2'] = fix_jhu_testing_dates(i)
+    #         if 'People_Tested' in df.columns:
+    #             df_trim['new_tests'] = df['People_Tested'].fillna(-1).astype(int).values
+    #             dfs_new.append(df_trim)
+    #         if 'Total_Test_Results' in df.columns:
+    #             df_trim['cum_tests'] = df['Total_Test_Results'].fillna(-1).astype(int).values
+    #             dfs_cum.append(df_trim)
+    #     except HTTPError:
+    #         print("Could not download data for %s" % i)
+    # df_cum_combined = pd.concat(dfs_cum)
+    # df_new_combined = pd.concat(dfs_new)
+    #
+    # df_cum_combined.sort_values(by='Province_State', inplace=True)
+    # df_new_combined.sort_values(by='Province_State', inplace=True)
+    # df_new_combined.to_csv(data_path / 'jhu_us_states_tests_new.csv', index=False)
+    # df_cum_combined.to_csv(data_path / 'jhu_us_states_tests_cum.csv', index=False)
+
+    #
+    df_new_combined = pd.read_csv(data_path / 'jhu_us_states_tests_new.csv')
+    df_cum_combined = pd.read_csv(data_path / 'jhu_us_states_tests_cum.csv')
+    # create datetime type column from dates2 to sort dates
+    
+
+    print(df_new_combined, df_cum_combined)
+
+
 
 
     exit()
