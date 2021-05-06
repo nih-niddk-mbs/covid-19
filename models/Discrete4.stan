@@ -4,11 +4,11 @@
 #include dataDiscrete.stan
 
 transformed data {
-  int segalpha  = 1;
+  int segalpha  = 26;
   int segbeta  = 1;
   int segsigc  = 1;
-  int segsigd  = 1;
-  int segsigr  = 1;
+  int segsigd  = 26;
+  int segsigr  = 26;
   int n_blocksalpha = (n_weeks-1)/segalpha + 1;
   int n_blocksbeta = (n_weeks-1)/segbeta + 1;
   int n_blockssigc = (n_weeks-1)/segsigc + 1;
