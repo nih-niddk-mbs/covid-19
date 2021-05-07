@@ -475,55 +475,74 @@ def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) 
          """
     url_template = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/%s.csv"
     # generate a list of dates for scraping
-
     start_dt = date(2020, 4, 12) # When JHU starts reporting
     end_dt = date.today()
     dates = []
     delta = end_dt - start_dt
     delta = delta.days
+    for dt in daterange(start_dt, end_dt):
+        dates.append(dt.strftime("%m-%d-%Y"))
+    # cumulative tests are named 'People_Tested' for first 200 ish days
+    # then cumulative tests are named 'Total_Test_Results' after 200 ish days
+    dfs = []
+    for i in tqdm(dates, desc=f'Scraping {delta} days of data'):
+        url = url_template % i
+        try:
+            df = pd.read_csv(url)
+            df_trim = pd.DataFrame(columns=['Province_State', 'cum_tests', 'dates2'])
+            df_trim['Province_State'] = df['Province_State'].values
+            df_trim['dates2'] = fix_jhu_testing_dates(i)
 
-    # for dt in daterange(start_dt, end_dt):
-    #     dates.append(dt.strftime("%m-%d-%Y"))
-    # dfs_new = [] # tests are named 'People_Tested' for first 200 ish days (new tests)
-    # dfs_cum = [] # then tests are named 'Total_Test_Results' after (cumulative tests)
-    # for i in tqdm(dates, desc=f'Scraping {delta} days of data'):
-    #     url = url_template % i
-    #     try:
-    #         df = pd.read_csv(url)
-    #         # handle cases where column is people_tested and then switches to Total_Test_Results
-    #         df_trim = pd.DataFrame(columns=['Province_State', 'cum_tests', 'new_tests', 'dates2'])
-    #         df_trim['Province_State'] = df['Province_State'].values
-    #         df_trim['dates2'] = fix_jhu_testing_dates(i)
-    #         if 'People_Tested' in df.columns:
-    #             df_trim['new_tests'] = df['People_Tested'].fillna(-1).astype(int).values
-    #             dfs_new.append(df_trim)
-    #         if 'Total_Test_Results' in df.columns:
-    #             df_trim['cum_tests'] = df['Total_Test_Results'].fillna(-1).astype(int).values
-    #             dfs_cum.append(df_trim)
-    #     except HTTPError:
-    #         print("Could not download data for %s" % i)
-    # df_cum_combined = pd.concat(dfs_cum)
-    # df_new_combined = pd.concat(dfs_new)
-    #
-    # df_cum_combined.sort_values(by='Province_State', inplace=True)
-    # df_new_combined.sort_values(by='Province_State', inplace=True)
-    # df_new_combined.to_csv(data_path / 'jhu_us_states_tests_new.csv', index=False)
-    # df_cum_combined.to_csv(data_path / 'jhu_us_states_tests_cum.csv', index=False)
+            # handle cases where column is people_tested and then switches to Total_Test_Results
+            if 'People_Tested' in df.columns:
+                df_trim['cum_tests'] = df['People_Tested'].fillna(-1).astype(int).values
+                dfs.append(df_trim)
+            if 'Total_Test_Results' in df.columns:
+                df_trim['cum_tests'] = df['Total_Test_Results'].fillna(-1).astype(int).values
+                dfs.append(df_trim)
+        except HTTPError:
+            print("Could not download tests data for %s" % i)
+    df_combined = pd.concat(dfs)
+    df_combined.sort_values(by='Province_State', inplace=True)
+    df_combined['Date'] = pd.to_datetime(df_combined['dates2'])
+    rois = df_combined['Province_State'].unique()
+    sorted_dfs = []
+    for roi in rois:
+        df_roi = df_combined[df_combined['Province_State'] == roi]
+        df_roi = df_roi.sort_values(by="Date")
+        df_roi['new_tests'] = df_roi['cum_tests'].diff().fillna(-1).astype(int)
+        sorted_dfs.append(df_roi)
 
-    #
-    df_new_combined = pd.read_csv(data_path / 'jhu_us_states_tests_new.csv')
-    df_cum_combined = pd.read_csv(data_path / 'jhu_us_states_tests_cum.csv')
-    # create datetime type column from dates2 to sort dates
-    
+    df_tests = pd.concat(sorted_dfs)
+    df_tests.reset_index(inplace=True, drop=True)
+    df_tests.replace(us_state_abbrev, inplace=True)
+    df_tests['Province_State'] = 'US_' + df_tests['Province_State']
+    df_tests.rename(columns={'Province_State': 'roi'}, inplace=True)
 
-    print(df_new_combined, df_cum_combined)
+    # now open csvs in data_path that match rois and merge on csv to add cum_test and new_tests
+    rois = df_tests.roi.unique().tolist()
+    to_remove = ['US_AS', 'US_Diamond Princess', 'US_Grand Princess', 'US_Recovered']
+    for i in to_remove:
+        if i in rois:
+            rois.remove(i)
 
+    for roi in rois:
+        csv_path = data_path / f'covidtimeseries_{roi}.csv'
+        try:
+            df_timeseries = pd.read_csv(csv_path)
+            for i in df_timeseries.columns: # Check if OWID testng data already included
+                if 'tests' in i:
+                    df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
+            df_roi_tests = df_tests[df_tests['roi'] == roi] # filter down to roi
+            df_result = df_timeseries.merge(df_roi_tests[['dates2','cum_tests', 'new_tests']], on='dates2', how='left')
+            df_result.fillna(-1, inplace=True)
+            df_result[['cum_tests', 'new_tests']] = df_result[['cum_tests', 'new_tests']].astype(int)
+            df_result = df_result.loc[:, ~df_result.columns.str.contains('^Unnamed')]
+            df_result.to_csv(csv_path) # overwrite timeseries CSV
 
+        except:
+            print(f'Could not find file for {roi} to add tests data.')
 
-
-    exit()
-
-    # print(date_list)
 
 def daterange(date1, date2):
     for n in range(int ((date2 - date1).days)+1):
