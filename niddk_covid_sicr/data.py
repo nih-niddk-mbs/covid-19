@@ -16,7 +16,7 @@ from datetime import timedelta, date
 JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
 COVIDTRACKER_FILTER_DEFAULTS = {'cum_cases': 5, 'cum_recover': 1, 'cum_deaths': 0}
 
-us_state_abbrev = {
+US_STATE_ABBREV = {
     'Alabama': 'AL',
     'Alaska': 'AK',
     'American Samoa': 'AS',
@@ -119,10 +119,10 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
                     df = pd.concat([df1] + more_dfs)
                 elif region == 'US':
                     # Use state name as index
-                    for k, v in us_state_abbrev.items(): # get US state abbrev
-                        if not us_state_abbrev[k].startswith('US_'):
-                            us_state_abbrev[k] = 'US_' + v # Add 'US_' to abbrev
-                    df.replace(us_state_abbrev, inplace=True)
+                    for k, v in US_STATE_ABBREV.items(): # get US state abbrev
+                        if not US_STATE_ABBREV[k].startswith('US_'):
+                            US_STATE_ABBREV[k] = 'US_' + v # Add 'US_' to abbrev
+                    df.replace(US_STATE_ABBREV, inplace=True)
                     df = df.set_index('Province_State')
                     df = df.groupby('Province_State').sum() # combine counties to create state level data
 
@@ -515,7 +515,7 @@ def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) 
 
     df_tests = pd.concat(sorted_dfs)
     df_tests.reset_index(inplace=True, drop=True)
-    df_tests.replace(us_state_abbrev, inplace=True)
+    df_tests.replace(US_STATE_ABBREV, inplace=True)
     df_tests['Province_State'] = 'US_' + df_tests['Province_State']
     df_tests.rename(columns={'Province_State': 'roi'}, inplace=True)
 
