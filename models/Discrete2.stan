@@ -17,12 +17,12 @@ transformed data {
 }
 
 parameters {
-real<lower=0,upper=200> alpha[n_blocksalpha];           // migration rate
-real<lower=0,upper=10> beta[n_blocksbeta];             // infection rate
-real<lower=0,upper=5> sigc[n_blockssigc];              // case rate
-real<lower=0,upper=5> sigd[n_blockssigd];              // death rate
-real<lower=0,upper=5> sigr[n_blockssigr];              // recovery rate
-real<lower=0,upper=20> sigmau;                      // uninfected rate
+real<lower=0> alpha[n_blocksalpha];           // migration rate
+real<lower=0> beta[n_blocksbeta];             // infection rate
+real<lower=0> sigc[n_blockssigc];              // case rate
+real<lower=0> sigd[n_blockssigd];              // death rate
+real<lower=0> sigr[n_blockssigr];              // recovery rate
+real<lower=0> sigmau;                      // uninfected rate
 real<lower=0,upper=1> ft;                          // noncase death fraction
 real<lower=0> extra_std;      // phi = 1/extra_std^2 in neg_binomial_2(mu,phi)
 }
