@@ -17,62 +17,62 @@ JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
 COVIDTRACKER_FILTER_DEFAULTS = {'cum_cases': 5, 'cum_recover': 1, 'cum_deaths': 0}
 
 US_STATE_ABBREV = {
-    'Alabama': 'AL',
-    'Alaska': 'AK',
-    'American Samoa': 'AS',
-    'Arizona': 'AZ',
-    'Arkansas': 'AR',
-    'California': 'CA',
-    'Colorado': 'CO',
-    'Connecticut': 'CT',
-    'Delaware': 'DE',
-    'District of Columbia': 'DC',
-    'Florida': 'FL',
-    'Georgia': 'GA',
-    'Guam': 'GU',
-    'Hawaii': 'HI',
-    'Idaho': 'ID',
-    'Illinois': 'IL',
-    'Indiana': 'IN',
-    'Iowa': 'IA',
-    'Kansas': 'KS',
-    'Kentucky': 'KY',
-    'Louisiana': 'LA',
-    'Maine': 'ME',
-    'Maryland': 'MD',
-    'Massachusetts': 'MA',
-    'Michigan': 'MI',
-    'Minnesota': 'MN',
-    'Mississippi': 'MS',
-    'Missouri': 'MO',
-    'Montana': 'MT',
-    'Nebraska': 'NE',
-    'Nevada': 'NV',
-    'New Hampshire': 'NH',
-    'New Jersey': 'NJ',
-    'New Mexico': 'NM',
-    'New York': 'NY',
-    'North Carolina': 'NC',
-    'North Dakota': 'ND',
-    'Northern Mariana Islands':'MP',
-    'Ohio': 'OH',
-    'Oklahoma': 'OK',
-    'Oregon': 'OR',
-    'Pennsylvania': 'PA',
-    'Puerto Rico': 'PR',
-    'Rhode Island': 'RI',
-    'South Carolina': 'SC',
-    'South Dakota': 'SD',
-    'Tennessee': 'TN',
-    'Texas': 'TX',
-    'Utah': 'UT',
-    'Vermont': 'VT',
-    'Virgin Islands': 'VI',
-    'Virginia': 'VA',
-    'Washington': 'WA',
-    'West Virginia': 'WV',
-    'Wisconsin': 'WI',
-    'Wyoming': 'WY'
+    'Alabama': 'US_AL',
+    'Alaska': 'US_AK',
+    'American Samoa': 'US_AS',
+    'Arizona': 'US_AZ',
+    'Arkansas': 'US_AR',
+    'California': 'US_CA',
+    'Colorado': 'US_CO',
+    'Connecticut': 'US_CT',
+    'Delaware': 'US_DE',
+    'District of Columbia': 'US_DC',
+    'Florida': 'US_FL',
+    'Georgia': 'US_GA',
+    'Guam': 'US_GU',
+    'Hawaii': 'US_HI',
+    'Idaho': 'US_ID',
+    'Illinois': 'US_IL',
+    'Indiana': 'US_IN',
+    'Iowa': 'US_IA',
+    'Kansas': 'US_KS',
+    'Kentucky': 'US_KY',
+    'Louisiana': 'US_LA',
+    'Maine': 'US_ME',
+    'Maryland': 'US_MD',
+    'Massachusetts': 'US_MA',
+    'Michigan': 'US_MI',
+    'Minnesota': 'US_MN',
+    'Mississippi': 'US_MS',
+    'Missouri': 'US_MO',
+    'Montana': 'US_MT',
+    'Nebraska': 'US_NE',
+    'Nevada': 'US_NV',
+    'New Hampshire': 'US_NH',
+    'New Jersey': 'US_NJ',
+    'New Mexico': 'US_NM',
+    'New York': 'US_NY',
+    'North Carolina': 'US_NC',
+    'North Dakota': 'US_ND',
+    'Northern Mariana Islands':'US_MP',
+    'Ohio': 'US_OH',
+    'Oklahoma': 'US_OK',
+    'Oregon': 'US_OR',
+    'Pennsylvania': 'US_PA',
+    'Puerto Rico': 'US_PR',
+    'Rhode Island': 'US_RI',
+    'South Carolina': 'US_SC',
+    'South Dakota': 'US_SD',
+    'Tennessee': 'US_TN',
+    'Texas': 'US_TX',
+    'Utah': 'US_UT',
+    'Vermont': 'US_VT',
+    'Virgin Islands': 'US_VI',
+    'Virginia': 'US_VA',
+    'Washington': 'US_WA',
+    'West Virginia': 'US_WV',
+    'Wisconsin': 'US_WI',
+    'Wyoming': 'US_WY'
 }
 
 def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
@@ -119,9 +119,9 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
                     df = pd.concat([df1] + more_dfs)
                 elif region == 'US':
                     # Use state name as index
-                    for k, v in US_STATE_ABBREV.items(): # get US state abbrev
-                        if not US_STATE_ABBREV[k].startswith('US_'):
-                            US_STATE_ABBREV[k] = 'US_' + v # Add 'US_' to abbrev
+                    # for k, v in US_STATE_ABBREV.items(): # get US state abbrev
+                    #     if not US_STATE_ABBREV[k].startswith('US_'):
+                    #         US_STATE_ABBREV[k] = 'US_' + v # Add 'US_' to abbrev
                     df.replace(US_STATE_ABBREV, inplace=True)
                     df = df.set_index('Province_State')
                     df = df.groupby('Province_State').sum() # combine counties to create state level data
@@ -293,7 +293,6 @@ def covid_tracking_recovery(data_path: str):
         df['dates2'] = pd.to_datetime(df['dates2']).dt.strftime('%m/%d/%y') # convert dates to string
         df = df.set_index('dates2') # Convert to int
         df['new_recover'] = df['cum_recover'].diff()
-
         ctp_dfs['US_'+state] = df
     return ctp_dfs
 
@@ -429,6 +428,7 @@ def get_owid(data_path: str, filter_: Union[dict, bool] = True,
 
     src_rois = src_trim['Alpha-3 code'].unique()
     unavailable_testing_data = [] # for appending rois that don't have testing data
+
     for roi in roi_codes_dict:
         if roi not in src_rois:
             unavailable_testing_data.append(roi)
@@ -516,12 +516,11 @@ def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) 
     df_tests = pd.concat(sorted_dfs)
     df_tests.reset_index(inplace=True, drop=True)
     df_tests.replace(US_STATE_ABBREV, inplace=True)
-    df_tests['Province_State'] = 'US_' + df_tests['Province_State']
     df_tests.rename(columns={'Province_State': 'roi'}, inplace=True)
 
     # now open csvs in data_path that match rois and merge on csv to add cum_test and new_tests
     rois = df_tests.roi.unique().tolist()
-    to_remove = ['US_AS', 'US_Diamond Princess', 'US_Grand Princess', 'US_Recovered']
+    to_remove = ['Diamond Princess', 'Grand Princess', 'Recovered']
     for i in to_remove:
         if i in rois:
             rois.remove(i)
@@ -530,18 +529,24 @@ def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) 
         csv_path = data_path / f'covidtimeseries_{roi}.csv'
         try:
             df_timeseries = pd.read_csv(csv_path)
+        except:
+            print(f"{csv_path} not found in data path.")
+        try:
             for i in df_timeseries.columns: # Check if OWID testng data already included
                 if 'tests' in i:
                     df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
             df_roi_tests = df_tests[df_tests['roi'] == roi] # filter down to roi
-            df_result = df_timeseries.merge(df_roi_tests[['dates2','cum_tests', 'new_tests']], on='dates2', how='left')
+            df_result = df_timeseries.merge(df_roi_tests, on='dates2', how='left')
             df_result.fillna(-1, inplace=True)
             df_result[['cum_tests', 'new_tests']] = df_result[['cum_tests', 'new_tests']].astype(int)
-            df_result = df_result.loc[:, ~df_result.columns.str.contains('^Unnamed')]
-            df_result.to_csv(csv_path) # overwrite timeseries CSV
+            df_result_trim = df_result[['dates2', 'cum_cases', 'new_cases',
+                                        'cum_deaths', 'new_deaths', 'cum_recover',
+                                        'new_recover', 'new_uninfected', 'cum_tests',
+                                        'new_tests', 'population']].copy()
+            df_result_trim.to_csv(csv_path) # overwrite timeseries CSV
 
         except:
-            print(f'Could not find file for {roi} to add tests data.')
+            print(f'Could not get tests data for {roi}.')
 
 
 def daterange(date1, date2):
