@@ -11,12 +11,16 @@ model {
     extra_std ~ exponential(1.);
 
     for (i in 1:n_weeks){
-      if (y[i,1] > -1)
-        target += neg_binomial_2_lpmf(y[i,1]| dC[i],phi);
-      if (y[i,2] > -1)
-        target += neg_binomial_2_lpmf(y[i,2]| dR[i],phi);
-      if (y[i,3] > -1)
-        target += neg_binomial_2_lpmf(y[i,3]| dD[i],phi);
+      if (dC[i] > 1e8 || dR[i] > 1e8 || dD[i] > 1e8)
+        target += negative_infinity();
+      else {
+        if (y[i,1] > -1)
+          target += neg_binomial_2_lpmf(y[i,1]| dC[i],phi);
+        if (y[i,2] > -1)
+          target += neg_binomial_2_lpmf(y[i,2]| dR[i],phi);
+        if (y[i,3] > -1)
+          target += neg_binomial_2_lpmf(y[i,3]| dD[i],phi);
+        }
     }
 
     for (i in 1:n_weeks){
