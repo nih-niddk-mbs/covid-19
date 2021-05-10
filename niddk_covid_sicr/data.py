@@ -449,6 +449,9 @@ def get_owid(data_path: str, filter_: Union[dict, bool] = True,
 
         df_combined = df_timeseries.merge(src_roi[['cum_tests']], how='left', on='dates2')
         df_combined['new_tests'] = df_combined['cum_tests'].diff()
+        df_combined.loc[df_combined['new_tests'] < 0, 'new_tests'] = -1 # Handle cases where
+        # cumulative counts decrease and new_tests becomes a large negative number
+
         df_combined[['cum_tests', 'new_tests']] = df_combined[['cum_tests', 'new_tests']].fillna(-1).astype(int).values
         df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
         df_combined.to_csv(timeseries_path) # overwrite timeseries CSV
@@ -532,12 +535,15 @@ def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) 
         except:
             print(f"{csv_path} not found in data path.")
         try:
-            for i in df_timeseries.columns: # Check if OWID testng data already included
+            for i in df_timeseries.columns: # Check if testng data already included
                 if 'tests' in i:
                     df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
             df_roi_tests = df_tests[df_tests['roi'] == roi] # filter down to roi
             df_result = df_timeseries.merge(df_roi_tests, on='dates2', how='left')
             df_result.fillna(-1, inplace=True)
+            df_result.loc[df_result['new_tests'] < 0, 'new_tests'] = -1 # Handle cases where
+                        # cumulative counts decrease and new_tests becomes a large negative number
+            df_result['new_tests'] = df_result['new_tests'].astype(int)
             df_result[['cum_tests', 'new_tests']] = df_result[['cum_tests', 'new_tests']].astype(int)
             df_result_trim = df_result[['dates2', 'cum_cases', 'new_cases',
                                         'cum_deaths', 'new_deaths', 'cum_recover',
