@@ -56,11 +56,20 @@ transformed parameters {
     I *= exp(beta_wk[i]*s - sigmac[i] - sigmau);
     s *= exp(-beta_wk[i]*I/Nt);
     dC[i] = sigmac[i]*I;
+
+    if (dC[i] <= 0)
+      dC[i] = 0.0001;
+
     C += dC[i];
     C *= exp(-(sigmar[i]+sigmad[i]));
 
     dR[i] = sigmar[i]*C;
+    if (dR[i] <= 0)
+      dR[i] = 0.0001;
+
     dD[i] = sigmad[i]*C;
+    if (dD[i] <= 0)
+      dD[i] = 0.0001;
 
     Ccum += dC[i];
     Dcum += dD[i]*(1+ft/sigmac[i]);
