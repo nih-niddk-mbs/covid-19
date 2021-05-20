@@ -123,7 +123,7 @@ def roi_df(args, model_name, roi):
                                       model_name, roi, args.fit_format)
         stats = ncs.get_waic(samples)
     df = ncs.make_table(roi, samples, args.params, args.totwk,
-                        stats, quantiles=args.quantiles, m_averaging=args.model_averaging,
+                        stats, m_averaging=args.model_averaging, quantiles=args.quantiles, 
                         day_offset=day_offset)
     return model_name, roi, df
 
