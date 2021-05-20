@@ -177,7 +177,7 @@ def reweighted_stat(stat_vals: np.array, pred_acc_stat: np.array) -> float:
     """
     # Assume that loo is on a deviance scale (lower is better)
     min_pred_acc_stat = min(pred_acc_stat)
-    print(pred_acc_stat)
+    print(stat_vals)
     exit()
     weights = np.exp(-0.5*(pred_acc_stat-min_pred_acc_stat))
     weights = weights/np.sum(weights)
