@@ -217,8 +217,7 @@ def reweighted_stats(args, raw_table_path: str, save: bool = True,
                 pred_acc_stat = df.loc[(roi, 'mean', 'aic')]
             else:
                 pred_acc_stat = df.loc[(roi, 'mean', 'loo')]
-            print(df.loc[(roi, 'mean', 'loo')])
-            
+
         except:
             break
         # An indexer for this ROI
@@ -368,13 +367,6 @@ def filter_region(super_means, region):
             super_means = super_means.drop(index=i)
 
     return super_means, region
-
-
-# def bootstrapping():
-#     """Get loo scores then perform bootstrapping, sampling with replacement,
-#     on samples from all respective fit files according to loo score (>). Save
-#     new samples in new fit file per roi."""
-
 
 
 def days_into_2020(date_str):
