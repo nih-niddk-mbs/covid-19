@@ -393,11 +393,9 @@ def model_averaging(raw_table):
     rois = raw_table.index.get_level_values('roi').unique()
     loo_stats = []
     for roi in tqdm(rois):
-        roi_dict = roi
         roi_dict = {}
+        roi_dict['roi'] = roi
         for model in models:
-            print(models)
-            print(model)
             try:
                 loo = raw_table.loc[(model, roi, 'mean'), 'loo']
                 roi_dict[model] = loo
