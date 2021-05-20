@@ -395,11 +395,27 @@ def model_averaging(raw_table):
     for roi in tqdm(rois):
         roi_dict = {}
         roi_dict['roi'] = roi
+        loos = []
         for model in models:
             try:
                 loo = raw_table.loc[(model, roi, 'mean'), 'loo']
                 roi_dict[model] = loo
+                loos.append(loo)
             except:
                 continue
+        # calculate if loos are within a factor of ten from each other and remove if not
+        for i in loos:
+            val = min(loos)/i
+            if val < 0.1:
+                loos.remove(i)
+
+        # update dictionary by https://www.geeksforgeeks.org/python-get-key-from-value-in-dictionary/
+        # getting key from value and deleting key
+
+
+
         loo_stats.append(roi_dict)
-    print(loo_stats)
+        # For example if model 1 has loo 1000 and model 2 has loo 1010,
+        # then you would take w1 = exp(-1000/2)/(exp(-1000/2) + exp(-1010/2)), etc.
+
+    # open fit
