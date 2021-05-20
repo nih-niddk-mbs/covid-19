@@ -177,8 +177,6 @@ def reweighted_stat(stat_vals: np.array, pred_acc_stat: np.array) -> float:
     """
     # Assume that loo is on a deviance scale (lower is better)
     min_pred_acc_stat = min(pred_acc_stat)
-    print(stat_vals)
-    exit()
     weights = np.exp(-0.5*(pred_acc_stat-min_pred_acc_stat))
     weights = weights/np.sum(weights)
     return np.sum(stat_vals * weights)
@@ -219,6 +217,8 @@ def reweighted_stats(args, raw_table_path: str, save: bool = True,
                 pred_acc_stat = df.loc[(roi, 'mean', 'aic')]
             else:
                 pred_acc_stat = df.loc[(roi, 'mean', 'loo')]
+            print(df.loc[(roi, 'mean', 'loo')])
+            
         except:
             print(f"Found NaN values in {roi} across all models. Skipping this region.")
             continue
