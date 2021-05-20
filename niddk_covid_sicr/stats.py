@@ -177,6 +177,8 @@ def reweighted_stat(stat_vals: np.array, pred_acc_stat: np.array) -> float:
     """
     # Assume that loo is on a deviance scale (lower is better)
     min_pred_acc_stat = min(pred_acc_stat)
+    print(pred_acc_stat)
+    exit()
     weights = np.exp(-0.5*(pred_acc_stat-min_pred_acc_stat))
     weights = weights/np.sum(weights)
     return np.sum(stat_vals * weights)
@@ -366,6 +368,14 @@ def filter_region(super_means, region):
             super_means = super_means.drop(index=i)
 
     return super_means, region
+
+
+# def bootstrapping():
+#     """Get loo scores then perform bootstrapping, sampling with replacement,
+#     on samples from all respective fit files according to loo score (>). Save
+#     new samples in new fit file per roi."""
+
+
 
 def days_into_2020(date_str):
     date = datetime.strptime(date_str, '%Y-%m-%d')
