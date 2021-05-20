@@ -59,6 +59,8 @@ parser.add_argument('-tw', '--totwk', type=int, default=1,
                    help=('Use weekly totals for new cases, recoveries and deaths'))
 parser.add_argument('-ac', '--aic-weight', type=int, default=0,
                    help=('Weight by lowest AIC. Default is weight by LOO, 0.'))
+parser.add_argument('-ma', '--model-averaging', type=int, default=0,
+                   help=('Model averaging for fits. Default is no model averaging, 0.'))
 args = parser.parse_args()
 
 # Max jobs
@@ -121,7 +123,7 @@ def roi_df(args, model_name, roi):
                                       model_name, roi, args.fit_format)
         stats = ncs.get_waic(samples)
     df = ncs.make_table(roi, samples, args.params, args.totwk,
-                        stats, quantiles=args.quantiles,
+                        stats, quantiles=args.quantiles, m_averaging=args.model_averaging,
                         day_offset=day_offset)
     return model_name, roi, df
 
