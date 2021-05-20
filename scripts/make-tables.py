@@ -184,7 +184,7 @@ df = df.set_index(['model', 'roi', 'quantile']).sort_index()
 
 # Perform model averaging
 if args.model_averaging:
-    ncs.model_averaging(df, rois)
+    ncs.model_averaging(df)
 
 # Export the CSV file for the big table
 df.to_csv(out)
