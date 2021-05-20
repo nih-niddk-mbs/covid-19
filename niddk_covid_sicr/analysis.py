@@ -390,4 +390,4 @@ def model_averaging(raw_table, rois):
     on samples from all respective fit files according to loo score (?). Save
     new samples in new fit file per roi. Model average across fit files with bootstrapping"""
     for roi in tqdm(rois):
-        print(df.loc[(roi, 'mean', 'loo')])
+        print(raw_table.loc[(roi, 'mean', 'loo')])
