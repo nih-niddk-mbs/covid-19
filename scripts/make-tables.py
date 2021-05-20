@@ -183,8 +183,8 @@ df = pd.merge(df, df_numweek, on='roi')
 df = df.set_index(['model', 'roi', 'quantile']).sort_index()
 
 # Perform model averaging
-model_averaging(df, rois)
-
+if args.model_averaging:
+    ncs.model_averaging(df, rois)
 
 # Export the CSV file for the big table
 df.to_csv(out)
