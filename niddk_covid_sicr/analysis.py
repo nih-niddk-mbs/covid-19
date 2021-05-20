@@ -396,6 +396,8 @@ def model_averaging(raw_table):
         roi_dict = roi
         roi_dict = {}
         for model in models:
+            print(models)
+            print(model)
             try:
                 loo = raw_table.loc[(model, roi, 'mean'), 'loo']
                 roi_dict[model] = loo
