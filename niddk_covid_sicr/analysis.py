@@ -384,3 +384,10 @@ def make_lineplots(samples: pd.DataFrame, time_params: list, rows: int = 4,
         ax.set_title(param)
         ax.set_xlabel('Days')
     plt.tight_layout()
+
+def model_averaging(raw_table, rois):
+    """Get loo scores then perform bootstrapping, sampling with replacement,
+    on samples from all respective fit files according to loo score (?). Save
+    new samples in new fit file per roi. Model average across fit files with bootstrapping"""
+    for roi in tqdm(rois):
+        print(df.loc[(roi, 'mean', 'loo')])

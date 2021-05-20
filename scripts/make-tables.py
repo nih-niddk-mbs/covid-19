@@ -123,7 +123,7 @@ def roi_df(args, model_name, roi):
                                       model_name, roi, args.fit_format)
         stats = ncs.get_waic(samples)
     df = ncs.make_table(roi, samples, args.params, args.totwk,
-                        stats, quantiles=args.quantiles, 
+                        stats, quantiles=args.quantiles,
                         day_offset=day_offset)
     return model_name, roi, df
 
@@ -181,7 +181,10 @@ df_numweek = ncs.get_weeks(args, rois)
 df = df.reset_index()
 df = pd.merge(df, df_numweek, on='roi')
 df = df.set_index(['model', 'roi', 'quantile']).sort_index()
-# calculate AIC and add to table
+
+# Perform model averaging
+model_averaging(df, rois)
+
 
 # Export the CSV file for the big table
 df.to_csv(out)
@@ -195,8 +198,3 @@ if n_data_path.resolve().is_file():
     ncs.reweighted_stats(args, out, extra=extra, dates=args.dates)
 else:
     print("No sample size file found at %s; unable to compute global average" % n_data_path.resolve())
-# try:
-#     ncs.add_ir(args.data_path, args.tables_path) # Add infectivity ratio IR to tables
-#                                             # using regional populations
-# except:
-#     print("Could not add Infectivity Ratio to tables.")
