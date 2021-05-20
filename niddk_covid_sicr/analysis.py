@@ -389,8 +389,8 @@ def model_averaging(raw_table):
     """Get loo scores then perform bootstrapping, sampling with replacement,
     on samples from all respective fit files according to loo score (?). Save
     new samples in new fit file per roi. Model average across fit files with bootstrapping"""
-    models = df.index.get_level_values('model').unique()
-    rois = df.index.get_level_values('roi').unique()
+    models = raw_table.index.get_level_values('model').unique()
+    rois = raw_table.index.get_level_values('roi').unique()
     loo_stats = []
     for roi in tqdm(rois):
         roi_dict = roi
