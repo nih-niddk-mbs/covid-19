@@ -425,9 +425,10 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
             if x < 2: # skip adding roi to models list
                 continue
             models.append(k)
-        for i in models:
+        for model_name in models:
+            print(roi, model_name)
+            print(samples)
             samples = ncs.extract_samples(fits_path, models_path, model_name,
                                 roi, fit_format)
-            print(roi, i)
-            print(samples)
+
             exit()
