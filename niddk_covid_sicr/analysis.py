@@ -427,8 +427,8 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
             models.append(k)
         for model_name in models:
             print(roi, model_name)
-            print(samples)
             samples = ncs.extract_samples(fits_path, models_path, model_name,
                                 roi, fit_format)
+            print(samples)
 
             exit()
