@@ -410,17 +410,10 @@ def model_averaging(raw_table):
             val = min(loos)/i
             if val < 0.1:
                 position = val_list.index(i)
-                print(key_list[position])
-
-
-
-
-        # update dictionary by https://www.geeksforgeeks.org/python-get-key-from-value-in-dictionary/
-        # getting key from value and deleting key
-
-
-
-        # loo_stats.append(roi_dict)
+                key = key_list[position]
+                del roi_dict[key]
+        loo_stats.append(roi_dict)
+    print(loo_stats)
         # For example if model 1 has loo 1000 and model 2 has loo 1010,
         # then you would take w1 = exp(-1000/2)/(exp(-1000/2) + exp(-1010/2)), etc.
 
