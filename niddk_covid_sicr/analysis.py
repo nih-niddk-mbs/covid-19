@@ -385,7 +385,7 @@ def make_lineplots(samples: pd.DataFrame, time_params: list, rows: int = 4,
         ax.set_xlabel('Days')
     plt.tight_layout()
 
-def model_averaging(raw_table):
+def model_averaging(fits_path, fit_format, raw_table):
     """Get loo scores then perform bootstrapping, sampling with replacement,
     on samples from all respective fit files according to loo score (?). Save
     new samples in new fit file per roi. Model average across fit files with bootstrapping"""
@@ -421,12 +421,20 @@ def model_averaging(raw_table):
         models = []
         x = 0
         for k in di:
-            if x == 0: # skip adding roi to models list
-                continue
             x+=1
+            if x < 2: # skip adding roi to models list
+                continue
+
             models.append(k)
         print(roi, models)
 
-
+    # if args.fit_format == 1:
+    #     fit = ncs.load_fit(fit_path, model_path)
+    #     stats = ncs.get_waic_and_loo(fit)
+    #     samples = fit.to_dataframe()
+    # elif args.fit_format == 0:
+    #     samples = ncs.extract_samples(args.fits_path, args.models_path,
+    #                                   model_name, roi, args.fit_format)
+    #     stats = ncs.get_waic(samples)
 
         len(di) - 1
