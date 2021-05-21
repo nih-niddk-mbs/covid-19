@@ -414,7 +414,19 @@ def model_averaging(raw_table):
                 del roi_dict[key]
         loo_stats.append(roi_dict)
     print(loo_stats)
-        # For example if model 1 has loo 1000 and model 2 has loo 1010,
-        # then you would take w1 = exp(-1000/2)/(exp(-1000/2) + exp(-1010/2)), etc.
-
     # open fit
+    # get path to fit for roi/model combo in loos dictionary
+    for di in loo_stats:
+        roi = di['roi']
+        models = []
+        x = 0
+        for k in di:
+            if x == 0: # skip adding roi to models list
+                continue
+            x+=1
+            models.append(k)
+        print(roi, models)
+
+
+
+        len(di) - 1
