@@ -442,7 +442,7 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
         print(f"Model averaging for the following regions: {rois_to_average}")
         # calculate weights
         calculate_model_average_weights(rois_to_average, tmp_loo_stats)
-        exit()
+    exit()
 
 
 
@@ -468,7 +468,6 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
         #     pickle.dump({'model_name': args.model_name,
         #                  'model_code': stanrunmodel.model_code, 'fit': fit},
         #                 f, protocol=pickle.HIGHEST_PROTOCOL)
-            exit()
 def calculate_model_average_weights(rois_to_average, loo_stats):
     """Calculate weights for bootstrapping using model loo values"""
     for roi in rois_to_average:
