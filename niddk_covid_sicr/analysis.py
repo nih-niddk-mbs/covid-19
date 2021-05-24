@@ -476,3 +476,5 @@ def calculate_model_average_weights(rois_to_average, loo_stats):
                 for k,v in d.items():
                     if 'Discrete' in v:
                         print(v)
+            else:
+                print('could not find roi in dictionary')
