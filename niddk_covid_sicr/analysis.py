@@ -417,36 +417,50 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
         loo_stats.append(roi_dict)
         # weight = np.exponent() # now calculate weight for drawing samples
     # check if multiple models remain per roi
+    rois_to_average = []
+    rois_to_not_average = []
     for d in loo_stats:
-        if len(d) > 2:
-            print(d['roi'], ' not applicable for model averaging.')
+        if len(d) < 2:
+            rois_to_not_average.append(d['roi'])
         else:
-            print('model averaging for ', d['roi'])
+            rois_to_average.append(d['roi'])
 
     tmp_loo_stats = [{'roi': 'Iran', 'Discrete1': 3739.0785450449694, 'Discrete2': 3740.0785450449694, 'Discrete3': 3739.2785450449694, 'Discrete4': 3738.0785450449694},
                      {'roi': 'US_NY', 'Discrete1': 2951.686769057542, 'Discrete2': 2952.686769057542, 'Discrete3': 2950.786769057542, 'Discrete4': 2950.686769057542}]
-    for d in tmp_loo_stats:
-        if len(d) > 2:
-            print(d['roi'], ' not applicable for model averaging.')
-        else:
-            print('model averaging for ', d['roi'])
 
-    exit()
+    rois_to_average = []
+    rois_to_not_average = []
+    for d in tmp_loo_stats:
+        if len(d) < 2:
+            rois_to_not_average.append(d['roi'])
+        else:
+            rois_to_average.append(d['roi'])
+
+    if rois_to_average < 1:
+        print(f"Model averaging not applicable for any rois found in {fits_path}.")
+    else:
+        print(f"Model averaging for the following regions: {rois_to_average}")
+        # calculate weights
+        calculate_model_average_weights(rois_to_average, tmp_loo_stats)
+        exit()
+
+
+
     # get path to fit for roi/model combo in loos dictionary
-    for di in loo_stats:
-        roi = di['roi']
-        models = []
-        x = 0
-        for k in di:
-            x+=1
-            if x < 2: # skip adding roi to models list
-                continue
-            models.append(k)
-        for model_name in models:
-            print(roi, model_name)
-            samples = ncs.extract_samples(fits_path, models_path, model_name,
-                                roi, fit_format)
-            print(samples)
+    # for di in loo_stats:
+    #     roi = di['roi']
+    #     models = []
+    #     x = 0
+    #     for k in di:
+    #         x+=1
+    #         if x < 2: # skip adding roi to models list
+    #             continue
+    #         models.append(k)
+    #     for model_name in models:
+    #         print(roi, model_name)
+    #         samples = ncs.extract_samples(fits_path, models_path, model_name,
+    #                             roi, fit_format)
+    #         print(samples)
 
         # df.sample(frac=0.5, replace=True, random_state=1)
         # save_path = save_dir / ("%s_%s.pkl" % (args.model_name, args.roi))
@@ -455,3 +469,11 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
         #                  'model_code': stanrunmodel.model_code, 'fit': fit},
         #                 f, protocol=pickle.HIGHEST_PROTOCOL)
             exit()
+def calculate_model_average_weights(rois_to_average, loo_stats):
+    """Calculate weights for bootstrapping using model loo values"""
+    for roi in rois_to_average:
+        for d in loo_stats:
+            if roi in d:
+                for k,v in d.items():
+                    if 'Discrete' in v:
+                        print(v)
