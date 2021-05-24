@@ -414,7 +414,7 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
                 del roi_dict[key]
         print(roi_dict)
         exit()
-            weight = np.exponent() # now calculate weight for drawing samples
+        weight = np.exponent() # now calculate weight for drawing samples
 
         loo_stats.append(roi_dict)
     print(loo_stats)
