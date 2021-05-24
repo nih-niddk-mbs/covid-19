@@ -414,11 +414,11 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
                 key = key_list[position]
                 del roi_dict[key]
         print(roi_dict)
-
-        # weight = np.exponent() # now calculate weight for drawing samples
-    exit()
         loo_stats.append(roi_dict)
+        # weight = np.exponent() # now calculate weight for drawing samples
+
     print(loo_stats)
+    exit()
     # get path to fit for roi/model combo in loos dictionary
     for di in loo_stats:
         roi = di['roi']
