@@ -416,8 +416,21 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
         print(roi_dict)
         loo_stats.append(roi_dict)
         # weight = np.exponent() # now calculate weight for drawing samples
+    # check if multiple models remain per roi
+    for d in loo_stats:
+        if len(d) > 2:
+            print(d['roi'], ' not applicable for model averaging.')
+        else:
+            print('model averaging for ', d['roi'])
 
-    print(loo_stats)
+    tmp_loo_stats = [{'roi': 'Iran', 'Discrete1': 3739.0785450449694, 'Discrete2': 3740.0785450449694, 'Discrete3': 3739.2785450449694, 'Discrete4': 3738.0785450449694},
+                     {'roi': 'US_NY', 'Discrete1': 2951.686769057542, 'Discrete2': 2952.686769057542, 'Discrete3': 2950.786769057542, 'Discrete4': 2950.686769057542}]
+    for d in tmp_loo_stats:
+        if len(d) > 2:
+            print(d['roi'], ' not applicable for model averaging.')
+        else:
+            print('model averaging for ', d['roi'])
+
     exit()
     # get path to fit for roi/model combo in loos dictionary
     for di in loo_stats:
