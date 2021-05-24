@@ -403,18 +403,21 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
                 loos.append(loo)
             except:
                 continue
-        # calculate if loos are within a factor of ten from each other and remove if not
+        # calculate if loos are close enough from each other and remove if not
         key_list = list(roi_dict.keys())
         val_list = list(roi_dict.values())
-        for i in loos:
-            val = min(loos)/i
-            if val < 0.1:
+        for i in loos: # check if within 10 of lowest
+            val = min(loos)
+            if i - val > 10:
                 position = val_list.index(i)
                 key = key_list[position]
                 del roi_dict[key]
+        print(roi_dict)
+        exit()
+            weight = np.exponent() # now calculate weight for drawing samples
+
         loo_stats.append(roi_dict)
     print(loo_stats)
-    # open fit
     # get path to fit for roi/model combo in loos dictionary
     for di in loo_stats:
         roi = di['roi']
@@ -431,4 +434,10 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
                                 roi, fit_format)
             print(samples)
 
+        # df.sample(frac=0.5, replace=True, random_state=1)
+        # save_path = save_dir / ("%s_%s.pkl" % (args.model_name, args.roi))
+        # with open(save_path, "wb") as f:
+        #     pickle.dump({'model_name': args.model_name,
+        #                  'model_code': stanrunmodel.model_code, 'fit': fit},
+        #                 f, protocol=pickle.HIGHEST_PROTOCOL)
             exit()
