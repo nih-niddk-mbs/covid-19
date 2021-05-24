@@ -436,7 +436,7 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
         else:
             rois_to_average.append(d['roi'])
 
-    if rois_to_average < 1:
+    if len(rois_to_average) < 1:
         print(f"Model averaging not applicable for any rois found in {fits_path}.")
     else:
         print(f"Model averaging for the following regions: {rois_to_average}")
