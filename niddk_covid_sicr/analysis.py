@@ -406,6 +406,7 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
         # calculate if loos are close enough from each other and remove if not
         key_list = list(roi_dict.keys())
         val_list = list(roi_dict.values())
+        print(roi_dict)
         for i in loos: # check if within 10 of lowest
             val = min(loos)
             if i - val > 10:
@@ -413,9 +414,9 @@ def model_averaging(fits_path, models_path, fit_format, raw_table):
                 key = key_list[position]
                 del roi_dict[key]
         print(roi_dict)
-        exit()
-        weight = np.exponent() # now calculate weight for drawing samples
 
+        # weight = np.exponent() # now calculate weight for drawing samples
+    exit()
         loo_stats.append(roi_dict)
     print(loo_stats)
     # get path to fit for roi/model combo in loos dictionary
