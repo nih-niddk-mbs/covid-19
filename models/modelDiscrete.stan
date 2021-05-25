@@ -11,7 +11,7 @@ model {
     extra_std ~ exponential(1.);
 
     for (i in 1:n_weeks){
-      if (dC[i] > 1e8 || dR[i] > 1e8 || dD[i] > 1e8)
+      if (dC[i] > 1e8 || dR[i] > 1e8 || dD[i] > 1e8 || dC[i] < 0 || dR[i] < 0 || dD[i] < 0)
         target += negative_infinity();
       else {
         if (y[i,1] > -1)
