@@ -57,18 +57,18 @@ transformed parameters {
     s *= exp(-beta_wk[i]*I/Nt);
     dC[i] = sigmac[i]*I;
 
-    if (dC[i] <= 0 || is_nan(dC[i]))
+    if (dC[i] <= 0 || is_nan(-dC[i]))
       dC[i] = 0.0001;
 
     C += dC[i];
     C *= exp(-(sigmar[i]+sigmad[i]));
 
     dR[i] = sigmar[i]*C;
-    if (dR[i] <= 0)
+    if (dR[i] <= 0 || is_nan(-dR[i]))
       dR[i] = 0.0001;
 
     dD[i] = sigmad[i]*C;
-    if (dD[i] <= 0)
+    if (dD[i] <= 0 || is_nan(-dD[i]))
       dD[i] = 0.0001;
 
     Ccum += dC[i];
