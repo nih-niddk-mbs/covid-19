@@ -12,7 +12,9 @@ model {
 
     for (i in 1:n_weeks){
       if (dC[i] > 1e8 || dR[i] > 1e8 || dD[i] > 1e8 || dC[i] < 0 || dR[i] < 0 || dD[i] < 0 || is_nan(dC[i]) || is_nan(dR[i])|| is_nan(dD[i]))
+        print(target);
         target += negative_infinity();
+        print(target);
       else {
         if (y[i,1] > -1)
           target += neg_binomial_2_lpmf(y[i,1]| dC[i],phi);
