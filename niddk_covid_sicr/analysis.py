@@ -385,64 +385,83 @@ def make_lineplots(samples: pd.DataFrame, time_params: list, rows: int = 4,
         ax.set_xlabel('Days')
     plt.tight_layout()
 
+
+
 def model_averaging(fits_path, models_path, fit_format, raw_table):
     """Get loo scores then perform bootstrapping, sampling with replacement,
     on samples from all respective fit files according to loo score (?). Save
     new samples in new fit file per roi. Model average across fit files with bootstrapping"""
-    models = raw_table.index.get_level_values('model').unique()
+    raw_table.set_index(['model', 'roi', 'quantile'], inplace=True)
+    raw_table = raw_table[~raw_table.index.duplicated(keep='last')]
+    raw_table.columns.name = 'param'
+    raw_table = raw_table.stack('param').unstack(['roi', 'quantile', 'param']).T
     rois = raw_table.index.get_level_values('roi').unique()
-    loo_stats = []
-    for roi in tqdm(rois):
-        roi_dict = {}
-        roi_dict['roi'] = roi
-        loos = []
-        for model in models:
-            try:
-                loo = raw_table.loc[(model, roi, 'mean'), 'loo']
-                roi_dict[model] = loo
-                loos.append(loo)
-            except:
-                continue
-        # calculate if loos are close enough from each other and remove if not
-        key_list = list(roi_dict.keys())
-        val_list = list(roi_dict.values())
-        print(roi_dict)
-        for i in loos: # check if within 10 of lowest
-            val = min(loos)
-            if i - val > 10:
-                position = val_list.index(i)
-                key = key_list[position]
-                del roi_dict[key]
-        print(roi_dict)
-        loo_stats.append(roi_dict)
-        # weight = np.exponent() # now calculate weight for drawing samples
-    # check if multiple models remain per roi
-    rois_to_average = []
-    rois_to_not_average = []
-    for d in loo_stats:
-        if len(d) < 2:
-            rois_to_not_average.append(d['roi'])
-        else:
-            rois_to_average.append(d['roi'])
+    dfs = []
+    for roi in rois:
+        loo_stats = raw_table.loc[(roi, 'mean', 'loo')]
+        dfs.append(loo_stats)
+    df_loos = pd.concat(dfs)
+    # filter out regions where lowest loo not within range of 10 of another model
 
-    tmp_loo_stats = [{'roi': 'Iran', 'Discrete1': 3739.0785450449694, 'Discrete2': 3740.0785450449694, 'Discrete3': 3739.2785450449694, 'Discrete4': 3738.0785450449694},
-                     {'roi': 'US_NY', 'Discrete1': 2951.686769057542, 'Discrete2': 2952.686769057542, 'Discrete3': 2950.786769057542, 'Discrete4': 2950.686769057542}]
 
-    rois_to_average = []
-    rois_to_not_average = []
-    for d in tmp_loo_stats:
-        if len(d) < 2:
-            rois_to_not_average.append(d['roi'])
-        else:
-            rois_to_average.append(d['roi'])
 
-    if len(rois_to_average) < 1:
-        print(f"Model averaging not applicable for any rois found in {fits_path}.")
-    else:
-        print(f"Model averaging for the following regions: {rois_to_average}")
-        # calculate weights
-        calculate_model_average_weights(rois_to_average, tmp_loo_stats)
-    exit()
+
+
+
+    # models = raw_table.index.get_level_values('model').unique()
+    # rois = raw_table.index.get_level_values('roi').unique()
+    # loo_stats = []
+    # for roi in tqdm(rois):
+    #     roi_dict = {}
+    #     roi_dict['roi'] = roi
+    #     loos = []
+    #     for model in models:
+    #         try:
+    #             loo = raw_table.loc[(model, roi, 'mean'), 'loo']
+    #             roi_dict[model] = loo
+    #             loos.append(loo)
+    #         except:
+    #             continue
+    #     # calculate if loos are close enough from each other and remove if not
+    #     key_list = list(roi_dict.keys())
+    #     val_list = list(roi_dict.values())
+    #     print(roi_dict)
+    #     for i in loos: # check if within 10 of lowest
+    #         val = min(loos)
+    #         if i - val > 10:
+    #             position = val_list.index(i)
+    #             key = key_list[position]
+    #             del roi_dict[key]
+    #     print(roi_dict)
+    #     loo_stats.append(roi_dict)
+    #     # weight = np.exponent() # now calculate weight for drawing samples
+    # # check if multiple models remain per roi
+    # rois_to_average = []
+    # rois_to_not_average = []
+    # for d in loo_stats:
+    #     if len(d) < 2:
+    #         rois_to_not_average.append(d['roi'])
+    #     else:
+    #         rois_to_average.append(d['roi'])
+    #
+    # tmp_loo_stats = [{'roi': 'Iran', 'Discrete1': 3739.0785450449694, 'Discrete2': 3740.0785450449694, 'Discrete3': 3739.2785450449694, 'Discrete4': 3738.0785450449694},
+    #                  {'roi': 'US_NY', 'Discrete1': 2951.686769057542, 'Discrete2': 2952.686769057542, 'Discrete3': 2950.786769057542, 'Discrete4': 2950.686769057542}]
+    #
+    # rois_to_average = []
+    # rois_to_not_average = []
+    # for d in tmp_loo_stats:
+    #     if len(d) < 2:
+    #         rois_to_not_average.append(d['roi'])
+    #     else:
+    #         rois_to_average.append(d['roi'])
+    #
+    # if len(rois_to_average) < 1:
+    #     print(f"Model averaging not applicable for any rois found in {fits_path}.")
+    # else:
+    #     print(f"Model averaging for the following regions: {rois_to_average}")
+    #     # calculate weights
+    #     calculate_model_average_weights(rois_to_average, tmp_loo_stats)
+    # exit()
 
 
 
@@ -472,9 +491,12 @@ def calculate_model_average_weights(rois_to_average, loo_stats):
     """Calculate weights for bootstrapping using model loo values"""
     for roi in rois_to_average:
         for d in loo_stats:
-            if roi in d:
-                for k,v in d.items():
-                    if 'Discrete' in v:
+            for k,v in d.items():
+                if roi in v:
+                    if v.startswith('Discrete'):
+                        e = exp()
+                    print(k,v)
+                    if 'Discrete' in k:
                         print(v)
             else:
                 print('could not find roi in dictionary')
