@@ -184,7 +184,10 @@ df = df.set_index(['model', 'roi', 'quantile']).sort_index()
 
 # Perform model averaging
 if args.model_averaging:
-    ncs.model_averaging(args.fits_path, args.models_path, args.fit_format, df)
+    df_weights = ncs.model_averaging(args.fits_path, args.models_path, args.fit_format, df)
+    # use df_weights to get samples from fit files and save reweighted fit file
+    out = tables_path / ('weights_for_averaging.csv')
+    df_weights.to_csv(out)
 
 # Export the CSV file for the big table
 df.to_csv(out)

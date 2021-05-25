@@ -217,9 +217,9 @@ def reweighted_stats(args, raw_table_path: str, save: bool = True,
                 pred_acc_stat = df.loc[(roi, 'mean', 'aic')]
             else:
                 pred_acc_stat = df.loc[(roi, 'mean', 'loo')]
-
         except:
-            break
+            print(f"Found NaN values in {roi} across all models. Skipping this region.")
+            continue
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
         result[chunk] = df[chunk].apply(lambda x: reweighted_stat(x, pred_acc_stat), axis=1)
@@ -367,7 +367,6 @@ def filter_region(super_means, region):
             super_means = super_means.drop(index=i)
 
     return super_means, region
-
 
 def days_into_2020(date_str):
     date = datetime.strptime(date_str, '%Y-%m-%d')
