@@ -385,118 +385,122 @@ def make_lineplots(samples: pd.DataFrame, time_params: list, rows: int = 4,
         ax.set_xlabel('Days')
     plt.tight_layout()
 
-
-
-def model_averaging(fits_path, models_path, fit_format, raw_table):
-    """Get loo scores then perform bootstrapping, sampling with replacement,
+def get_loo_weights_for_averaging(fits_path, models_path, raw_table):
+    """Get loo scores and weights for models for applicable regions then perform
+    bootstrapping, sampling with replacement,
     on samples from all respective fit files according to loo score (?). Save
-    new samples in new fit file per roi. Model average across fit files with bootstrapping"""
+    new samples in new fit file per roi. Model average across fit files with bootstrapping.
+
+    Args:
+        fits_path: Path to fits.
+        models_path: Path to models.
+        raw_table: pd.DataFrame containing regions and stats.
+    Returns:
+        df_weights: pd.DataFrame containing model weights per region for applicable regions."""
+
     raw_table.set_index(['model', 'roi', 'quantile'], inplace=True)
     raw_table = raw_table[~raw_table.index.duplicated(keep='last')]
     raw_table.columns.name = 'param'
     raw_table = raw_table.stack('param').unstack(['roi', 'quantile', 'param']).T
-    rois = raw_table.index.get_level_values('roi').unique()
-    dfs = []
-    for roi in rois:
-        loo_stats = raw_table.loc[(roi, 'mean', 'loo')]
-        dfs.append(loo_stats)
-    df_loos = pd.concat(dfs)
+    raw_table.reset_index(inplace=True)
+    filter1 = raw_table['quantile'] == 'mean'
+    filter2 = raw_table['param'] == 'loo'
+    df_loo = raw_table.where(filter1 & filter2)
+    df_loo = df_loo[df_loo['roi'].notna()]
+    df_loo.dropna(inplace=True) # NEED TO HANDLE NANS AT SOME POINT
+    columns = [col for col in df_loo if col.startswith('Discrete')]
+    df_loo = df_loo.assign(minimum = df_loo[columns].min(axis=1), minimum_column=df_loo[columns].idxmin(axis=1))
+    df_weights = df_loo.apply(calculate_loo_weights_per_region, axis=1)
+    df_weights.dropna(inplace=True)
+    return df_weights
     # filter out regions where lowest loo not within range of 10 of another model
 
+def calculate_loo_weights_per_region(row):
+    """Helper function for model_averaging(). Used to calculate weights in
+       raw_table DataFrame for models that have loo values that are close enough
+       to one another (within 10 from the smallest).
+       Regions where a model weight is > 95% will be excluded from model averaging.
+       Weights will be used for bootstrapping samples from the fits path for each
+       model weight for model averaging.
 
+       Args:
+            row: Row in pd.DataFrame. """
 
+    lowest_model = row['minimum_column']
+    lowest_loo = row['minimum']
+    loo_dict = {}
+    weights_dict = {}
 
+    # don't include loos that are above 10 from lowest for weights calculation
+    if row['Discrete1']:
+        loo = row['Discrete1']
+        if loo - lowest_loo < 10:
+            loo_dict['Discrete1'] = loo
 
+    if row['Discrete2']:
+        loo = row['Discrete2']
+        if loo - lowest_loo  < 10:
+            loo_dict['Discrete2'] = loo
 
-    # models = raw_table.index.get_level_values('model').unique()
-    # rois = raw_table.index.get_level_values('roi').unique()
-    # loo_stats = []
-    # for roi in tqdm(rois):
-    #     roi_dict = {}
-    #     roi_dict['roi'] = roi
-    #     loos = []
-    #     for model in models:
-    #         try:
-    #             loo = raw_table.loc[(model, roi, 'mean'), 'loo']
-    #             roi_dict[model] = loo
-    #             loos.append(loo)
-    #         except:
-    #             continue
-    #     # calculate if loos are close enough from each other and remove if not
-    #     key_list = list(roi_dict.keys())
-    #     val_list = list(roi_dict.values())
-    #     print(roi_dict)
-    #     for i in loos: # check if within 10 of lowest
-    #         val = min(loos)
-    #         if i - val > 10:
-    #             position = val_list.index(i)
-    #             key = key_list[position]
-    #             del roi_dict[key]
-    #     print(roi_dict)
-    #     loo_stats.append(roi_dict)
-    #     # weight = np.exponent() # now calculate weight for drawing samples
-    # # check if multiple models remain per roi
-    # rois_to_average = []
-    # rois_to_not_average = []
-    # for d in loo_stats:
-    #     if len(d) < 2:
-    #         rois_to_not_average.append(d['roi'])
-    #     else:
-    #         rois_to_average.append(d['roi'])
-    #
-    # tmp_loo_stats = [{'roi': 'Iran', 'Discrete1': 3739.0785450449694, 'Discrete2': 3740.0785450449694, 'Discrete3': 3739.2785450449694, 'Discrete4': 3738.0785450449694},
-    #                  {'roi': 'US_NY', 'Discrete1': 2951.686769057542, 'Discrete2': 2952.686769057542, 'Discrete3': 2950.786769057542, 'Discrete4': 2950.686769057542}]
-    #
-    # rois_to_average = []
-    # rois_to_not_average = []
-    # for d in tmp_loo_stats:
-    #     if len(d) < 2:
-    #         rois_to_not_average.append(d['roi'])
-    #     else:
-    #         rois_to_average.append(d['roi'])
-    #
-    # if len(rois_to_average) < 1:
-    #     print(f"Model averaging not applicable for any rois found in {fits_path}.")
-    # else:
-    #     print(f"Model averaging for the following regions: {rois_to_average}")
-    #     # calculate weights
-    #     calculate_model_average_weights(rois_to_average, tmp_loo_stats)
-    # exit()
+    if row['Discrete3']:
+        loo = row['Discrete3']
+        if loo - lowest_loo < 10:
+            loo_dict['Discrete3'] = loo
 
+    if row['Discrete4']:
+        loo = row['Discrete4']
+        if loo - lowest_loo < 10:
+            loo_dict['Discrete4'] = loo
+    # If there's only one model that dominates with loo, skip weights by adding nans
+    nan_dict = {'Discrete1_weight':np.nan,
+                'Discrete2_weight':np.nan,
+                'Discrete3_weight':np.nan,
+                'Discrete4_weight':np.nan,
+               }
+    if len(loo_dict) < 2:
+        weights_dict = nan_dict
+        for i in weights_dict.keys():
+            if 'weight' not in i:
+                i+='_weight'
+            row[i] = weights_dict[i]
+        return row
 
+    # handle cases where two or more models are applicable for model averaging
+    weights_dict = get_weights(loo_dict, lowest_loo, nan_dict)
+    for i in ['Discrete1_weight', 'Discrete2_weight', 'Discrete3_weight', 'Discrete4_weight']: # fill missing weights as -1
+        if i not in weights_dict.keys():
+            weights_dict[i] = -1
+    for i in weights_dict.keys():
+        if 'weight' not in i:
+            i+='_weight'
+        row[i] = weights_dict[i]
+    return row
 
-    # get path to fit for roi/model combo in loos dictionary
-    # for di in loo_stats:
-    #     roi = di['roi']
-    #     models = []
-    #     x = 0
-    #     for k in di:
-    #         x+=1
-    #         if x < 2: # skip adding roi to models list
-    #             continue
-    #         models.append(k)
-    #     for model_name in models:
-    #         print(roi, model_name)
-    #         samples = ncs.extract_samples(fits_path, models_path, model_name,
-    #                             roi, fit_format)
-    #         print(samples)
+def get_weights(loo_dict, lowest_loo, nan_dict):
+    """ Calculates weights for models. Weights will be used for bootstrapping samples and model averaging.
+    Args:
+        loo_dict: (dict) Dictionary containing key value pairs of models and loo scores per region.
+        lowest_loo: (float) Lowest loo value.
+        nan_dict: (dict) Dictionary containing model names and np.nans to remove unapplicable regions.
+        """
+    denom = sum([expand_loos(lowest_loo, x) for x in loo_dict.values()])
+    numerators = [expand_loos(lowest_loo, x) for x in loo_dict.values()]
+    finalCalcs = [x/denom for x in numerators]
 
-        # df.sample(frac=0.5, replace=True, random_state=1)
-        # save_path = save_dir / ("%s_%s.pkl" % (args.model_name, args.roi))
-        # with open(save_path, "wb") as f:
-        #     pickle.dump({'model_name': args.model_name,
-        #                  'model_code': stanrunmodel.model_code, 'fit': fit},
-        #                 f, protocol=pickle.HIGHEST_PROTOCOL)
-def calculate_model_average_weights(rois_to_average, loo_stats):
-    """Calculate weights for bootstrapping using model loo values"""
-    for roi in rois_to_average:
-        for d in loo_stats:
-            for k,v in d.items():
-                if roi in v:
-                    if v.startswith('Discrete'):
-                        e = exp()
-                    print(k,v)
-                    if 'Discrete' in k:
-                        print(v)
-            else:
-                print('could not find roi in dictionary')
+    for i in finalCalcs: # If one weight still dominates with > 0.96 share of samples, set to nans
+        if i > 0.95:
+            return nan_dict
+
+    weights_keys = [i+'_weight' for i in loo_dict.keys()]
+    weights_dict = {weights_keys[i]: finalCalcs[i] for i in range(len(weights_keys))}
+    return weights_dict
+
+def expand_loos(x, lowest_loo):
+    """Helper function for get_weights().
+    Args:
+        x: (float) Loo value per model.
+        lowest_loo: (float) Lowest loo value.
+    Returns:
+        Numpy exponential. """
+
+    return np.exp((lowest_loo-x)/2)
