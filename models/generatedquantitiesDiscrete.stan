@@ -13,11 +13,11 @@ generated quantities {
         y_proj[i,1] = 0;
         y_proj[i,2] = 0;
         y_proj[i,3] = 0;
-      else {
+      else
         y_proj[i,1] = neg_binomial_2_rng(min([dC[i],1e7]),phi);
         y_proj[i,2] = neg_binomial_2_rng(min([dR[i],1e7]),phi);
         y_proj[i,3] = neg_binomial_2_rng(min([dD[i],1e7]),phi);
-        }
+
 
         if (y[i,1] > -1)
           llx[i,1] = neg_binomial_2_lpmf(y[i,1]| min([dC[i],1e7]),phi);
