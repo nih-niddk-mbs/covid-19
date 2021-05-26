@@ -398,6 +398,8 @@ def get_loo_weights_for_averaging(fits_path, models_path, tables_path):
     Returns:
         df_weights: pd.DataFrame containing model weights per region for applicable regions."""
     raw_table = pd.read_csv(Path(tables_path) / ('fit_table_raw.csv'))
+    print(raw_table.columns)
+    print(raw_table.head())
     raw_table.set_index(['model', 'roi', 'quantile'], inplace=True)
     raw_table = raw_table[~raw_table.index.duplicated(keep='last')]
     raw_table.columns.name = 'param'
