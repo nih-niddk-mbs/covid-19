@@ -190,8 +190,8 @@ if args.model_averaging:
     print("Getting weights for model averaging.")
     df_weights = ncs.get_loo_weights_for_averaging(args.fits_path, args.models_path, args.tables_path)
     # use df_weights to get samples from fit files and save reweighted fit file
-    out = tables_path / ('weights_for_averaging.csv')
-    df_weights.to_csv(out)
+    weights_out = tables_path / ('weights_for_averaging.csv')
+    df_weights.to_csv(weights_out)
 
 # Get n_data_pts and t0 obtained from `scripts/get-n-data.py`
 n_data_path = Path(args.data_path) / ('n_data.csv')
