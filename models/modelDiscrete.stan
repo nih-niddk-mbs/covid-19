@@ -24,8 +24,12 @@ model {
     }
 
     for (i in 1:n_weeks){
-      target += normal_lpdf(car[i] | .1,.2);
-      target += normal_lpdf(ifr[i] | .01, .02);
-      target += normal_lpdf(Rt[i] | 1.,2.);
+      if (is_nan(car[i]) || is_nan(ifr[i]) || is_nan(Rt[i]))
+        target += negative_infinity();
+      else {
+        target += normal_lpdf(car[i] | .1,.2);
+        target += normal_lpdf(ifr[i] | .01, .02);
+        target += normal_lpdf(Rt[i] | 1.,2.);
+        }
       }
 }
