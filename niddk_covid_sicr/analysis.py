@@ -416,6 +416,7 @@ def get_loo_weights_for_averaging(fits_path, models_path, tables_path):
                             'Discrete3', 'Discrete4', 'minimum', 'minimum_column',
                             'Discrete1_weight', 'Discrete2_weight', 'Discrete3_weight',
                             'Discrete4_weight']] # reorder columns
+    df_weights.reset_index(inplace=True)
     return df_weights
     # filter out regions where lowest loo not within range of 10 of another model
 
