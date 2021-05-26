@@ -398,8 +398,6 @@ def get_loo_weights_for_averaging(fits_path, models_path, tables_path):
     Returns:
         df_weights: pd.DataFrame containing model weights per region for applicable regions."""
     raw_table = pd.read_csv(Path(tables_path) / 'fit_table_raw.csv')
-    print(raw_table.columns)
-    print(raw_table.head())
     raw_table.set_index(['model', 'roi', 'quantile'], inplace=True)
     raw_table = raw_table[~raw_table.index.duplicated(keep='last')]
     raw_table.columns.name = 'param'
@@ -414,6 +412,10 @@ def get_loo_weights_for_averaging(fits_path, models_path, tables_path):
     df_loo = df_loo.assign(minimum = df_loo[columns].min(axis=1), minimum_column=df_loo[columns].idxmin(axis=1))
     df_weights = df_loo.apply(calculate_loo_weights_per_region, axis=1)
     df_weights.dropna(inplace=True)
+    df_weights = df_weights[['roi', 'quantile', 'param', 'Discrete1', 'Discrete2',
+                            'Discrete3', 'Discrete4', 'minimum', 'minimum_column',
+                            'Discrete1_weight', 'Discrete2_weight', 'Discrete3_weight',
+                            'Discrete4_weight']] # reorder columns
     return df_weights
     # filter out regions where lowest loo not within range of 10 of another model
 
