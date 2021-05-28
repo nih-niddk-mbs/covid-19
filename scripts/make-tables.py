@@ -220,7 +220,7 @@ if args.model_averaging: # Perform model averaging using raw fit file
 
         df_model_averaged = pd.concat(dfs)
         df_model_averaged.reset_index(inplace=True, drop=True)
-        df_model_averaged.to_csv(fits_path / f'Discrete_average_{roi}.csv')
+        df_model_averaged.to_csv(args.fits_path / f'Discrete_average_{roi}.csv')
 
 # Get n_data_pts and t0 obtained from `scripts/get-n-data.py`
 n_data_path = Path(args.data_path) / ('n_data.csv')
