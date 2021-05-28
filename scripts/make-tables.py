@@ -185,13 +185,30 @@ df = df.set_index(['model', 'roi', 'quantile']).sort_index()
 # Export the CSV file for the big table
 df.to_csv(out)
 
-# Perform model averaging using raw fit file
-if args.model_averaging:
+if args.model_averaging: # Perform model averaging using raw fit file
     print("Getting weights for model averaging.")
     df_weights = ncs.get_loo_weights_for_averaging(args.fits_path, args.models_path, args.tables_path)
     # use df_weights to get samples from fit files and save reweighted fit file
     weights_out = tables_path / ('weights_for_averaging.csv')
     df_weights.to_csv(weights_out)
+    roi_model_combos = get_fits_path_weights(df_weights)
+    # load fits and extract samples per roi we have weights for
+    for roi,models in roi_model_combos.items():
+        for model_name in models:
+            model_path = ncs.get_model_path(args.models_path, model_name)
+            extension = ['csv', 'pkl'][args.fit_format]
+            fit_path = ncs.get_fit_path(args.fits_path, model_name, roi)
+            if args.fit_format == 1:
+                fit = ncs.load_fit(fit_path, model_path)
+                # stats = ncs.get_waic_and_loo(fit)
+                samples = fit.to_dataframe()
+            elif args.fit_format == 0:
+                samples = ncs.extract_samples(args.fits_path, args.models_path,
+                                              model_name, roi, args.fit_format)
+                stats = ncs.get_waic(samples)
+            print(samples)
+            samples.to_csv(tables_path / f'samples_{model_name}_{roi}.csv')
+
 
 # Get n_data_pts and t0 obtained from `scripts/get-n-data.py`
 n_data_path = Path(args.data_path) / ('n_data.csv')
