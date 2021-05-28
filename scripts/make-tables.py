@@ -191,6 +191,9 @@ if args.model_averaging: # Perform model averaging using raw fit file
     # use df_weights to get samples from fit files and save reweighted fit file
     weights_out = tables_path / ('weights_for_averaging.csv')
     df_weights.to_csv(weights_out)
+    print(df_weights)
+    df_weights.reset_index(inplace=True)
+    print(df_weights)
     roi_model_combos = ncs.get_fits_path_weights(df_weights)
     # load fits and extract samples per roi we have weights for
     for roi,models in roi_model_combos.items():
