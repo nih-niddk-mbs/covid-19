@@ -491,7 +491,7 @@ def get_weights(loo_dict, lowest_loo, nan_dict):
         """
     denom = sum([expand_loos(lowest_loo, x) for x in loo_dict.values()])
     numerators = [expand_loos(lowest_loo, x) for x in loo_dict.values()]
-    finalCalcs = [1-(x/denom) for x in numerators]
+    finalCalcs = [x/denom for x in numerators]
 
     for i in finalCalcs: # If one weight still dominates with > 0.96 share of samples, set to nans
         if i > 0.95:
@@ -500,7 +500,7 @@ def get_weights(loo_dict, lowest_loo, nan_dict):
     weights_dict = {weights_keys[i]: finalCalcs[i] for i in range(len(weights_keys))}
     return weights_dict
 
-def expand_loos(x, lowest_loo):
+def expand_loos(lowest_loo, x):
     """Helper function for get_weights().
     Args:
         x: (float) Loo value per model.
