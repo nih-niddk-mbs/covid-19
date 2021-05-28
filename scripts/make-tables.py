@@ -204,7 +204,7 @@ if args.model_averaging: # Perform model averaging using raw fit file
             df_roi = df_weights.loc[roi]
             print(df_roi)
             model_name_weight = model_name + '_weight'
-            weight = df_roi[model_name_weight].values[0]
+            weight = df_roi[model_name_weight]
 
             if args.fit_format == 1:
                 fit = ncs.load_fit(fit_path, model_path)
