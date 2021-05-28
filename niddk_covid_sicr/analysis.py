@@ -8,6 +8,7 @@ import pandas as pd
 from pathlib import Path
 from scipy.stats import norm
 from tqdm import tqdm
+import re
 
 from .io import get_data, get_fit_path, list_rois, load_fit
 import niddk_covid_sicr as ncs
@@ -524,4 +525,3 @@ def get_fits_path_weights(df_weights):
 
 def sample_bootstrapping(df_weights, roi_model_combos):
     """ Load fits, get samples, and use weights to perform bootstrapping on samples."""
-    
