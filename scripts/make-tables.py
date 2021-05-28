@@ -194,21 +194,33 @@ if args.model_averaging: # Perform model averaging using raw fit file
     roi_model_combos = ncs.get_fits_path_weights(df_weights)
     # load fits and extract samples per roi we have weights for
     for roi,models in roi_model_combos.items():
+        dfs = []
         for model_name in models:
             model_path = ncs.get_model_path(args.models_path, model_name)
             extension = ['csv', 'pkl'][args.fit_format]
             fit_path = ncs.get_fit_path(args.fits_path, model_name, roi)
+            df_roi = df_weights[(df_weights['roi'] == roi)]
+            model_name_weight = model_name + '_weight'
+            weight = df_roi[model_name_weight].values[0]
+
             if args.fit_format == 1:
                 fit = ncs.load_fit(fit_path, model_path)
                 # stats = ncs.get_waic_and_loo(fit)
                 samples = fit.to_dataframe()
+                samples_weighted_df = samples.sample(frac=weight, replace=True)
+                dfs.append(samples_weighted_df)
+
             elif args.fit_format == 0:
                 samples = ncs.extract_samples(args.fits_path, args.models_path,
                                               model_name, roi, args.fit_format)
                 stats = ncs.get_waic(samples)
-            print(samples)
-            samples.to_csv(tables_path / f'samples_{model_name}_{roi}.csv')
+                samples = fit.to_dataframe()
+                samples_weighted_df = samples.sample(frac=weight, replace=True)
+                dfs.append(samples_weighted_df)
 
+        df_model_averaged = pd.concat(dfs)
+        df_model_averaged.reset_index(inplace=True, drop=True)
+        df_model_averaged.to_csv(fits_path / f'Discrete_average_{roi}.csv')
 
 # Get n_data_pts and t0 obtained from `scripts/get-n-data.py`
 n_data_path = Path(args.data_path) / ('n_data.csv')
