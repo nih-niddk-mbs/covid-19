@@ -416,7 +416,7 @@ def get_loo_weights_for_averaging(fits_path, models_path, tables_path):
                             'Discrete3', 'Discrete4', 'minimum', 'minimum_column',
                             'Discrete1_weight', 'Discrete2_weight', 'Discrete3_weight',
                             'Discrete4_weight']] # reorder columns
-    df_weights.reset_index(inplace=True)
+    df_weights.reset_index(inplace=True, drop=True)
     return df_weights
     # filter out regions where lowest loo not within range of 10 of another model
 
@@ -495,7 +495,6 @@ def get_weights(loo_dict, lowest_loo, nan_dict):
     for i in finalCalcs: # If one weight still dominates with > 0.96 share of samples, set to nans
         if i > 0.95:
             return nan_dict
-
     weights_keys = [i+'_weight' for i in loo_dict.keys()]
     weights_dict = {weights_keys[i]: finalCalcs[i] for i in range(len(weights_keys))}
     return weights_dict
@@ -507,5 +506,22 @@ def expand_loos(x, lowest_loo):
         lowest_loo: (float) Lowest loo value.
     Returns:
         Numpy exponential. """
-
     return np.exp((lowest_loo-x)/2)
+
+def get_fits_path_weights(df_weights):
+    """Get fits path for regions applicable for model averaging."""
+    df_weights.set_index('roi', inplace=True)
+    df_weights = df_weights[['Discrete1_weight', 'Discrete2_weight','Discrete3_weight', 'Discrete4_weight']]
+    df_weights = df_weights.apply(lambda row: row[row!=-1].index, axis=1)
+    df_weights_dict = df_weights.to_dict()
+
+    roi_model_combos = {}
+    for roi,models in df_weights_dict.items():
+        model_string = str(models)
+        models_list = re.findall('Discrete.', model_string)
+        roi_model_combos[roi] = models_list
+    return roi_model_combos
+
+def sample_bootstrapping(df_weights, roi_model_combos):
+    """ Load fits, get samples, and use weights to perform bootstrapping on samples."""
+    
