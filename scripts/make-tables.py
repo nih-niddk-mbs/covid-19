@@ -241,11 +241,10 @@ if args.model_averaging: # Perform model averaging using raw fit file
     # replace applicable regions with model averaged results
     # Get all model_names, roi combinations
         combos = []
-        model_name = 'DiscreteAverage'
         model_path = ncs.get_model_path(args.models_path, 'Discrete1') # Just use Discrete1
         extension = ['csv', 'pkl'][0] # use 'csv'
         rois = ncs.list_rois(fits_path_averaged, 'DiscreteAverage', extension)
-        combos += [(model_name, roi) for roi in rois]
+        combos += [('Discrete1', roi) for roi in rois]
         # Organize into (model_name, roi) tuples
         combos = list(zip(*combos))
         print(combos)
@@ -253,8 +252,7 @@ if args.model_averaging: # Perform model averaging using raw fit file
         print("There are %d combinations of models and ROIs for model averaging." % len(combos))
 
         result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
-
-        out = tables_path / ('%s_fit_table.csv' % model_name)
+        out = tables_path / ('DiscreteAverage_fit_table.csv')
         tables = [df_ for model_name_, roi, df_ in result
                     if model_name_ == model_name]
         if not len(tables):  # Probably no matching models
