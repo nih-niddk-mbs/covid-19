@@ -185,8 +185,19 @@ df = df.set_index(['model', 'roi', 'quantile']).sort_index()
 # Export the CSV file for the big table
 df.to_csv(out)
 
+# Get n_data_pts and t0 obtained from `scripts/get-n-data.py`
+n_data_path = Path(args.data_path) / ('n_data.csv')
+if n_data_path.resolve().is_file():
+    extra = pd.read_csv(n_data_path).set_index('roi')
+    extra['t0'] = extra['t0'].fillna('2020-01-23').astype('datetime64').apply(lambda x: x.weekofyear).astype(int)
+    # Model-averaged table
+    ncs.reweighted_stats(args, out, extra=extra, dates=args.dates)
+else:
+    print("No sample size file found at %s; unable to compute global average" % n_data_path.resolve())
+
+
 if args.model_averaging: # Perform model averaging using raw fit file
-    print("Getting weights for model averaging.")
+    print("Model averaging applicable regions...")
     df_weights = ncs.get_loo_weights_for_averaging(args.fits_path, args.models_path, args.tables_path)
     # use df_weights to get samples from fit files and save reweighted fit file
     weights_out = tables_path / ('weights_for_averaging.csv')
@@ -220,14 +231,10 @@ if args.model_averaging: # Perform model averaging using raw fit file
 
         df_model_averaged = pd.concat(dfs)
         df_model_averaged.reset_index(inplace=True, drop=True)
-        df_model_averaged.to_csv(args.fits_path + f'/Discrete_average_{roi}.csv')
 
-# Get n_data_pts and t0 obtained from `scripts/get-n-data.py`
-n_data_path = Path(args.data_path) / ('n_data.csv')
-if n_data_path.resolve().is_file():
-    extra = pd.read_csv(n_data_path).set_index('roi')
-    extra['t0'] = extra['t0'].fillna('2020-01-23').astype('datetime64').apply(lambda x: x.weekofyear).astype(int)
-    # Model-averaged table
-    ncs.reweighted_stats(args, out, extra=extra, dates=args.dates)
-else:
-    print("No sample size file found at %s; unable to compute global average" % n_data_path.resolve())
+        fits_path_averaged = Path(args.fits_path) / '/model_averaged'
+        fits_path_averaged.mkdir(exist_ok=True)
+        df_model_averaged.to_csv(fits_path_averaged / f'/DiscreteAverage_{roi}.csv')
+    # now that we have model averaged fits, create tables
+    # mimic other tables code and merge reweighted table with model averaged table
+    # replace applicable regions with model averaged results
