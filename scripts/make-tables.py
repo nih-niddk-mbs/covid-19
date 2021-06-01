@@ -240,6 +240,9 @@ if args.model_averaging: # Perform model averaging using raw fit file
     # mimic other tables code and merge reweighted table with model averaged table
     # replace applicable regions with model averaged results
     # Get all model_names, roi combinations
+
+    ##### NEED TO MAKE IT SO MODEL PATH IS DISCRETE1 TO GET MODEL CODE,
+    ##### BUT THAT WE NEED TO GET THE MODEL AVERAGED FIT FILE, AND NOT DISCRETE1
         combos = []
         model_path = ncs.get_model_path(args.models_path, 'Discrete1') # Just use Discrete1
         extension = ['csv', 'pkl'][0] # use 'csv'
