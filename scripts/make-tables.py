@@ -133,6 +133,8 @@ tables_path.mkdir(exist_ok=True)
 
 if not args.average_only:
     result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
+    print(result)
+    exit()
 
 dfs = []
 for model_name in args.model_names:
@@ -235,6 +237,21 @@ if args.model_averaging: # Perform model averaging using raw fit file
         fits_path_averaged = Path(args.fits_path) / '/model_averaged'
         fits_path_averaged.mkdir(exist_ok=True)
         df_model_averaged.to_csv(fits_path_averaged / f'/DiscreteAverage_{roi}.csv')
+
     # now that we have model averaged fits, create tables
     # mimic other tables code and merge reweighted table with model averaged table
     # replace applicable regions with model averaged results
+    # Get all model_names, roi combinations
+    if not args.average_only:
+        combos = []
+        for model_name in args.model_names:
+            model_path = ncs.get_model_path(args.models_path, model_name)
+            extension = ['csv', 'pkl'][0]
+            rois = ncs.list_rois(args.fits_path, model_name, extension)
+            if args.rois:
+                rois = list(set(rois).intersection(args.rois))
+            combos += [(model_name, roi) for roi in rois]
+        # Organize into (model_name, roi) tuples
+        combos = list(zip(*combos))
+        assert len(combos), "No combinations of models and ROIs found"
+        print("There are %d combinations of models and ROIs" % len(combos))
