@@ -133,8 +133,6 @@ tables_path.mkdir(exist_ok=True)
 
 if not args.average_only:
     result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
-    print(result)
-    exit()
 
 dfs = []
 for model_name in args.model_names:
@@ -242,16 +240,35 @@ if args.model_averaging: # Perform model averaging using raw fit file
     # mimic other tables code and merge reweighted table with model averaged table
     # replace applicable regions with model averaged results
     # Get all model_names, roi combinations
-    if not args.average_only:
         combos = []
-        for model_name in args.model_names:
-            model_path = ncs.get_model_path(args.models_path, model_name)
-            extension = ['csv', 'pkl'][0]
-            rois = ncs.list_rois(args.fits_path, model_name, extension)
-            if args.rois:
-                rois = list(set(rois).intersection(args.rois))
-            combos += [(model_name, roi) for roi in rois]
+        model_name = 'DiscreteAverage'
+        model_path = ncs.get_model_path(args.models_path, 'Discrete1') # Just use Discrete1
+        extension = ['csv', 'pkl'][0] # use 'csv'
+        rois = ncs.list_rois(fits_path_averaged, 'DiscreteAverage', extension)
+        combos += [(model_name, roi) for roi in rois]
         # Organize into (model_name, roi) tuples
         combos = list(zip(*combos))
+        print(combos)
         assert len(combos), "No combinations of models and ROIs found"
-        print("There are %d combinations of models and ROIs" % len(combos))
+        print("There are %d combinations of models and ROIs for model averaging." % len(combos))
+
+        result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
+
+        out = tables_path / ('%s_fit_table.csv' % model_name)
+        tables = [df_ for model_name_, roi, df_ in result
+                    if model_name_ == model_name]
+        if not len(tables):  # Probably no matching models
+            continue
+        df = pd.concat(tables)
+        df = df.sort_index()
+        # Export the CSV file for this model
+        df.to_csv(out)
+
+        # # Then prepare for the big table (across models)
+        # df['model'] = model_name
+        # dfs.append(df)
+        #
+        # # Raw table
+        # df = pd.concat(dfs).reset_index().\
+        #         set_index(['model', 'roi', 'quantile']).sort_index()
+        # out = tables_path / ('fit_table_raw.csv')
