@@ -232,9 +232,9 @@ if args.model_averaging: # Perform model averaging using raw fit file
         df_model_averaged = pd.concat(dfs)
         df_model_averaged.reset_index(inplace=True, drop=True)
 
-        fits_path_averaged = Path(args.fits_path) / '/model_averaged'
+        fits_path_averaged = Path(args.fits_path) / 'model_averaged'
         fits_path_averaged.mkdir(exist_ok=True)
-        df_model_averaged.to_csv(fits_path_averaged / f'/DiscreteAverage_{roi}.csv')
+        df_model_averaged.to_csv(fits_path_averaged / f'DiscreteAverage_{roi}.csv')
 
     # now that we have model averaged fits, create tables
     # mimic other tables code and merge reweighted table with model averaged table
