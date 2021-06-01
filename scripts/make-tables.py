@@ -254,8 +254,8 @@ if args.model_averaging: # Perform model averaging using raw fit file
         result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
         out = tables_path / ('DiscreteAverage_fit_table.csv')
         tables = [df_ for model_name_, roi, df_ in result
-                    if model_name_ == model_name]
-                    
+                    if model_name_ == 'Discrete1']
+
         df = pd.concat(tables)
         df = df.sort_index()
         # Export the CSV file for this model
