@@ -42,7 +42,7 @@ transformed parameters {
   I = 0;
   Z = 1;
 
-  Nt = N;
+  Nt = N/7;
 
   for (i in 1:n_weeks){
     alpha_wk[i] = alpha[(i-1)/segalpha + 1];
