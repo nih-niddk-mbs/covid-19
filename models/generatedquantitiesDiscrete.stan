@@ -16,9 +16,9 @@ generated quantities {
         y_proj[i,3] = 0;
         }
       else
-        y_proj[i,1] = neg_binomial_2_rng(min([dC[i],1e7]),max([phi,.001]));
-        y_proj[i,2] = neg_binomial_2_rng(min([dR[i],1e7]),max([phi,.001]));
-        y_proj[i,3] = neg_binomial_2_rng(min([dD[i],1e7]),max([phi,.001]));
+        y_proj[i,1] = neg_binomial_2_rng(min([dC[i],1e7]),max([phi,.01]));
+        y_proj[i,2] = neg_binomial_2_rng(min([dR[i],1e7]),max([phi,.01]));
+        y_proj[i,3] = neg_binomial_2_rng(min([dD[i],1e7]),max([phi,.01]));
 
 
         if (y[i,1] > -1)
