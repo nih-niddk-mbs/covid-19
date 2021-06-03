@@ -252,7 +252,7 @@ if args.model_averaging: # Perform model averaging using raw fit file
         if len(tables) > 1:
             df_averaged = pd.concat(tables)
         else:
-            df_averaged = tables
+            df_averaged = tables[0]
 
         df_averaged.sort_index(inplace=True)
         df_averaged.to_csv(out)
