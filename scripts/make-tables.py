@@ -241,18 +241,19 @@ if args.model_averaging: # Perform model averaging using raw fit file
         combos = []
         extension = ['csv', 'pkl'][0] # use 'csv'
         rois = ncs.list_rois(fits_path_averaged, 'DiscreteAverage', extension)
-        print(rois)
         combos += [('Discrete1', roi) for roi in rois]
         combos = list(zip(*combos)) # Organize into (model_name, roi) tuples
-        print(combos)
         assert len(combos), "No combinations of models and ROIs found"
         # print("There are %d ROIs applicable for model averaging." % len(combos)/2)
         result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
-        print(result)
         out = tables_path / ('DiscreteAverage_fit_table.csv')
-        tables = [df_ for model_name_, roi, df_ in result
-                    if model_name_ == 'Discrete1']
-        df_averaged = pd.concat(tables)
+        # tables = [df_ for model_name_, roi, df_ in result
+        #             if model_name_ == 'Discrete1']
+        if len(result > 1):
+            df_averaged = pd.concat(result)
+        else:
+            df_averaged = result
+
         df_averaged = df.sort_index()
         df_averaged.to_csv(out)
 
