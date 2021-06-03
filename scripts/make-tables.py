@@ -249,7 +249,7 @@ if args.model_averaging: # Perform model averaging using raw fit file
         out = tables_path / ('DiscreteAverage_fit_table.csv')
         # tables = [df_ for model_name_, roi, df_ in result
         #             if model_name_ == 'Discrete1']
-        if len(result > 1):
+        if len(result) > 1:
             df_averaged = pd.concat(result)
         else:
             df_averaged = result
