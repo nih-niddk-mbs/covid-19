@@ -258,7 +258,8 @@ if args.model_averaging: # Perform model averaging using raw fit file
         # reweighted data with averaged data
         reweighted_path = Path(args.tables_path) / ('fit_table_reweighted.csv')
         if reweighted_path.resolve().is_file():
-            df_reweighted = pd.read_csv(reweighted_path, index_col=['roi', 'quantile'])
-            df_averaged = df_averaged.reset_index().set_index(['roi', 'quantile'])
-            df_combined = df_reweighted.update(df_averaged)
-            df_combined.to_csv(Path(args.tables_path) / 'fit_table_reweighted_and_averaged.csv')
+            df_reweighted = pd.read_csv('fit_table_reweighted.csv', index_col=['roi', 'quantile'])
+            df_averaged = pd.read_csv('DiscreteAverage_fit_table.csv')
+            df_averaged = df_averaged.reset_index(drop=True).set_index(['roi', 'quantile'])
+            df_reweighted.update(df_averaged)
+            df_reweighted.to_csv(Path(args.tables_path) / 'fit_table_reweighted_and_averaged.csv')
