@@ -125,7 +125,6 @@ def roi_df(args, model_name, roi):
     df = ncs.make_table(roi, samples, args.params, args.totwk,
                         stats, quantiles=args.quantiles,
                         day_offset=day_offset)
-    print('first df', df)
     return model_name, roi, df
 
 
@@ -144,7 +143,6 @@ for model_name in args.model_names:
         if not len(tables):  # Probably no matching models
             continue
         df = pd.concat(tables)
-        print('concat tables ', tables)
         df = df.sort_index()
         # Export the CSV file for this model
         df.to_csv(out)
@@ -161,7 +159,6 @@ for model_name in args.model_names:
 # Raw table
 df = pd.concat(dfs).reset_index().\
         set_index(['model', 'roi', 'quantile']).sort_index()
-print('big raw table before indexing and merging ', df)
 out = tables_path / ('fit_table_raw.csv')
 
 # Possibly append
@@ -184,8 +181,6 @@ df_numweek = ncs.get_weeks(args, rois)
 df = df.reset_index()
 df = pd.merge(df, df_numweek, on='roi')
 df = df.set_index(['model', 'roi', 'quantile']).sort_index()
-print('big raw table after indexing and merging ', df)
-
 # Export the CSV file for the big table
 df.to_csv(out)
 
@@ -195,8 +190,7 @@ if n_data_path.resolve().is_file():
     extra = pd.read_csv(n_data_path).set_index('roi')
     extra['t0'] = extra['t0'].fillna('2020-01-23').astype('datetime64').apply(lambda x: x.weekofyear).astype(int)
     # Model-averaged table
-    df = ncs.reweighted_stats(args, out, extra=extra, dates=args.dates) # REMOVE DF VARIABLE WHEN DONE TESTING
-    print('reweighted', df)
+    ncs.reweighted_stats(args, out, extra=extra, dates=args.dates)
 else:
     print("No sample size file found at %s; unable to compute global average" % n_data_path.resolve())
 
@@ -233,50 +227,38 @@ if args.model_averaging: # Perform model averaging using raw fit file
                 samples = fit.to_dataframe()
                 samples_weighted_df = samples.sample(frac=weight, replace=True)
                 dfs.append(samples_weighted_df)
-
         df_model_averaged = pd.concat(dfs)
         df_model_averaged.reset_index(inplace=True, drop=True)
-        print('model averaged begininning', df_model_averaged)
-
         fits_path_averaged = Path(args.fits_path) / 'model_averaged'
         fits_path_averaged.mkdir(exist_ok=True)
         df_model_averaged.to_csv(fits_path_averaged / f'DiscreteAverage_{roi}.csv')
 
-    # now that we have model averaged fits, create tables
-    # mimic other tables code and merge reweighted table with model averaged table
-    # replace applicable regions with model averaged results
-    # Get all model_names, roi combinations
+        # now that we have model averaged fits, create tables
+        # mimic other tables code and merge reweighted table with model averaged table
+        # replace applicable regions with model averaged results
+        # Get all model_names, roi combinations
 
-    ##### NEED TO MAKE IT SO MODEL PATH IS DISCRETE1 TO GET MODEL CODE,
-    ##### BUT THAT WE NEED TO GET THE MODEL AVERAGED FIT FILE, AND NOT DISCRETE1
         combos = []
         model_path = ncs.get_model_path(args.models_path, 'Discrete1') # Just use Discrete1
         extension = ['csv', 'pkl'][0] # use 'csv'
         rois = ncs.list_rois(fits_path_averaged, 'DiscreteAverage', extension)
         combos += [('Discrete1', roi) for roi in rois]
-        # Organize into (model_name, roi) tuples
-        combos = list(zip(*combos))
-        print(combos)
+        combos = list(zip(*combos)) # Organize into (model_name, roi) tuples
         assert len(combos), "No combinations of models and ROIs found"
-        print("There are %d combinations of models and ROIs for model averaging." % len(combos))
-
+        print("There are %d ROIs applicable for model averaging." % len(combos)/2)
         result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
-        print('result', result)
         out = tables_path / ('DiscreteAverage_fit_table.csv')
         tables = [df_ for model_name_, roi, df_ in result
                     if model_name_ == 'Discrete1']
+        df_averaged = pd.concat(tables)
+        df_averaged = df.sort_index()
+        df_averaged.to_csv(out)
 
-        df = pd.concat(tables)
-        df = df.sort_index()
-        print('results concatted', df)
-        # Export the CSV file for this model
-        df.to_csv(out)
-
-        # # Then prepare for the big table (across models)
-        # df['model'] = model_name
-        # dfs.append(df)
-        #
-        # # Raw table
-        # df = pd.concat(dfs).reset_index().\
-        #         set_index(['model', 'roi', 'quantile']).sort_index()
-        # out = tables_path / ('fit_table_raw.csv')
+        # Now merge averaged table with reweighted table on applicable rois, replacing
+        # reweighted data with averaged data
+        reweighted_path = Path(args.tables_path) / ('fit_table_reweighted.csv')
+        if reweighted_path.resolve().is_file():
+            df_reweighted = df = pd.read_csv(reweighted_path, index_col=['roi', 'quantile'])
+            df_averaged = df_averaged.reset_index().set_index(['roi', 'quantile'])
+            df_combined = df_reweighted.update(df_averaged)
+            df_combined.to_csv(Path(args.tables_path) / 'fit_table_reweighted_and_averaged.csv')
