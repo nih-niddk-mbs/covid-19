@@ -252,9 +252,9 @@ if args.model_averaging: # Perform model averaging using raw fit file
         if len(result) > 1:
             df_averaged = pd.concat(result)
         else:
-            df_averaged = result
+            df_averaged = result[0]
 
-        df_averaged = df_averaged.sort_index()
+        df_averaged.sort_index(inplace=True)
         df_averaged.to_csv(out)
 
         # Now merge averaged table with reweighted table on applicable rois, replacing
