@@ -196,6 +196,7 @@ else:
 
 
 if args.model_averaging: # Perform model averaging using raw fit file
+    # try:
     print("Model averaging applicable regions...")
     df_weights = ncs.get_loo_weights_for_averaging(args.fits_path, args.models_path, args.tables_path)
     # use df_weights to get samples from fit files and save reweighted fit file
@@ -260,6 +261,9 @@ if args.model_averaging: # Perform model averaging using raw fit file
         reweighted_path = Path(args.tables_path) / ('fit_table_reweighted.csv')
         if reweighted_path.resolve().is_file():
             df_reweighted = pd.read_csv(reweighted_path, index_col=['roi', 'quantile'])
+            print(df_averaged)
             df_averaged = df_averaged.reset_index(drop=True).set_index(['roi', 'quantile'])
             df_reweighted.update(df_averaged)
             df_reweighted.to_csv(Path(args.tables_path) / 'fit_table_reweighted_and_averaged.csv')
+    # except:
+    #     print("Could not perform model averaging.")
