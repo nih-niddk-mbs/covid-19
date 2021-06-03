@@ -245,7 +245,7 @@ if args.model_averaging: # Perform model averaging using raw fit file
         combos = list(zip(*combos)) # Organize into (model_name, roi) tuples
         assert len(combos), "No combinations of models and ROIs found for model averaging"
         result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
-        out = tables_path / ('DiscreteAverage_fit_table.csv')
+        # out = tables_path / ('DiscreteAverage_fit_table.csv')
         tables = [df_ for model_name_, roi, df_ in result]
         if len(tables) > 1:
             df_averaged = pd.concat(tables)
@@ -253,14 +253,13 @@ if args.model_averaging: # Perform model averaging using raw fit file
             df_averaged = tables[0]
 
         df_averaged.sort_index(inplace=True)
-        df_averaged.to_csv(out)
+        # df_averaged.to_csv(out)
 
         # Now merge averaged table with reweighted table on applicable rois, replacing
         # reweighted data with averaged data
         reweighted_path = Path(args.tables_path) / ('fit_table_reweighted.csv')
         if reweighted_path.resolve().is_file():
             df_reweighted = pd.read_csv(reweighted_path, index_col=['roi', 'quantile'])
-            df_averaged = pd.read_csv(Path(args.tables_path) / 'DiscreteAverage_fit_table.csv')
             df_averaged = df_averaged.reset_index(drop=True).set_index(['roi', 'quantile'])
             df_reweighted.update(df_averaged)
             df_reweighted.to_csv(Path(args.tables_path) / 'fit_table_reweighted_and_averaged.csv')
