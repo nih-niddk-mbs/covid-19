@@ -234,34 +234,34 @@ if args.model_averaging: # Perform model averaging using raw fit file
             fits_path_averaged.mkdir(exist_ok=True)
             df_model_averaged.to_csv(fits_path_averaged / f'DiscreteAverage_{roi}.csv')
 
-            # now that we have model averaged fits, create tables
-            # mimic other tables code and merge reweighted table with model averaged table
-            # replace applicable regions with model averaged results
-            # Get all model_names, roi combinations
+        # now that we have model averaged fits, create tables
+        # mimic other tables code and merge reweighted table with model averaged table
+        # replace applicable regions with model averaged results
+        # Get all model_names, roi combinations
 
-            combos = []
-            extension = ['csv', 'pkl'][0] # use 'csv'
-            rois = ncs.list_rois(fits_path_averaged, 'DiscreteAverage', extension)
-            combos += [('Discrete1', roi) for roi in rois]
-            combos = list(zip(*combos)) # Organize into (model_name, roi) tuples
-            assert len(combos), "No combinations of models and ROIs found for model averaging"
-            result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
-            # out = tables_path / ('DiscreteAverage_fit_table.csv')
-            tables = [df_ for model_name_, roi, df_ in result]
-            if len(tables) > 1:
-                df_averaged = pd.concat(tables)
-            else:
-                df_averaged = tables[0]
+        combos = []
+        extension = ['csv', 'pkl'][0] # use 'csv'
+        rois = ncs.list_rois(fits_path_averaged, 'DiscreteAverage', extension)
+        combos += [('Discrete1', roi) for roi in rois]
+        combos = list(zip(*combos)) # Organize into (model_name, roi) tuples
+        assert len(combos), "No combinations of models and ROIs found for model averaging"
+        result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
+        # out = tables_path / ('DiscreteAverage_fit_table.csv')
+        tables = [df_ for model_name_, roi, df_ in result]
+        if len(tables) > 1:
+            df_averaged = pd.concat(tables)
+        else:
+            df_averaged = tables[0]
 
-            df_averaged.sort_index(inplace=True)
+        df_averaged.sort_index(inplace=True)
 
-            # Now merge averaged table with reweighted table on applicable rois, replacing
-            # reweighted data with averaged data
-            reweighted_path = Path(args.tables_path) / ('fit_table_reweighted.csv')
-            if reweighted_path.resolve().is_file():
-                df_reweighted = pd.read_csv(reweighted_path, index_col=['roi', 'quantile'])
-                df_averaged = df_averaged.reset_index().set_index(['roi', 'quantile'])
-                df_reweighted.update(df_averaged)
-                df_reweighted.to_csv(Path(args.tables_path) / 'fit_table_reweighted_and_averaged.csv')
+        # Now merge averaged table with reweighted table on applicable rois, replacing
+        # reweighted data with averaged data
+        reweighted_path = Path(args.tables_path) / ('fit_table_reweighted.csv')
+        if reweighted_path.resolve().is_file():
+            df_reweighted = pd.read_csv(reweighted_path, index_col=['roi', 'quantile'])
+            df_averaged = df_averaged.reset_index().set_index(['roi', 'quantile'])
+            df_reweighted.update(df_averaged)
+            df_reweighted.to_csv(Path(args.tables_path) / 'fit_table_reweighted_and_averaged.csv')
     except:
         print("Could not perform model averaging.")
