@@ -11,7 +11,7 @@ model {
     extra_std ~ exponential(1.);
 
     for (i in 1:n_weeks){
-      if (dC[i] > 1e8 || dR[i] > 1e8 || dD[i] > 1e8 || dC[i] < 0 || dR[i] < 0 || dD[i] < 0 || is_nan(-dC[i]) || is_nan(-dR[i])|| is_nan(-dD[i]))
+      if (dC[i] > 1e7 || dR[i] > 1e7 || dD[i] > 1e7 || dC[i] < 0 || dR[i] < 0 || dD[i] < 0 || is_nan(-dC[i]) || is_nan(-dR[i])|| is_nan(-dD[i]))
         target += 1000000;
       else {
         if (y[i,1] > -1)
