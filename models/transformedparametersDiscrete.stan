@@ -12,7 +12,7 @@ transformed parameters {
   real car[n_weeks];
   real ifr[n_weeks];
   real Rt[n_weeks];
-  real phi = max([1/(extra_std^2),1e-3]); // likelihood over-dispersion of std
+  real phi = 1/(extra_std^2); // likelihood over-dispersion of std
 
 {
   real sigmad[n_weeks];

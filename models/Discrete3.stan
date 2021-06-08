@@ -24,7 +24,7 @@ real<lower=0> sigd[n_blockssigd];              // death rate
 real<lower=0> sigr[n_blockssigr];              // recovery rate
 real<lower=0> sigmau;                      // uninfected rate
 real<lower=0,upper=1> ft;                          // noncase death fraction
-real<lower=0> extra_std;      // phi = 1/extra_std^2 in neg_binomial_2(mu,phi)
+real<lower=0,upper=10> extra_std;      // phi = 1/extra_std^2 in neg_binomial_2(mu,phi)
 }
 
 #include transformedparametersDiscrete.stan
