@@ -42,7 +42,7 @@ transformed parameters {
   I = 0;
   Z = 1;
 
-  Nt = N/7;
+  Nt = N/scale;
 
   for (i in 1:n_weeks){
     alpha_wk[i] = alpha[(i-1)/segalpha + 1];
@@ -51,7 +51,6 @@ transformed parameters {
     sigmar[i] = sigr[(i-1)/segsigr + 1];
     sigmad[i] = sigd[(i-1)/segsigd + 1];
 
-    I0 = s*Nt;
     I += alpha_wk[i];
     I *= exp(beta_wk[i]*s - sigmac[i] - sigmau);
     s *= exp(-beta_wk[i]*I/Nt);

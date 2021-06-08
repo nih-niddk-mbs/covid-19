@@ -14,6 +14,7 @@ transformed data {
   int n_blockssigc = (n_weeks-1)/segsigc + 1;
   int n_blockssigd = (n_weeks-1)/segsigd + 1;
   int n_blockssigr = (n_weeks-1)/segsigr + 1;
+  int scale = max(N/10000000,1);
 }
 
 parameters {
