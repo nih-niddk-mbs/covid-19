@@ -15,11 +15,11 @@ model {
         target += 1000000;
       else {
         if (y[i,1] > -1)
-          target += neg_binomial_2_lpmf(y[i,1]/7| dC[i],phi);
+          target += neg_binomial_2_lpmf(y[i,1]/scale| dC[i],phi);
         if (y[i,2] > -1)
-          target += neg_binomial_2_lpmf(y[i,2]/7| dR[i],phi);
+          target += neg_binomial_2_lpmf(y[i,2]/scale| dR[i],phi);
         if (y[i,3] > -1)
-          target += neg_binomial_2_lpmf(y[i,3]/7| dD[i],phi);
+          target += neg_binomial_2_lpmf(y[i,3]/scale| dD[i],phi);
         }
     }
 
