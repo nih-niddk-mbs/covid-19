@@ -8,6 +8,7 @@ import pandas as pd
 from pathlib import Path
 from scipy.stats import norm
 from tqdm import tqdm
+import re
 
 from .io import get_data, get_fit_path, list_rois, load_fit
 import niddk_covid_sicr as ncs
@@ -384,3 +385,143 @@ def make_lineplots(samples: pd.DataFrame, time_params: list, rows: int = 4,
         ax.set_title(param)
         ax.set_xlabel('Days')
     plt.tight_layout()
+
+def get_loo_weights_for_averaging(fits_path, models_path, tables_path):
+    """Get loo scores and weights for models for applicable regions then perform
+    bootstrapping, sampling with replacement,
+    on samples from all respective fit files according to loo score (?). Save
+    new samples in new fit file per roi. Model average across fit files with bootstrapping.
+
+    Args:
+        fits_path: Path to fits.
+        models_path: Path to models.
+        raw_table: pd.DataFrame containing regions and stats.
+    Returns:
+        df_weights: pd.DataFrame containing model weights per region for applicable regions."""
+    raw_table = pd.read_csv(Path(tables_path) / 'fit_table_raw.csv')
+    raw_table.set_index(['model', 'roi', 'quantile'], inplace=True)
+    raw_table = raw_table[~raw_table.index.duplicated(keep='last')]
+    raw_table.columns.name = 'param'
+    raw_table = raw_table.stack('param').unstack(['roi', 'quantile', 'param']).T
+    raw_table.reset_index(inplace=True)
+    filter1 = raw_table['quantile'] == 'mean'
+    filter2 = raw_table['param'] == 'loo'
+    df_loo = raw_table.where(filter1 & filter2)
+    df_loo = df_loo[df_loo['roi'].notna()]
+    df_loo.dropna(inplace=True) # NEED TO HANDLE NANS AT SOME POINT
+    columns = [col for col in df_loo if col.startswith('Discrete')]
+    df_loo = df_loo.assign(minimum = df_loo[columns].min(axis=1), minimum_column=df_loo[columns].idxmin(axis=1))
+    df_weights = df_loo.apply(calculate_loo_weights_per_region, axis=1)
+    df_weights.dropna(inplace=True)
+    df_weights = df_weights[['roi', 'quantile', 'param', 'Discrete1', 'Discrete2',
+                            'Discrete3', 'Discrete4', 'minimum', 'minimum_column',
+                            'Discrete1_weight', 'Discrete2_weight', 'Discrete3_weight',
+                            'Discrete4_weight']] # reorder columns
+    df_weights.reset_index(inplace=True, drop=True)
+    return df_weights
+    # filter out regions where lowest loo not within range of 10 of another model
+
+def calculate_loo_weights_per_region(row):
+    """Helper function for model_averaging(). Used to calculate weights in
+       raw_table DataFrame for models that have loo values that are close enough
+       to one another (within 10 from the smallest).
+       Regions where a model weight is > 95% will be excluded from model averaging.
+       Weights will be used for bootstrapping samples from the fits path for each
+       model weight for model averaging.
+
+       Args:
+            row: Row in pd.DataFrame. """
+
+    lowest_model = row['minimum_column']
+    lowest_loo = row['minimum']
+    loo_dict = {}
+    weights_dict = {}
+
+    # don't include loos that are above 10 from lowest for weights calculation
+    if row['Discrete1']:
+        loo = row['Discrete1']
+        if loo - lowest_loo < 10:
+            loo_dict['Discrete1'] = loo
+
+    if row['Discrete2']:
+        loo = row['Discrete2']
+        if loo - lowest_loo  < 10:
+            loo_dict['Discrete2'] = loo
+
+    if row['Discrete3']:
+        loo = row['Discrete3']
+        if loo - lowest_loo < 10:
+            loo_dict['Discrete3'] = loo
+
+    if row['Discrete4']:
+        loo = row['Discrete4']
+        if loo - lowest_loo < 10:
+            loo_dict['Discrete4'] = loo
+    # If there's only one model that dominates with loo, skip weights by adding nans
+    nan_dict = {'Discrete1_weight':np.nan,
+                'Discrete2_weight':np.nan,
+                'Discrete3_weight':np.nan,
+                'Discrete4_weight':np.nan,
+               }
+    if len(loo_dict) < 2:
+        weights_dict = nan_dict
+        for i in weights_dict.keys():
+            if 'weight' not in i:
+                i+='_weight'
+            row[i] = weights_dict[i]
+        return row
+
+    # handle cases where two or more models are applicable for model averaging
+    weights_dict = get_weights(loo_dict, lowest_loo, nan_dict)
+    for i in ['Discrete1_weight', 'Discrete2_weight', 'Discrete3_weight', 'Discrete4_weight']: # fill missing weights as -1
+        if i not in weights_dict.keys():
+            weights_dict[i] = -1
+    for i in weights_dict.keys():
+        if 'weight' not in i:
+            i+='_weight'
+        row[i] = weights_dict[i]
+    return row
+
+def get_weights(loo_dict, lowest_loo, nan_dict):
+    """ Calculates weights for models. Weights will be used for bootstrapping samples and model averaging.
+    Args:
+        loo_dict: (dict) Dictionary containing key value pairs of models and loo scores per region.
+        lowest_loo: (float) Lowest loo value.
+        nan_dict: (dict) Dictionary containing model names and np.nans to remove unapplicable regions.
+        """
+    denom = sum([expand_loos(lowest_loo, x) for x in loo_dict.values()])
+    numerators = [expand_loos(lowest_loo, x) for x in loo_dict.values()]
+    finalCalcs = [x/denom for x in numerators]
+
+    for i in finalCalcs: # If one weight still dominates with > 0.96 share of samples, set to nans
+        if i > 0.95:
+            return nan_dict
+    weights_keys = [i+'_weight' for i in loo_dict.keys()]
+    weights_dict = {weights_keys[i]: finalCalcs[i] for i in range(len(weights_keys))}
+    return weights_dict
+
+def expand_loos(lowest_loo, x):
+    """Helper function for get_weights().
+    Args:
+        x: (float) Loo value per model.
+        lowest_loo: (float) Lowest loo value.
+    Returns:
+        Numpy exponential. """
+    return np.exp((lowest_loo-x)/2)
+
+def get_fits_path_weights(df_weights):
+    """Get fits path for regions applicable for model averaging."""
+    df_weights.set_index('roi', inplace=True)
+    df_weights = df_weights[['Discrete1_weight', 'Discrete2_weight','Discrete3_weight', 'Discrete4_weight']]
+    df_weights = df_weights.apply(lambda row: row[row!=-1].index, axis=1)
+    df_weights_dict = df_weights.to_dict()
+
+    roi_model_combos = {}
+    for roi,models in df_weights_dict.items():
+        model_string = str(models)
+        models_list = re.findall('Discrete.', model_string)
+        roi_model_combos[roi] = models_list
+    return roi_model_combos
+
+def sample_bootstrapping(df_weights, roi_model_combos):
+    """ Load fits, get samples, and use weights to perform bootstrapping on samples."""

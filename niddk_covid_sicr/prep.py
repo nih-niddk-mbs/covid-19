@@ -26,13 +26,14 @@ def get_stan_data(full_data_path, args):
         return [None, None]
     # tm := start of mitigation, index space
 
-    try:
-        dfm = pd.read_csv(args.data_path / 'mitigationprior.csv')
-        tmdate = dfm.loc[dfm.region == args.roi, 'date'].values[0]
-        tm = np.where(df["dates2"] == tmdate)[0][0]
-    except Exception:
-        print("Could not use mitigation prior data; setting mitigation prior to default.")
-        tm = t0 + 10
+    # COMMENTING OUT MITIGATION DATA CHECK
+    # try:
+    #     dfm = pd.read_csv(args.data_path / 'mitigationprior.csv')
+    #     tmdate = dfm.loc[dfm.region == args.roi, 'date'].values[0]
+    #     tm = np.where(df["dates2"] == tmdate)[0][0]
+    # except Exception:
+    #     print("Could not use mitigation prior data; setting mitigation prior to default.")
+    tm = t0 + 10
 
     n_proj = 120
     stan_data = {}
@@ -140,7 +141,7 @@ def get_stan_data_weekly_total(full_data_path, args):
         tmdate = dfm.loc[dfm.region == args.roi, 'date'].values[0]
         tm = np.where(df["dates2"] == tmdate)[0][0]
     except Exception:
-        print("Could not use mitigation prior data; setting mitigation prior to default.")
+        # print("Could not use mitigation prior data; setting mitigation prior to default.")
         tm = t0 + 10
 
     try: # Get population estimate for roi
