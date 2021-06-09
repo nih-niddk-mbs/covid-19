@@ -141,10 +141,16 @@ def get_aic(d):
     """Calculate AIC, add to table, reweight stats. """
     model = d['model']
     num_weeks = d['num weeks']
-    if model == 'SICRdiscrete4Nwk':
-        n_blocks = int(np.floor((int(num_weeks)-1)/9)) # calculate n_blocks
-        num_weeks = n_blocks
-    d['num_params'] = MODEL_PARAMETER_CONSTANTS[model]['cons1'] + MODEL_PARAMETER_CONSTANTS[model]['cons2']*num_weeks
+    if model == 'Discrete1':
+        num_params = num_weeks*5 + 3
+    if model == 'Discrete2':
+        num_params = int(np.floor((int(num_weeks)-1)/9))*5 + 3
+    if model == 'Discrete3':
+        num_params = int(np.floor((int(num_weeks)-1)/27))*5 + 3
+    if model == 'Discrete4':
+        num_params = int(np.floor((int(num_weeks)-1)/27))*3 +
+                     int(np.floor((int(num_weeks)-1)/2))*2 + 3
+    d['num_params'] = num_params
     d['aic'] = d['ll_'] + 2*d['num_params']
     return d
 
