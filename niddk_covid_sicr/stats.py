@@ -148,8 +148,7 @@ def get_aic(d):
     if model == 'Discrete3':
         num_params = int(np.floor((int(num_weeks)-1)/27))*5 + 3
     if model == 'Discrete4':
-        num_params = int(np.floor((int(num_weeks)-1)/27))*3 +
-                     int(np.floor((int(num_weeks)-1)/2))*2 + 3
+        num_params = int(np.floor((int(num_weeks)-1)/27))*3 + int(np.floor((int(num_weeks)-1)/2))*2 + 3
     d['num_params'] = num_params
     d['aic'] = d['ll_'] + 2*d['num_params']
     return d
