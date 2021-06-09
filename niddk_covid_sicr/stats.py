@@ -11,6 +11,7 @@ from tqdm.auto import tqdm
 from warnings import warn
 
 from .io import extract_samples
+<<<<<<< HEAD
 # constants for model parameters' module; used for aic calculation
 MODEL_PARAMETER_CONSTANTS = {
               'SICRdiscreteNwk':{'cons1':1, 'cons2':5},
@@ -21,6 +22,8 @@ MODEL_PARAMETER_CONSTANTS = {
               'SICRdiscrete5Nwk':{'cons1':1, 'cons2':5},
               'SICRdiscrete6Nwk':{'cons1':3, 'cons2':3}
               }
+=======
+>>>>>>> 20009596208b841d8f3611ffd705dda5363b3df8
 
 def get_rhat(fit) -> float:
     """Get `rhat` for the log-probability of a fit.
@@ -151,6 +154,7 @@ def get_aic(d):
     """Calculate AIC, add to table, reweight stats. """
     model = d['model']
     num_weeks = d['num weeks']
+<<<<<<< HEAD
     if model == 'SICRdiscrete4Nwk':
         n_blocks = int(np.floor((int(num_weeks)-1)/9)) # calculate n_blocks
         num_weeks = n_blocks
@@ -160,26 +164,40 @@ def get_aic(d):
 
 def reweighted_stat(stat_vals: np.array, loo_vals: np.array,
                     loo_se_vals: np.array = None) -> float:
+=======
+    if model == 'Discrete1':
+        num_params = num_weeks*5 + 3
+    if model == 'Discrete2':
+        num_params = int(np.floor((int(num_weeks)-1)/9))*5 + 3
+    if model == 'Discrete3':
+        num_params = int(np.floor((int(num_weeks)-1)/27))*5 + 3
+    if model == 'Discrete4':
+        num_params = int(np.floor((int(num_weeks)-1)/27))*3 +
+                     int(np.floor((int(num_weeks)-1)/2))*2 + 3
+    d['num_params'] = num_params
+    d['aic'] = d['ll_'] + 2*d['num_params']
+    return d
+
+def reweighted_stat(stat_vals: np.array, pred_acc_stat: np.array) -> float:
+>>>>>>> 20009596208b841d8f3611ffd705dda5363b3df8
     """Get weighted means of a stat (across models),
     where the weights are related to the LOO's of model/
 
     Args:
         stat_vals (np.array): Values (across models) of some statistic.
-        loo_vals (np.array): Values (across models) of LOO.
-        loo_se_vals (np.array, optional): Values (across models) of se of LOO.
-            Defaults to None.
+        pred_acc_stat (np.array): Values (across models) of LOO or AIC. Variable
+                                  stands for "predictive accuracy statistic".
 
     Returns:
         float: A new average value for the statistic, weighted across models.
     """
-
     # Assume that loo is on a deviance scale (lower is better)
-    min_loo = min(loo_vals)
-    weights = np.exp(-0.5*(loo_vals-min_loo))
+    min_pred_acc_stat = min(pred_acc_stat)
+    weights = np.exp(-0.5*(pred_acc_stat-min_pred_acc_stat))
     weights = weights/np.sum(weights)
     return np.sum(stat_vals * weights)
 
-def reweighted_stats(raw_table_path: str, save: bool = True,
+def reweighted_stats(args, raw_table_path: str, save: bool = True,
                      roi_weight='n_data_pts', extra=None, first=None, dates=None) -> pd.DataFrame:
     """Reweight all statistics (across models) according to the LOO
     of each of the models.
@@ -202,7 +220,10 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     df = df.set_index(['model', 'roi', 'quantile']).sort_index()
     df.to_csv(raw_table_path)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 20009596208b841d8f3611ffd705dda5363b3df8
     df.columns.name = 'param'
     df = df.stack('param').unstack(['roi', 'quantile', 'param']).T
     rois = df.index.get_level_values('roi').unique()
@@ -214,16 +235,22 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
         # if roi != 'Andorra':
         #     pass
         try: # catch nan instances
-            loo = df.loc[(roi, 'mean', 'loo')]
-            loo_se = df.loc[(roi, 'std', 'loo')]
+            if args.aic_weight:
+                pred_acc_stat = df.loc[(roi, 'mean', 'aic')]
+            else:
+                pred_acc_stat = df.loc[(roi, 'mean', 'loo')]
         except:
-            break
-
+            print(f"Found NaN values in {roi} across all models. Skipping this region.")
+            continue
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
+<<<<<<< HEAD
         result[chunk] = df[chunk].apply(lambda x:
                                         reweighted_stat(x, loo, loo_se),
                                         axis=1)
+=======
+        result[chunk] = df[chunk].apply(lambda x: reweighted_stat(x, pred_acc_stat), axis=1)
+>>>>>>> 20009596208b841d8f3611ffd705dda5363b3df8
 
     result = result.unstack(['param'])
     result = result[~result.index.get_level_values('quantile')
@@ -264,15 +291,16 @@ def reweighted_stats(raw_table_path: str, save: bool = True,
     #   rois not in superregion.
 
     # (super_means, region) = filter_region(super_means, 'United States')
-    regions = ['Brazil', 'Canada', 'United States','Caribbean','Southern Asia',
-               'Middle Africa', 'Northern Europe', 'Southern Europe',
-               'Western Asia', 'South America', 'Polynesia',
-               'Australia and New Zealand', 'Western Europe', 'Eastern Africa',
-               'Western Africa', 'Eastern Europe', 'Central America',
-               'North America', 'South-Eastern Asia', 'Southern Africa',
-               'Eastern Asia', 'Northern Africa', 'Melanesia', 'Micronesia',
-               'Central Asia','Central Europe', 'Americas', 'Asia', 'Africa',
-               'Europe', 'Oceania', 'South America', 'North America', 'Antarctic' ]
+    # regions = ['Brazil', 'Canada', 'United States','Caribbean','Southern Asia',
+    #            'Middle Africa', 'Northern Europe', 'Southern Europe',
+    #            'Western Asia', 'South America', 'Polynesia',
+    #            'Australia and New Zealand', 'Western Europe', 'Eastern Africa',
+    #            'Western Africa', 'Eastern Europe', 'Central America',
+    #            'North America', 'South-Eastern Asia', 'Southern Africa',
+    #            'Eastern Asia', 'Northern Africa', 'Melanesia', 'Micronesia',
+    #            'Central Asia','Central Europe', 'Americas', 'Asia', 'Africa',
+    #            'Europe', 'Oceania', 'South America', 'North America', 'Antarctic' ]
+    regions = ['United States', 'Brazil']
 
     for i in range(len(regions)):
         roi = regions[i]

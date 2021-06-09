@@ -26,13 +26,14 @@ def get_stan_data(full_data_path, args):
         return [None, None]
     # tm := start of mitigation, index space
 
-    try:
-        dfm = pd.read_csv(args.data_path / 'mitigationprior.csv')
-        tmdate = dfm.loc[dfm.region == args.roi, 'date'].values[0]
-        tm = np.where(df["dates2"] == tmdate)[0][0]
-    except Exception:
-        print("Could not use mitigation prior data; setting mitigation prior to default.")
-        tm = t0 + 10
+    # COMMENTING OUT MITIGATION DATA CHECK
+    # try:
+    #     dfm = pd.read_csv(args.data_path / 'mitigationprior.csv')
+    #     tmdate = dfm.loc[dfm.region == args.roi, 'date'].values[0]
+    #     tm = np.where(df["dates2"] == tmdate)[0][0]
+    # except Exception:
+    #     print("Could not use mitigation prior data; setting mitigation prior to default.")
+    tm = t0 + 10
 
     n_proj = 120
     stan_data = {}
@@ -97,31 +98,39 @@ def get_stan_data_weekly_total(full_data_path, args):
 
     n_proj = 0
     stan_data = {}
+    for kind in ['cases', 'deaths', 'recover']: # find where missing data crops
+                                    # up in cumulative values and set to -1
+        try:
+            start_data = np.where(df["cum_%s" % kind].values > 0)[0][0]
+            df['new_%s' % kind] = np.where(((df['cum_%s' % kind] == 0) & ((df.index > start_data))), -1, df['new_%s' % kind])
+        except: # if data is preset to -1 indicating no data already (from CTP archived data)
+            df['new_%s' % kind] = -1 # keep it at -1
 
-    # calculate t0 where new cases > 0
-    t0 = np.where(df["new_cases"].values > 0)[0][0] # gives index position
-    df['Date'] = pd.to_datetime(df.loc[:, 'dates2']) # used to calculate leading week
-    df.set_index('Date', inplace=True) # need this for df.resample()
+    df['Datetime'] = pd.to_datetime(df.loc[:, 'dates2']) # used to calculate leading week
+    df.set_index('Datetime', inplace=True) # need this for df.resample()
 
-    t0_date = df.index[t0] # get date where new_cases > 0
-    df = get_sunday(df, t0_date) # get dataframe with Sunday as beginning day
-                                # so we can sample for weekly totals by Sundays
+    df = df.replace(-1, np.nan)# Set -1 to NaNs to handle no data during summing
     df['weeklytotal_new_cases'] = df.new_cases.resample('W-SAT').sum()
     df['weeklytotal_new_recover'] = df.new_recover.resample('W-SAT').sum()
     df['weeklytotal_new_deaths'] = df.new_deaths.resample('W-SAT').sum()
-    df.dropna(inplace=True) # drop last rows if they spill over weekly chunks and present NAs
-        # will also remove non-weekly dates so each element is by weekly amount
+
+    # Create datetime index with range to exclude days that spill over weekly chunks
+    weekly_index = pd.date_range(start=df.index[0], end=df.index[-1], freq='W-SAT')
+    df = df.reindex(weekly_index)
 
     df.weeklytotal_new_cases = df.weeklytotal_new_cases.astype(int) # convert float to int
     df.weeklytotal_new_recover = df.weeklytotal_new_recover.astype(int)
     df.weeklytotal_new_deaths = df.weeklytotal_new_deaths.astype(int)
 
-    # handle negatives by setting to 0
-    df['weeklytotal_new_cases'] = df['weeklytotal_new_cases'].clip(lower=0)
-    df['weeklytotal_new_recover'] = df['weeklytotal_new_recover'].clip(lower=0)
-    df['weeklytotal_new_deaths'] = df['weeklytotal_new_deaths'].clip(lower=0)
+    df = df.replace({'weeklytotal_new_recover': 0}, -1) # NaNs became zeros
+    # handle negatives by setting to -1
+    df['weeklytotal_new_cases'] = df['weeklytotal_new_cases'].clip(lower=-1)
+    df['weeklytotal_new_recover'] = df['weeklytotal_new_recover'].clip(lower=-1)
+    df['weeklytotal_new_deaths'] = df['weeklytotal_new_deaths'].clip(lower=-1)
+
     df.reset_index(inplace=True) # reset index
     t0 = np.where(df["weeklytotal_new_cases"].values > 0)[0][0]
+
     if df.loc[0 ,"dates2"] == 0: # handle cases where this did not get removed
         df.drop([0], inplace=True)
         df.reset_index(inplace=True)
@@ -132,7 +141,7 @@ def get_stan_data_weekly_total(full_data_path, args):
         tmdate = dfm.loc[dfm.region == args.roi, 'date'].values[0]
         tm = np.where(df["dates2"] == tmdate)[0][0]
     except Exception:
-        print("Could not use mitigation prior data; setting mitigation prior to default.")
+        # print("Could not use mitigation prior data; setting mitigation prior to default.")
         tm = t0 + 10
 
     try: # Get population estimate for roi
@@ -159,6 +168,7 @@ def get_stan_data_weekly_total(full_data_path, args):
         stan_data['tm'] += offset
         stan_data['ts'] += offset
     return stan_data, df['dates2'][t0], stan_data['n_weeks']
+<<<<<<< HEAD
 
 def get_sunday(df, t0_date):
     """ Calculate Sunday prior to t0 (where new cases > 0).
@@ -191,13 +201,14 @@ def get_sunday(df, t0_date):
         df_bf = df.merge(df2, how='outer', left_index=True, right_index=True)
         df_bf.fillna(0, inplace=True) # df_bf stands for df_backfilled
         return df_bf
+=======
+>>>>>>> 20009596208b841d8f3611ffd705dda5363b3df8
 
 def get_n_data(stan_data):
     if stan_data:
         return (stan_data['y'] > 0).ravel().sum()
     else:
         return 0
-
 
 # functions used to initialize parameters
 def get_init_fun(args, stan_data, force_fresh=False):
@@ -213,27 +224,14 @@ def get_init_fun(args, stan_data, force_fresh=False):
             print("Using last sample from previous fit to initialize")
     else:
         print("Using default values to initialize fit")
-        result = {'f1': gamma(2., 10.),
-                  'f2': gamma(40., 1/100.),
-                  'sigmar': gamma(20, 1/120.),
-                  'sigmad': gamma(20, 1/120),
-                  'sigmau': gamma(2., 1/20.),
-                  'q': exponential(.1),
-                  'mbase': gamma(2., .1/2.),
-                  # 'mlocation': lognormal(np.log(stan_data['tm']), 1.),
-                  'mlocation': normal(stan_data['tm'], 4.),
-                  'extra_std': exponential(.5),
-                  'extra_std_R': exponential(.5),
-                  'extra_std_D': exponential(.5),
-                  'cbase': gamma(1., 1.),
-                  # 'clocation': lognormal(np.log(20.), 1.),
-                  'clocation': normal(50., 1.),
-                  'ctransition': normal(10., 1.),
-                  # 'n_pop': lognormal(np.log(1e5), 1.),
-                  'n_pop': normal(1e6, 1e4),
-                  'sigmar1': gamma(2., .01),
-                  'sigmad1': gamma(2., .01),
-                  'trelax': normal(50.,5.)
+        result = {
+                    'sigmau': exponential(1.)
+                  # 'beta': normal(1.,.5),
+                  # 'sigr': exponential(.5),
+                  # 'sigd': exponential(.2),
+                  # 'sigmau': exponential(1.),
+                  # 'sigc': exponential(1.),
+                  # 'alpha': exponential(1.)
                   }
 
     def init_fun():
