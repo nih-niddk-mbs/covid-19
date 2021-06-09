@@ -11,18 +11,6 @@ from tqdm.auto import tqdm
 from warnings import warn
 
 from .io import extract_samples
-# constants for model parameters' module; used for aic calculation
-# MODEL_PARAMETER_CONSTANTS = {
-#               'SICRdiscreteNwk':{'cons1':1, 'cons2':5},
-#               'SICRdiscrete1Nwk':{'cons1':2, 'cons2':4},
-#               'SICRdiscrete2Nwk':{'cons1':2, 'cons2':4},
-#               'SICRdiscrete3Nwk':{'cons1':3, 'cons2':3},
-#               'SICRdiscrete4Nwk':{'cons1':2, 'cons2':4},
-#               'SICRdiscrete5Nwk':{'cons1':1, 'cons2':5},
-#               'SICRdiscrete6Nwk':{'cons1':3, 'cons2':3},
-#               'SICRdiscrete7Nwk':{'cons1':2, 'cons2':4},
-#               'SICRdiscrete8Nwk':{'cons1':1, 'cons2':5}
-#               }
 
 def get_rhat(fit) -> float:
     """Get `rhat` for the log-probability of a fit.
@@ -149,19 +137,22 @@ def getllxtensor_singleroi(roi: str, data_path: str, fits_path: str,
         print('--')
     return llx
 
-# def get_aic(d):
-#     """Calculate AIC, add to table, reweight stats. """
-#     model = d['model']
-#     num_weeks = d['num weeks']
-#     if model == 'SICRdiscrete4Nwk' or model == 'SICRdiscrete7Nwk':
-#         n_blocks = int(np.floor((int(num_weeks)-1)/9)) # calculate n_blocks
-#         num_weeks = n_blocks
-#     if model == 'SICRdiscrete8Nwk': # reduced block size
-#         n_blocks = int(np.floor((int(num_weeks)-1)/5)) # calculate n_blocks
-#         num_weeks = n_blocks
-#     d['num_params'] = MODEL_PARAMETER_CONSTANTS[model]['cons1'] + MODEL_PARAMETER_CONSTANTS[model]['cons2']*num_weeks
-#     d['aic'] = d['ll_'] + 2*d['num_params']
-#     return d
+def get_aic(d):
+    """Calculate AIC, add to table, reweight stats. """
+    model = d['model']
+    num_weeks = d['num weeks']
+    if model == 'Discrete1':
+        num_params = num_weeks*5 + 3
+    if model == 'Discrete2':
+        num_params = int(np.floor((int(num_weeks)-1)/9))*5 + 3
+    if model == 'Discrete3':
+        num_params = int(np.floor((int(num_weeks)-1)/27))*5 + 3
+    if model == 'Discrete4':
+        num_params = int(np.floor((int(num_weeks)-1)/27))*3 +
+                     int(np.floor((int(num_weeks)-1)/2))*2 + 3
+    d['num_params'] = num_params
+    d['aic'] = d['ll_'] + 2*d['num_params']
+    return d
 
 def reweighted_stat(stat_vals: np.array, pred_acc_stat: np.array) -> float:
     """Get weighted means of a stat (across models),
@@ -200,7 +191,7 @@ def reweighted_stats(args, raw_table_path: str, save: bool = True,
 
     df['ll_'] = df['ll_'] * -2 # first calculate ll (ll * -2)
     df.reset_index(inplace=True)
-    # df = df.apply(get_aic, axis=1)
+    df = df.apply(get_aic, axis=1)
     df = df.set_index(['model', 'roi', 'quantile']).sort_index()
     df.to_csv(raw_table_path)
 
