@@ -1,7 +1,7 @@
 roi,region,subregion
 Aruba,Americas,Caribbean
 Afghanistan,Asia,Southern Asia
-Angola,Africa,Middle Africa
+Angola,Africa,Central Africa
 Anguilla,Americas,Caribbean
 Åland Islands,Europe,Northern Europe
 Albania,Europe,Southern Europe
@@ -78,17 +78,18 @@ CA_PEI,North America,Canada
 CA_Quebec,North America,Canada
 CA_Saskatchewan,North America,Canada
 CA_Yukon,North America,Canada
-Central African Republic,Africa,Middle Africa
+Central African Republic,Africa,Central Africa
 Canada,Americas,North America
 Cabo Verde,Africa,Western Africa
 Cocos (Keeling) Islands,Oceania,Australia and New Zealand
+Congo (Brazzaville),Africa,Central Africa
 Switzerland,Europe,Western Europe
 Chile,Americas,South America
 China,Asia,Eastern Asia
 Ivory Coast,Africa,Western Africa
-Cameroon,Africa,Middle Africa
-DR Congo,Africa,Middle Africa
-Republic of the Congo,Africa,Middle Africa
+Cameroon,Africa,Central Africa
+DR Congo,Africa,Central Africa
+Republic of the Congo,Africa,Central Africa
 Cook Islands,Oceania,Polynesia
 Colombia,Americas,South America
 Comoros,Africa,Eastern Africa
@@ -119,7 +120,7 @@ Falkland Islands,Americas,South America
 France,Europe,Western Europe
 Faroe Islands,Europe,Northern Europe
 Micronesia,Oceania,Micronesia
-Gabon,Africa,Middle Africa
+Gabon,Africa,Central Africa
 United Kingdom,Europe,Northern Europe
 Georgia,Asia,Western Asia
 Guernsey,Europe,Northern Europe
@@ -129,7 +130,7 @@ Guinea,Africa,Western Africa
 Guadeloupe,Americas,Caribbean
 Gambia,Africa,Western Africa
 Guinea-Bissau,Africa,Western Africa
-Equatorial Guinea,Africa,Middle Africa
+Equatorial Guinea,Africa,Central Africa
 Greece,Europe,Southern Europe
 Grenada,Americas,Caribbean
 Greenland,Americas,North America
@@ -246,8 +247,8 @@ San Marino,Europe,Southern Europe
 Somalia,Africa,Eastern Africa
 Saint Pierre and Miquelon,Americas,North America
 Serbia,Europe,Southern Europe
-South Sudan,Africa,Middle Africa
-São Tomé and Príncipe,Africa,Middle Africa
+South Sudan,Africa,Central Africa
+São Tomé and Príncipe,Africa,Central Africa
 Suriname,Americas,South America
 Slovakia,Europe,Central Europe
 Slovenia,Europe,Southern Europe
@@ -257,7 +258,7 @@ Sint Maarten,Americas,Caribbean
 Seychelles,Africa,Eastern Africa
 Syria,Asia,Western Asia
 Turks and Caicos Islands,Americas,Caribbean
-Chad,Africa,Middle Africa
+Chad,Africa,Central Africa
 Togo,Africa,Western Africa
 Thailand,Asia,South-Eastern Asia
 Tajikistan,Asia,Central Asia
