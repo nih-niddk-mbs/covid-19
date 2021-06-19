@@ -27,9 +27,12 @@ model {
       if (is_nan(car[i]) || is_nan(ifr[i]) || is_nan(Rt[i]))
         target += 1000000;
       else {
-        target += normal_lpdf(car[i] | .1,.2);
-        target += normal_lpdf(ifr[i] | .01, .02);
-        target += normal_lpdf(Rt[i] | 1.,2.);
+        target += normal_lpdf(car[i] | .1,.4);
+        target += normal_lpdf(ifr[i] | .01, .04);
+        target += normal_lpdf(Rt[i] | 1.,4.);
+      //  target += normal_lpdf(car[i] | .1,.2);
+      //  target += normal_lpdf(ifr[i] | .01, .02);
+      //  target += normal_lpdf(Rt[i] | 1.,2.);
         }
       }
 }
