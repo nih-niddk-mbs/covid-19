@@ -32,7 +32,7 @@ parser.add_argument('-tp', '--tables-path', default='./tables/',
                     help='Path to directory to save tables')
 parser.add_argument('-f', '--fit-format', type=int, default=1,
                     help='Version of fit format')
-parser.add_argument('-p', '--params', default=['R0', 'car', 'ifr', 'ir', 'beta'], nargs='+',
+parser.add_argument('-p', '--params', default=['R0', 'car', 'ifr', 'ir', 'beta', 'alpha'], nargs='+',
                     help='Which params to include in the table')
 parser.add_argument('-d', '--dates', default=None, nargs='+',
                     help='Which dates to include in the table')
