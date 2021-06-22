@@ -24,6 +24,7 @@ model {
     }
     for (i in 1:n_blockssigc-1){
       target += normal_lpdf((sigc[i+1]-sigc[i])/sigc[i] | 0, .25);
+      target += normal_lpdf((beta[i+1]-beta[i])/beta[i] | 0, .25);
     }
     for (i in 1:n_weeks){
       if (is_nan(car[i]) || is_nan(ifr[i]) || is_nan(Rt[i]))
