@@ -203,19 +203,15 @@ if args.model_averaging: # Perform model averaging using raw fit file
         weights_out = tables_path / ('weights_for_averaging.csv')
         df_weights.to_csv(weights_out)
         roi_model_combos = ncs.get_fits_path_weights(df_weights)
-        print(roi_model_combos)
         # load fits and extract samples per roi we have weights for
         for roi,models in roi_model_combos.items():
             dfs = []
             for model_name in models:
                 model_path = ncs.get_model_path(args.models_path, model_name)
-                print(model_path)
                 extension = ['csv', 'pkl'][args.fit_format]
                 fit_path = ncs.get_fit_path(args.fits_path, model_name, roi)
-                print(fit_path)
                 df_roi = df_weights.loc[roi]
                 model_name_weight = model_name + '_weight'
-                print(model_name_weight)
                 weight = df_roi[model_name_weight]
 
                 if args.fit_format == 1:
@@ -244,9 +240,12 @@ if args.model_averaging: # Perform model averaging using raw fit file
         extension = ['csv', 'pkl'][0] # use 'csv'
         rois = ncs.list_rois(Path(args.fits_path), 'DiscreteAverage', extension)
         combos += [('Discrete1', roi) for roi in rois]
+        print(combos)
         combos = list(zip(*combos)) # Organize into (model_name, roi) tuples
+        print(combos)
         assert len(combos), "No combinations of models and ROIs found for model averaging"
         result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
+        print(result)
         tables = [df_ for model_name_, roi, df_ in result]
         if len(tables) > 1:
             df_averaged = pd.concat(tables)
