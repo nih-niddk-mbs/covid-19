@@ -245,7 +245,6 @@ if args.model_averaging: # Perform model averaging using raw fit file
         print(combos)
         assert len(combos), "No combinations of models and ROIs found for model averaging"
         result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
-        print(result)
         tables = [df_ for model_name_, roi, df_ in result]
         if len(tables) > 1:
             df_averaged = pd.concat(tables)
