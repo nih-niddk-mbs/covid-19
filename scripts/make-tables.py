@@ -85,6 +85,7 @@ if not args.average_only:
         combos += [(model_name, roi) for roi in rois]
     # Organize into (model_name, roi) tuples
     combos = list(zip(*combos))
+    print(combos)
     assert len(combos), "No combinations of models and ROIs found"
     print("There are %d combinations of models and ROIs" % len(combos))
 
