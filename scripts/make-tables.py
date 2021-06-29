@@ -216,7 +216,7 @@ def roi_df_averaging(args, model_name, roi):
     else:
         day_offset = 0
 
-    samples = pd.read_csv(args.fits_path f'/DiscreteAverage_{roi}.csv')
+    samples = pd.read_csv(args.fits_path + f'/DiscreteAverage_{roi}.csv')
     stats = ncs.get_waic(samples)
     df = ncs.make_table(roi, samples, args.params, args.totwk,
                         stats, quantiles=args.quantiles,
