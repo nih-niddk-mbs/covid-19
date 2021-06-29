@@ -195,74 +195,102 @@ else:
     print("No sample size file found at %s; unable to compute global average" % n_data_path.resolve())
 
 
+def roi_df_averaging(args, model_name, roi):
+    if args.fixed_t:
+        args.roi = roi  # Temporary
+        csv = Path(args.data_path) / ("covidtimeseries_%s.csv" % args.roi)
+        csv = csv.resolve()
+        assert csv.exists(), "No such csv file: %s" % csv
+        if not args.totwk:
+            stan_data, t0, num_weeks = ncs.get_stan_data(csv, args)
+        if args.totwk:
+            stan_data, t0, num_weeks = ncs.get_stan_data_weekly_total(csv, args)
+
+        global_start = datetime.strptime('01/22/20', '%m/%d/%y')
+        frame_start = datetime.strptime(t0, '%m/%d/%y')
+
+        if not args.totwk:
+            day_offset = (frame_start - global_start).days
+        if args.totwk:
+            day_offset = math.floor((frame_start - global_start).days/7) # for weeks
+    else:
+        day_offset = 0
+
+    samples = pd.read_csv(args.fits_path f'/DiscreteAverage_{roi}.csv')
+    stats = ncs.get_waic(samples)
+    df = ncs.make_table(roi, samples, args.params, args.totwk,
+                        stats, quantiles=args.quantiles,
+                        day_offset=day_offset)
+    return model_name, roi, df
+
 if args.model_averaging: # Perform model averaging using raw fit file
-    try:
-        print("Model averaging applicable regions...")
-        df_weights = ncs.get_loo_weights_for_averaging(args.fits_path, args.models_path, args.tables_path)
-        # use df_weights to get samples from fit files and save reweighted fit file
-        weights_out = tables_path / ('weights_for_averaging.csv')
-        df_weights.to_csv(weights_out)
-        roi_model_combos = ncs.get_fits_path_weights(df_weights)
-        # load fits and extract samples per roi we have weights for
-        for roi,models in roi_model_combos.items():
-            dfs = []
-            for model_name in models:
-                model_path = ncs.get_model_path(args.models_path, model_name)
-                extension = ['csv', 'pkl'][args.fit_format]
-                fit_path = ncs.get_fit_path(args.fits_path, model_name, roi)
-                df_roi = df_weights.loc[roi]
-                model_name_weight = model_name + '_weight'
-                weight = df_roi[model_name_weight]
+    # try:
+    print("Model averaging applicable regions...")
+    df_weights = ncs.get_loo_weights_for_averaging(args.fits_path, args.models_path, args.tables_path)
+    # use df_weights to get samples from fit files and save reweighted fit file
+    weights_out = tables_path / ('weights_for_averaging.csv')
+    df_weights.to_csv(weights_out)
+    roi_model_combos = ncs.get_fits_path_weights(df_weights)
+    # load fits and extract samples per roi we have weights for
+    for roi,models in roi_model_combos.items():
+        dfs = []
+        for model_name in models:
+            model_path = ncs.get_model_path(args.models_path, model_name)
+            extension = ['csv', 'pkl'][args.fit_format]
+            fit_path = ncs.get_fit_path(args.fits_path, model_name, roi)
+            df_roi = df_weights.loc[roi]
+            model_name_weight = model_name + '_weight'
+            weight = df_roi[model_name_weight]
 
-                if args.fit_format == 1:
-                    fit = ncs.load_fit(fit_path, model_path)
-                    # stats = ncs.get_waic_and_loo(fit)
-                    samples = fit.to_dataframe()
-                    samples_weighted_df = samples.sample(frac=weight, replace=True)
-                    dfs.append(samples_weighted_df)
+            if args.fit_format == 1:
+                fit = ncs.load_fit(fit_path, model_path)
+                # stats = ncs.get_waic_and_loo(fit)
+                samples = fit.to_dataframe()
+                samples_weighted_df = samples.sample(frac=weight, replace=True)
+                dfs.append(samples_weighted_df)
 
-                elif args.fit_format == 0:
-                    samples = ncs.extract_samples(args.fits_path, args.models_path,
-                                                  model_name, roi, args.fit_format)
-                    stats = ncs.get_waic(samples)
-                    samples = fit.to_dataframe()
-                    samples_weighted_df = samples.sample(frac=weight, replace=True)
-                    dfs.append(samples_weighted_df)
-            df_model_averaged = pd.concat(dfs)
-            df_model_averaged.reset_index(inplace=True, drop=True)
-            df_model_averaged.to_csv(Path(args.fits_path) / f'DiscreteAverage_{roi}.csv')
+            elif args.fit_format == 0:
+                samples = ncs.extract_samples(args.fits_path, args.models_path,
+                                              model_name, roi, args.fit_format)
+                stats = ncs.get_waic(samples)
+                samples = fit.to_dataframe()
+                samples_weighted_df = samples.sample(frac=weight, replace=True)
+                dfs.append(samples_weighted_df)
+        df_model_averaged = pd.concat(dfs)
+        df_model_averaged.reset_index(inplace=True, drop=True)
+        df_model_averaged.to_csv(Path(args.fits_path) / f'DiscreteAverage_{roi}.csv')
 
-        # now that we have model averaged fits, create tables
-        # mimic other tables code and merge reweighted table with model averaged table
-        # replace applicable regions with model averaged results
-        # Get all model_names, roi combinations
-        combos = []
-        extension = ['csv', 'pkl'][0] # use 'csv'
-        rois = ncs.list_rois(Path(args.fits_path), 'DiscreteAverage', extension)
-        print(rois)
-        combos += [('Discrete1', roi) for roi in rois]
-        combos = list(zip(*combos)) # Organize into (model_name, roi) tuples
-        combos = [('DiscreteAverage', 'Cameroon'), ('DiscreteAverage', 'Paraguay')]
-        print(combos)
-        assert len(combos), "No combinations of models and ROIs found for model averaging"
-        result = p_map(roi_df, repeat(args), *combos, num_cpus=args.max_jobs)
-        tables = [df_ for model_name_, roi, df_ in result]
-        if len(tables) > 1:
-            df_averaged = pd.concat(tables)
-        else:
-            df_averaged = tables[0]
+    # now that we have model averaged fits, create tables
+    # mimic other tables code and merge reweighted table with model averaged table
+    # replace applicable regions with model averaged results
+    # Get all model_names, roi combinations
+    combos = []
+    extension = ['csv', 'pkl'][0] # use 'csv'
+    rois = ncs.list_rois(Path(args.fits_path), 'DiscreteAverage', extension)
+    print(rois)
+    combos += [('Discrete1', roi) for roi in rois]
+    combos = list(zip(*combos)) # Organize into (model_name, roi) tuples
+    combos = [('DiscreteAverage', 'Cameroon'), ('DiscreteAverage', 'Paraguay')] # TESTING
+    print(combos)
+    assert len(combos), "No combinations of models and ROIs found for model averaging"
+    result = p_map(roi_df_averaging, repeat(args), *combos, num_cpus=args.max_jobs)
+    tables = [df_ for model_name_, roi, df_ in result]
+    if len(tables) > 1:
+        df_averaged = pd.concat(tables)
+    else:
+        df_averaged = tables[0]
 
-        df_averaged.sort_index(inplace=True)
-        out = tables_path / ('DiscreteAverage_fit_table.csv')
-        df_averaged.to_csv(out)
-        # Now merge averaged table with reweighted table on applicable rois, replacing
-        # reweighted data with averaged data
-        reweighted_path = Path(args.tables_path) / ('fit_table_reweighted.csv')
-        if reweighted_path.resolve().is_file():
-            df_reweighted = pd.read_csv(reweighted_path, index_col=['roi', 'quantile'])
-            df_averaged = pd.read_csv(Path(args.tables_path) / 'DiscreteAverage_fit_table.csv')
-            df_averaged = df_averaged.reset_index(drop=True).set_index(['roi', 'quantile'])
-            df_reweighted.update(df_averaged)
-            df_reweighted.to_csv(Path(args.tables_path) / 'fit_table_reweighted_and_averaged.csv')
-    except:
-        print("Could not perform model averaging.")
+    df_averaged.sort_index(inplace=True)
+    out = tables_path / ('DiscreteAverage_fit_table.csv')
+    df_averaged.to_csv(out)
+    # Now merge averaged table with reweighted table on applicable rois, replacing
+    # reweighted data with averaged data
+    reweighted_path = Path(args.tables_path) / ('fit_table_reweighted.csv')
+    if reweighted_path.resolve().is_file():
+        df_reweighted = pd.read_csv(reweighted_path, index_col=['roi', 'quantile'])
+        df_averaged = pd.read_csv(Path(args.tables_path) / 'DiscreteAverage_fit_table.csv')
+        df_averaged = df_averaged.reset_index(drop=True).set_index(['roi', 'quantile'])
+        df_reweighted.update(df_averaged)
+        df_reweighted.to_csv(Path(args.tables_path) / 'fit_table_reweighted_and_averaged.csv')
+    # except:
+    #     print("Could not perform model averaging.")
