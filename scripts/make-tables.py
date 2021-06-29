@@ -269,9 +269,11 @@ if args.model_averaging: # Perform model averaging using raw fit file
     extension = ['csv', 'pkl'][0] # use 'csv'
     rois = ncs.list_rois(Path(args.fits_path), 'DiscreteAverage', extension)
     print(rois)
-    combos += [('Discrete1', roi) for roi in rois]
-    combos = list(zip(*combos)) # Organize into (model_name, roi) tuples
-    combos = [('DiscreteAverage', 'DiscreteAverage'), ('Cameroon', 'Paraguay')] # TESTING
+    mods = tuple(['DiscreteAverage' for x in rois])
+    rois = tuple(rois)
+    combos.append(mods)
+    combos.append(rois)
+    # combos = [('DiscreteAverage', 'DiscreteAverage'), ('Cameroon', 'Paraguay')] # TESTING
     print(combos)
     assert len(combos), "No combinations of models and ROIs found for model averaging"
     result = p_map(roi_df_averaging, repeat(args), *combos, num_cpus=args.max_jobs)
