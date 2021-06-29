@@ -203,6 +203,7 @@ if args.model_averaging: # Perform model averaging using raw fit file
         weights_out = tables_path / ('weights_for_averaging.csv')
         df_weights.to_csv(weights_out)
         roi_model_combos = ncs.get_fits_path_weights(df_weights)
+        print(roi_model_combos)
         # load fits and extract samples per roi we have weights for
         for roi,models in roi_model_combos.items():
             dfs = []
