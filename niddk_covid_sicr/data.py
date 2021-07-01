@@ -12,6 +12,8 @@ from urllib.error import HTTPError
 import urllib.request, json
 import os
 from datetime import timedelta, date
+import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 
 JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
 COVIDTRACKER_FILTER_DEFAULTS = {'cum_cases': 5, 'cum_recover': 1, 'cum_deaths': 0}
@@ -479,12 +481,11 @@ def get_owid_us_vaccines(data_path: str, filter_: Union[dict, bool] = True,
     src_trim['region'] = src['location'].values
     src_trim['cum_vaccinations'] = src['total_vaccinations'].fillna(-1).astype(int).values
     src_trim['daily_vaccinations'] = src['daily_vaccinations'].fillna(-1).astype(int).values
-    src_trim['people_vaccinated'] = src['people_vaccinated'].fillna(-1).astype(int).values
-    src_trim['people_fully_vaccinated'] = src['people_fully_vaccinated'].fillna(-1).astype(int).values
+    src_trim['cum_people_vaccinated'] = src['people_vaccinated'].fillna(-1).astype(int).values
+    src_trim['cum_people_fully_vaccinated'] = src['people_fully_vaccinated'].fillna(-1).astype(int).values
     src_trim.set_index('dates2', inplace=True, drop=True)
     src_trim.replace("New York State", "New York", inplace=True) # fix NY name
     src_rois = src_trim['region'].unique()
-
     for roi in src_rois:
         if roi in US_STATE_ABBREV:
             try:
@@ -501,26 +502,29 @@ def get_owid_us_vaccines(data_path: str, filter_: Union[dict, bool] = True,
 
             src_roi = src_trim[src_trim['region'] == roi] # filter rows that match roi
 
-            df_combined = df_timeseries.merge(src_roi[['cum_vaccinations', 'daily_vaccinations', 'people_vaccinated',
-                                                       'people_fully_vaccinated']], how='left', on='dates2')
+            df_combined = df_timeseries.merge(src_roi[['cum_vaccinations', 'daily_vaccinations', 'cum_people_vaccinated',
+                                                       'cum_people_fully_vaccinated']], how='left', on='dates2')
             # there are cases where cum counts go missing and new counts get missed:
             # cum_count - (-1) = cum_count+1 where the new counts spike
             # we don't want it to spike, and we don't want to miss new counts before the gap
-            # Plan: create dummy cum_count column
+            # so create dummy dataframe with forward filled cumulative counts column,
+            # perform new cases calculation, then merge those new cases back into dataframe
 
-            df_combined['new_vaccinations'] = df_combined['cum_vaccinations'].diff()
+            df_combined_ffill = df_combined.loc[df_combined['cum_vaccinations'] > 0]
 
-            df_combined.loc[df_combined['new_vaccinations'] < 0, 'new_vaccinations'] = -1 # Handle cases where
-                                # cumulative counts decrease and new_tests becomes a large negative number
-                                # Handle cases where -1 creates a spike in new_vaccinations (-1 minus cum_vacc)
-            df_combined.loc[df_combined['new_vaccinations'] > df_combined['cum_vaccinations'], 'new_vaccinations'] = -1
+            df_combined_ffill['dummy_cum_vaccinations'] = df_combined_ffill['cum_vaccinations'].ffill().astype(int).values
+            df_combined_ffill['dummy_cum_people_vaccinated'] = df_combined_ffill['cum_people_vaccinated'].ffill().astype(int).values
+            df_combined_ffill['dummy_cum_people_fully_vaccinated'] = df_combined_ffill['cum_people_fully_vaccinated'].ffill().astype(int).values
 
-            df_combined[['cum_vaccinations', 'new_vaccinations', 'daily_vaccinations',
-                        'people_vaccinated', 'people_fully_vaccinated']] = \
-            df_combined[['cum_vaccinations', 'new_vaccinations', 'daily_vaccinations',
-                        'people_vaccinated', 'people_fully_vaccinated']].fillna(-1).astype(int).values
-            df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
-            df_combined.to_csv(timeseries_path) # overwrite timeseries CSV
+            df_combined_ffill['new_vaccinations'] = df_combined_ffill['dummy_cum_vaccinations'].diff().astype('Int64')
+            df_combined_ffill['new_people_vaccinated'] = df_combined_ffill['dummy_cum_people_vaccinated'].diff().astype('Int64')
+            df_combined_ffill['new_people_fully_vaccinated'] = df_combined_ffill['dummy_cum_people_fully_vaccinated'].diff().astype('Int64')
+
+            df = df_combined.join(df_combined_ffill[['new_vaccinations', 'new_people_vaccinated', 'new_people_fully_vaccinated']])
+            df = df.fillna(-1)
+
+            df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+            df.to_csv(timeseries_path) # overwrite timeseries CSV
 
 def fix_owid_dates(x):
     y = datetime.strptime(x, '%Y-%m-%d')
