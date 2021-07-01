@@ -11,67 +11,70 @@ from typing import Union
 from urllib.error import HTTPError
 import urllib.request, json
 import os
+from datetime import timedelta, date
+import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 
 JHU_FILTER_DEFAULTS = {'confirmed': 5, 'recovered': 1, 'deaths': 0}
 COVIDTRACKER_FILTER_DEFAULTS = {'cum_cases': 5, 'cum_recover': 1, 'cum_deaths': 0}
 
-us_state_abbrev = {
-    'Alabama': 'AL',
-    'Alaska': 'AK',
-    'American Samoa': 'AS',
-    'Arizona': 'AZ',
-    'Arkansas': 'AR',
-    'California': 'CA',
-    'Colorado': 'CO',
-    'Connecticut': 'CT',
-    'Delaware': 'DE',
-    'District of Columbia': 'DC',
-    'Florida': 'FL',
-    'Georgia': 'GA',
-    'Guam': 'GU',
-    'Hawaii': 'HI',
-    'Idaho': 'ID',
-    'Illinois': 'IL',
-    'Indiana': 'IN',
-    'Iowa': 'IA',
-    'Kansas': 'KS',
-    'Kentucky': 'KY',
-    'Louisiana': 'LA',
-    'Maine': 'ME',
-    'Maryland': 'MD',
-    'Massachusetts': 'MA',
-    'Michigan': 'MI',
-    'Minnesota': 'MN',
-    'Mississippi': 'MS',
-    'Missouri': 'MO',
-    'Montana': 'MT',
-    'Nebraska': 'NE',
-    'Nevada': 'NV',
-    'New Hampshire': 'NH',
-    'New Jersey': 'NJ',
-    'New Mexico': 'NM',
-    'New York': 'NY',
-    'North Carolina': 'NC',
-    'North Dakota': 'ND',
-    'Northern Mariana Islands':'MP',
-    'Ohio': 'OH',
-    'Oklahoma': 'OK',
-    'Oregon': 'OR',
-    'Pennsylvania': 'PA',
-    'Puerto Rico': 'PR',
-    'Rhode Island': 'RI',
-    'South Carolina': 'SC',
-    'South Dakota': 'SD',
-    'Tennessee': 'TN',
-    'Texas': 'TX',
-    'Utah': 'UT',
-    'Vermont': 'VT',
-    'Virgin Islands': 'VI',
-    'Virginia': 'VA',
-    'Washington': 'WA',
-    'West Virginia': 'WV',
-    'Wisconsin': 'WI',
-    'Wyoming': 'WY'
+US_STATE_ABBREV = {
+    'Alabama': 'US_AL',
+    'Alaska': 'US_AK',
+    'American Samoa': 'US_AS',
+    'Arizona': 'US_AZ',
+    'Arkansas': 'US_AR',
+    'California': 'US_CA',
+    'Colorado': 'US_CO',
+    'Connecticut': 'US_CT',
+    'Delaware': 'US_DE',
+    'District of Columbia': 'US_DC',
+    'Florida': 'US_FL',
+    'Georgia': 'US_GA',
+    'Guam': 'US_GU',
+    'Hawaii': 'US_HI',
+    'Idaho': 'US_ID',
+    'Illinois': 'US_IL',
+    'Indiana': 'US_IN',
+    'Iowa': 'US_IA',
+    'Kansas': 'US_KS',
+    'Kentucky': 'US_KY',
+    'Louisiana': 'US_LA',
+    'Maine': 'US_ME',
+    'Maryland': 'US_MD',
+    'Massachusetts': 'US_MA',
+    'Michigan': 'US_MI',
+    'Minnesota': 'US_MN',
+    'Mississippi': 'US_MS',
+    'Missouri': 'US_MO',
+    'Montana': 'US_MT',
+    'Nebraska': 'US_NE',
+    'Nevada': 'US_NV',
+    'New Hampshire': 'US_NH',
+    'New Jersey': 'US_NJ',
+    'New Mexico': 'US_NM',
+    'New York': 'US_NY',
+    'North Carolina': 'US_NC',
+    'North Dakota': 'US_ND',
+    'Northern Mariana Islands':'US_MP',
+    'Ohio': 'US_OH',
+    'Oklahoma': 'US_OK',
+    'Oregon': 'US_OR',
+    'Pennsylvania': 'US_PA',
+    'Puerto Rico': 'US_PR',
+    'Rhode Island': 'US_RI',
+    'South Carolina': 'US_SC',
+    'South Dakota': 'US_SD',
+    'Tennessee': 'US_TN',
+    'Texas': 'US_TX',
+    'Utah': 'US_UT',
+    'Vermont': 'US_VT',
+    'Virgin Islands': 'US_VI',
+    'Virginia': 'US_VA',
+    'Washington': 'US_WA',
+    'West Virginia': 'US_WV',
+    'Wisconsin': 'US_WI',
+    'Wyoming': 'US_WY'
 }
 
 def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
@@ -118,10 +121,10 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
                     df = pd.concat([df1] + more_dfs)
                 elif region == 'US':
                     # Use state name as index
-                    for k, v in us_state_abbrev.items(): # get US state abbrev
-                        if not us_state_abbrev[k].startswith('US_'):
-                            us_state_abbrev[k] = 'US_' + v # Add 'US_' to abbrev
-                    df.replace(us_state_abbrev, inplace=True)
+                    # for k, v in US_STATE_ABBREV.items(): # get US state abbrev
+                    #     if not US_STATE_ABBREV[k].startswith('US_'):
+                    #         US_STATE_ABBREV[k] = 'US_' + v # Add 'US_' to abbrev
+                    df.replace(US_STATE_ABBREV, inplace=True)
                     df = df.set_index('Province_State')
                     df = df.groupby('Province_State').sum() # combine counties to create state level data
 
@@ -132,7 +135,6 @@ def get_jhu(data_path: str, filter_: Union[dict, bool] = True) -> None:
     # Generate a list of countries that have "good" data,
     # according to these criteria:
     good_countries = get_countries(dfs['global'], filter_=filter_)
-
     # For each "good" country,
     # reformat and save that data in its own .csv file.
     source = dfs['global']
@@ -293,7 +295,6 @@ def covid_tracking_recovery(data_path: str):
         df['dates2'] = pd.to_datetime(df['dates2']).dt.strftime('%m/%d/%y') # convert dates to string
         df = df.set_index('dates2') # Convert to int
         df['new_recover'] = df['cum_recover'].diff()
-
         ctp_dfs['US_'+state] = df
     return ctp_dfs
 
@@ -409,6 +410,222 @@ def get_brazil(data_path: str, filter_: Union[dict, bool] = True,
         df['dates2'] = pd.to_datetime(df['dates2']).dt.strftime('%m/%d/%y') # convert dates to string
         df = df.set_index('dates2').fillna(0).astype(int) # Fill NaN with 0 and convert to int
         df.to_csv(data_path / ('covidtimeseries_BR_%s.csv' % state_code[state]))
+
+
+def get_owid_tests(data_path: str, filter_: Union[dict, bool] = True,
+                       fixes: bool = False) -> None:
+    """ Get testing data from Our World In Data
+        https://github.com/owid/covid-19-data
+        Add columns cum_tests and new_tests to csvs in data_path. """
+    url = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/testing/covid-testing-all-observations.csv'
+    src = pd.read_csv(url)
+    roi_codes = pd.read_csv(data_path / 'country_iso_codes.csv')
+    roi_codes_dict = pd.Series(roi_codes.Country.values,index=roi_codes['Alpha-3 code']).to_dict()
+    # trim down source dataframe
+    src_trim = pd.DataFrame(columns=['dates2','Alpha-3 code','cum_tests'])
+    src_trim['dates2'] = src['Date'].apply(fix_owid_dates).values # fix dates
+    src_trim['Alpha-3 code'] = src['ISO code'].values
+    src_trim['cum_tests'] = src['Cumulative total'].fillna(-1).astype(int).values
+    src_trim.set_index('dates2',inplace=True, drop=True)
+
+    src_rois = src_trim['Alpha-3 code'].unique()
+    unavailable_testing_data = [] # for appending rois that don't have testing data
+
+    for roi in roi_codes_dict:
+        if roi not in src_rois:
+            unavailable_testing_data.append(roi)
+            continue
+        if roi_codes_dict[roi] in ["US", "Marshall Islands", "Micronesia", "Samoa", "Vanuatu"]: # skipping because bad data
+            continue
+        try:
+            timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi_codes_dict[roi])
+            df_timeseries = pd.read_csv(timeseries_path, index_col='dates2')
+        except FileNotFoundError as fnf_error:
+            print(fnf_error, 'Could not add OWID data.')
+            pass
+
+        for i in df_timeseries.columns: # Check if OWID testng data already included
+            if 'tests' in i:
+                df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
+        src_roi = src_trim[src_trim['Alpha-3 code'] == roi] # filter delphi rows that match roi
+
+        df_combined = df_timeseries.merge(src_roi[['cum_tests']], how='left', on='dates2')
+        df_combined['new_tests'] = df_combined['cum_tests'].diff()
+        df_combined.loc[df_combined['new_tests'] < 0, 'new_tests'] = -1 # Handle cases where
+        # cumulative counts decrease and new_tests becomes a large negative number
+
+        df_combined[['cum_tests', 'new_tests']] = df_combined[['cum_tests', 'new_tests']].fillna(-1).astype(int).values
+        df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
+        df_combined.to_csv(timeseries_path) # overwrite timeseries CSV
+
+    print("OWID test results missing for: ")
+    for roi in roi_codes_dict:
+        if roi in unavailable_testing_data:
+            print(roi_codes_dict[roi], end=" ")
+    print("")
+
+def get_owid_us_vaccines(data_path: str, filter_: Union[dict, bool] = True,
+                       fixes: bool = False) -> None:
+    """ Get US vaccines data from Our World In Data
+        https://github.com/owid/covid-19-data
+        Add columns to US csvs in data_path. """
+
+    url = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/us_state_vaccinations.csv'
+    src = pd.read_csv(url)
+    cols = ['date', 'location', 'total_vaccinations', 'daily_vaccinations', 'people_vaccinated', 'people_fully_vaccinated']
+
+    src_trim = pd.DataFrame(columns=['dates2', 'region', 'cum_vaccinations', 'daily_vaccinations',
+                                     'people_vaccinated', 'people_fully_vaccinated'])
+
+    src_trim['dates2'] = src['date'].apply(fix_owid_dates).values # fix dates
+    src_trim['region'] = src['location'].values
+    src_trim['cum_vaccinations'] = src['total_vaccinations'].fillna(-1).astype(int).values
+    src_trim['daily_vaccinations'] = src['daily_vaccinations'].fillna(-1).astype(int).values
+    src_trim['cum_people_vaccinated'] = src['people_vaccinated'].fillna(-1).astype(int).values
+    src_trim['cum_people_fully_vaccinated'] = src['people_fully_vaccinated'].fillna(-1).astype(int).values
+    src_trim.set_index('dates2', inplace=True, drop=True)
+    src_trim.replace("New York State", "New York", inplace=True) # fix NY name
+    src_rois = src_trim['region'].unique()
+    for roi in src_rois:
+        if roi in US_STATE_ABBREV:
+            try:
+                timeseries_path = data_path / ('covidtimeseries_%s.csv' % US_STATE_ABBREV[roi])
+                df_timeseries = pd.read_csv(timeseries_path, index_col='dates2')
+
+            except FileNotFoundError as fnf_error:
+                print(fnf_error, 'Could not add OWID vaccinations data.')
+                pass
+
+            for i in df_timeseries.columns: # Check if OWID vaccines data already included
+                if 'vaccin' in i:
+                    df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
+
+            src_roi = src_trim[src_trim['region'] == roi] # filter rows that match roi
+
+            df_combined = df_timeseries.merge(src_roi[['cum_vaccinations', 'daily_vaccinations', 'cum_people_vaccinated',
+                                                       'cum_people_fully_vaccinated']], how='left', on='dates2')
+            # there are cases where cum counts go missing and new counts get missed:
+            # cum_count - (-1) = cum_count+1 where the new counts spike
+            # we don't want it to spike, and we don't want to miss new counts before the gap
+            # so create dummy dataframe with forward filled cumulative counts column,
+            # perform new cases calculation, then merge those new cases back into dataframe
+
+            df_combined_ffill = df_combined.loc[df_combined['cum_vaccinations'] > 0]
+
+            df_combined_ffill['dummy_cum_vaccinations'] = df_combined_ffill['cum_vaccinations'].ffill().astype(int).values
+            df_combined_ffill['dummy_cum_people_vaccinated'] = df_combined_ffill['cum_people_vaccinated'].ffill().astype(int).values
+            df_combined_ffill['dummy_cum_people_fully_vaccinated'] = df_combined_ffill['cum_people_fully_vaccinated'].ffill().astype(int).values
+
+            df_combined_ffill['new_vaccinations'] = df_combined_ffill['dummy_cum_vaccinations'].diff().astype('Int64')
+            df_combined_ffill['new_people_vaccinated'] = df_combined_ffill['dummy_cum_people_vaccinated'].diff().astype('Int64')
+            df_combined_ffill['new_people_fully_vaccinated'] = df_combined_ffill['dummy_cum_people_fully_vaccinated'].diff().astype('Int64')
+
+            df = df_combined.join(df_combined_ffill[['new_vaccinations', 'new_people_vaccinated', 'new_people_fully_vaccinated']])
+            df = df.fillna(-1)
+
+            df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+            df.to_csv(timeseries_path) # overwrite timeseries CSV
+
+def fix_owid_dates(x):
+    y = datetime.strptime(x, '%Y-%m-%d')
+    return datetime.strftime(y, '%m/%d/%y')
+
+
+def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) -> None:
+    """ Scrape JHU for US State level test results. Data is stored as a collection of
+        CSVs per date containing states and test results.
+
+        Args:
+            data_path (str): Full path to data directory.
+        Returns:
+            None
+         """
+    url_template = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/%s.csv"
+    # generate a list of dates for scraping
+    start_dt = date(2020, 4, 12) # When JHU starts reporting
+    end_dt = date.today()
+    dates = []
+    delta = end_dt - start_dt
+    delta = delta.days
+    for dt in daterange(start_dt, end_dt):
+        dates.append(dt.strftime("%m-%d-%Y"))
+    # cumulative tests are named 'People_Tested' for first 200 ish days
+    # then cumulative tests are named 'Total_Test_Results' after 200 ish days
+    dfs = []
+    for i in tqdm(dates, desc=f'Scraping {delta} days of data'):
+        url = url_template % i
+        try:
+            df = pd.read_csv(url)
+            df_trim = pd.DataFrame(columns=['Province_State', 'cum_tests', 'dates2'])
+            df_trim['Province_State'] = df['Province_State'].values
+            df_trim['dates2'] = fix_jhu_testing_dates(i)
+
+            # handle cases where column is people_tested and then switches to Total_Test_Results
+            if 'People_Tested' in df.columns:
+                df_trim['cum_tests'] = df['People_Tested'].fillna(-1).astype(int).values
+                dfs.append(df_trim)
+            if 'Total_Test_Results' in df.columns:
+                df_trim['cum_tests'] = df['Total_Test_Results'].fillna(-1).astype(int).values
+                dfs.append(df_trim)
+        except HTTPError:
+            print("Could not download tests data for %s" % i)
+    df_combined = pd.concat(dfs)
+    df_combined.sort_values(by='Province_State', inplace=True)
+    df_combined['Date'] = pd.to_datetime(df_combined['dates2'])
+    rois = df_combined['Province_State'].unique()
+    sorted_dfs = []
+    for roi in rois:
+        df_roi = df_combined[df_combined['Province_State'] == roi]
+        df_roi = df_roi.sort_values(by="Date")
+        df_roi['new_tests'] = df_roi['cum_tests'].diff().fillna(-1).astype(int)
+        sorted_dfs.append(df_roi)
+
+    df_tests = pd.concat(sorted_dfs)
+    df_tests.reset_index(inplace=True, drop=True)
+    df_tests.replace(US_STATE_ABBREV, inplace=True)
+    df_tests.rename(columns={'Province_State': 'roi'}, inplace=True)
+
+    # now open csvs in data_path that match rois and merge on csv to add cum_test and new_tests
+    rois = df_tests.roi.unique().tolist()
+    to_remove = ['Diamond Princess', 'Grand Princess', 'Recovered']
+    for i in to_remove:
+        if i in rois:
+            rois.remove(i)
+
+    for roi in rois:
+        csv_path = data_path / f'covidtimeseries_{roi}.csv'
+        try:
+            df_timeseries = pd.read_csv(csv_path)
+        except:
+            print(f"{csv_path} not found in data path.")
+        try:
+            for i in df_timeseries.columns: # Check if testng data already included
+                if 'tests' in i:
+                    df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
+            df_roi_tests = df_tests[df_tests['roi'] == roi] # filter down to roi
+            df_result = df_timeseries.merge(df_roi_tests, on='dates2', how='left')
+            df_result.fillna(-1, inplace=True)
+            df_result.loc[df_result['new_tests'] < 0, 'new_tests'] = -1 # Handle cases where
+                        # cumulative counts decrease and new_tests becomes a large negative number
+            df_result['new_tests'] = df_result['new_tests'].astype(int)
+            df_result[['cum_tests', 'new_tests']] = df_result[['cum_tests', 'new_tests']].astype(int)
+            df_result_trim = df_result[['dates2', 'cum_cases', 'new_cases',
+                                        'cum_deaths', 'new_deaths', 'cum_recover',
+                                        'new_recover', 'new_uninfected', 'cum_tests',
+                                        'new_tests', 'population']].copy()
+            df_result_trim.to_csv(csv_path) # overwrite timeseries CSV
+
+        except:
+            print(f'Could not get tests data for {roi}.')
+
+
+def daterange(date1, date2):
+    for n in range(int ((date2 - date1).days)+1):
+        yield date1 + timedelta(n)
+
+def fix_jhu_testing_dates(x):
+    y = datetime.strptime(x, '%m-%d-%Y')
+    return datetime.strftime(y, '%m/%d/%y')
 
 def fix_negatives(data_path: str, plot: bool = False) -> None:
     """Fix negative values in daily data.
