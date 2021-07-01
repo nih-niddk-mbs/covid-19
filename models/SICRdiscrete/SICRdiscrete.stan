@@ -13,6 +13,7 @@ data {
   }
 
 transformed data {
+  int N = 100000;
   int y_wk[n_weeks,n_ostates];
   print(n_weeks);
   for (k in 1:n_ostates){
@@ -29,17 +30,16 @@ transformed data {
 
 parameters {
 real<lower=0> beta[n_weeks];             // infection rate
-real<lower=0> alpha[n_weeks];
-real<lower=0> sigd[n_weeks];
-real<lower=0> sigc[n_weeks];
-real<lower=0> sigr[n_weeks];
 real<lower=0> sigmau;             // uninfected rate
-//real<lower=0> sigmac0;             // case rate
-//real<lower=0> sigmac1;             // case rate
+real<lower=0> sigmac0;             // case rate
+real<lower=0> sigmac1;             // case rate
 real<lower=0> sigmar0;             // recovery rate
 real<lower=0> sigmar1;             // recovery rate
-real<lower=0> sigmar2;
-
+real<lower=0> sigmar2;             // recovery rate
+real<lower=0> sigmad0;             // death rate
+real<lower=0> sigmad1;
+real<lower=0> sigmad2;
+real<lower=0> alpha[n_weeks];
 }
 
 transformed parameters {
@@ -49,10 +49,10 @@ transformed parameters {
   real dR[n_weeks];
   real dD[n_weeks];
   real sigmac[n_weeks];
-
-{
   real sigmad[n_weeks];
   real sigmar[n_weeks];
+
+{
   real C;
   real I;
   real Cd[n_weeks];
@@ -60,10 +60,9 @@ transformed parameters {
   C = 0;
   I = 0;
   for (i in 1:n_weeks){
-    sigmac[i] = sigc[i];
-    //sigmar[i] = sigmar0+sigmar1/(1 + exp(i - sigmar2));
-    sigmar[i] = sigr[i];
-    sigmad[i] = sigd[i];
+    sigmac[i] = sigmac0;
+    sigmad[i] = sigmad0/(sigmad2^2 + ((.1 + sigmad1)*i)^2);
+    sigmar[i] = sigmar0;
     I += alpha[i];
     I *= exp(beta[i] - sigmac[i] - sigmau);
     dC[i] = sigmac[i]*I;
@@ -84,19 +83,19 @@ transformed parameters {
 }
 
 model {
-  //sigmac0 ~ exponential(.25);
-  //sigmac1 ~ exponential(.25);
+  sigmac0 ~ exponential(.25);
+  sigmac1 ~ exponential(.25);
   sigmau ~ exponential(5.);
-  sigmar0 ~ exponential(10.);
-  sigmar1 ~ normal(1.,.2);
-  sigmar2 ~ normal(15.,2.);
+  sigmar0 ~ exponential(1.);
+  sigmar1 ~ exponential(1.);
+  sigmar2 ~ normal(20.,3);
+  sigmad0 ~ exponential(1.);
+  sigmad1 ~ exponential(1.);
+  sigmad2 ~ normal(20.,3);
 
     for (i in 1:n_weeks){
       alpha[i] ~ exponential(10.);
       beta[i] ~ exponential(.5);
-      sigd[i] ~ exponential(20.);
-      sigc[i] ~ exponential(2.);
-      sigr[i] ~ exponential(2.);
       target += poisson_lpmf(y_wk[i,1] | dC[i]);
       target += poisson_lpmf(y_wk[i,2] | dR[i]);
       target += poisson_lpmf(y_wk[i,3] | dD[i]);
@@ -104,10 +103,6 @@ model {
     for (i in 2:n_weeks-1){
       target += normal_lpdf(beta[i+1]-beta[i] | 0, .2);
       target += normal_lpdf(beta[i+1]-2*beta[i]+beta[i-1] | 0, .5);
-      target += normal_lpdf(sigc[i+1]-sigc[i] | 0, .2);
-      target += normal_lpdf(sigc[i+1]-2*sigc[i]+sigd[i-1] | 0, .5);
-      target += normal_lpdf(sigd[i+1]-sigd[i] | 0, .2);
-      target += normal_lpdf(sigd[i+1]-2*sigd[i]+sigd[i-1] | 0, .5);
     }
 }
 
@@ -120,12 +115,9 @@ generated quantities {
     real Rt[n_weeks];
     int y_proj[n_weeks*7,n_ostates];
     real llx[n_weeks*7, 3];
-    real ll_; // log-likelihood for model
-    int n_data_pts;
+    real ll_ = 0; // log-likelihood for model
 
     real R0 = beta[1]/sigmac[1];
-
-    ll_ = 0;
 
     {
       real C_cum;

@@ -1,7 +1,7 @@
 roi,region,subregion
 Aruba,Americas,Caribbean
 Afghanistan,Asia,Southern Asia
-Angola,Africa,Middle Africa
+Angola,Africa,Central Africa
 Anguilla,Americas,Caribbean
 Åland Islands,Europe,Northern Europe
 Albania,Europe,Southern Europe
@@ -24,6 +24,7 @@ Bangladesh,Asia,Southern Asia
 Bulgaria,Europe,Eastern Europe
 Bahrain,Asia,Western Asia
 Bahamas,Americas,Caribbean
+Burma,Asia,South-Eastern Asia
 BR_Alagoas,South America,Brazil
 BR_Amapa,South America,Brazil
 BR_Amazonas,South America,Brazil
@@ -77,16 +78,20 @@ CA_PEI,North America,Canada
 CA_Quebec,North America,Canada
 CA_Saskatchewan,North America,Canada
 CA_Yukon,North America,Canada
-Central African Republic,Africa,Middle Africa
+Central African Republic,Africa,Central Africa
 Canada,Americas,North America
+Cabo Verde,Africa,Western Africa
 Cocos (Keeling) Islands,Oceania,Australia and New Zealand
+Congo (Brazzaville),Africa,Central Africa
+Congo (Kinshasa),Africa,Central Africa
+Cote d'Ivoire,Africa,Western Africa
 Switzerland,Europe,Western Europe
 Chile,Americas,South America
 China,Asia,Eastern Asia
 Ivory Coast,Africa,Western Africa
-Cameroon,Africa,Middle Africa
-DR Congo,Africa,Middle Africa
-Republic of the Congo,Africa,Middle Africa
+Cameroon,Africa,Central Africa
+DR Congo,Africa,Central Africa
+Republic of the Congo,Africa,Central Africa
 Cook Islands,Oceania,Polynesia
 Colombia,Americas,South America
 Comoros,Africa,Eastern Africa
@@ -117,7 +122,7 @@ Falkland Islands,Americas,South America
 France,Europe,Western Europe
 Faroe Islands,Europe,Northern Europe
 Micronesia,Oceania,Micronesia
-Gabon,Africa,Middle Africa
+Gabon,Africa,Central Africa
 United Kingdom,Europe,Northern Europe
 Georgia,Asia,Western Asia
 Guernsey,Europe,Northern Europe
@@ -127,7 +132,7 @@ Guinea,Africa,Western Africa
 Guadeloupe,Americas,Caribbean
 Gambia,Africa,Western Africa
 Guinea-Bissau,Africa,Western Africa
-Equatorial Guinea,Africa,Middle Africa
+Equatorial Guinea,Africa,Central Africa
 Greece,Europe,Southern Europe
 Grenada,Americas,Caribbean
 Greenland,Americas,North America
@@ -135,6 +140,7 @@ Guatemala,Americas,Central America
 French Guiana,Americas,South America
 Guam,Oceania,Micronesia
 Guyana,Americas,South America
+Holy See,Europe,Southern Europe
 Hong Kong,Asia,Eastern Asia
 Heard Island and McDonald Islands,Antarctic,
 Honduras,Americas,Central America
@@ -161,6 +167,7 @@ Kyrgyzstan,Asia,Central Asia
 Cambodia,Asia,South-Eastern Asia
 Kiribati,Oceania,Micronesia
 Saint Kitts and Nevis,Americas,Caribbean
+"Korea, South",Asia,Eastern Asia
 South Korea,Asia,Eastern Asia
 Kosovo,Europe,Eastern Europe
 Kuwait,Asia,Western Asia
@@ -241,11 +248,12 @@ Solomon Islands,Oceania,Melanesia
 Sierra Leone,Africa,Western Africa
 El Salvador,Americas,Central America
 San Marino,Europe,Southern Europe
+Sao Tome and Principe,Africa,Central Africa
 Somalia,Africa,Eastern Africa
 Saint Pierre and Miquelon,Americas,North America
 Serbia,Europe,Southern Europe
-South Sudan,Africa,Middle Africa
-São Tomé and Príncipe,Africa,Middle Africa
+South Sudan,Africa,Central Africa
+São Tomé and Príncipe,Africa,Central Africa
 Suriname,Americas,South America
 Slovakia,Europe,Central Europe
 Slovenia,Europe,Southern Europe
@@ -254,8 +262,9 @@ Eswatini,Africa,Southern Africa
 Sint Maarten,Americas,Caribbean
 Seychelles,Africa,Eastern Africa
 Syria,Asia,Western Asia
+Taiwan*,Asia,Eastern Asia
 Turks and Caicos Islands,Americas,Caribbean
-Chad,Africa,Middle Africa
+Chad,Africa,Central Africa
 Togo,Africa,Western Africa
 Thailand,Asia,South-Eastern Asia
 Tajikistan,Asia,Central Asia
@@ -283,6 +292,7 @@ United States Virgin Islands,Americas,Caribbean
 Vietnam,Asia,South-Eastern Asia
 Vanuatu,Oceania,Melanesia
 Wallis and Futuna,Oceania,Polynesia
+West Bank and Gaza,Asia,Western Asia
 Samoa,Oceania,Polynesia
 Yemen,Asia,Western Asia
 South Africa,Africa,Southern Africa

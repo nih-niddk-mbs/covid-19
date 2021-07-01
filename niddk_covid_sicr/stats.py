@@ -11,18 +11,6 @@ from tqdm.auto import tqdm
 from warnings import warn
 
 from .io import extract_samples
-# constants for model parameters' module; used for aic calculation
-MODEL_PARAMETER_CONSTANTS = {
-              'SICRdiscreteNwk':{'cons1':1, 'cons2':5},
-              'SICRdiscrete1Nwk':{'cons1':2, 'cons2':4},
-              'SICRdiscrete2Nwk':{'cons1':2, 'cons2':4},
-              'SICRdiscrete3Nwk':{'cons1':3, 'cons2':3},
-              'SICRdiscrete4Nwk':{'cons1':2, 'cons2':4},
-              'SICRdiscrete5Nwk':{'cons1':1, 'cons2':5},
-              'SICRdiscrete6Nwk':{'cons1':3, 'cons2':3},
-              'SICRdiscrete7Nwk':{'cons1':2, 'cons2':4},
-              'SICRdiscrete8Nwk':{'cons1':1, 'cons2':5}
-              }
 
 def get_rhat(fit) -> float:
     """Get `rhat` for the log-probability of a fit.
@@ -153,13 +141,15 @@ def get_aic(d):
     """Calculate AIC, add to table, reweight stats. """
     model = d['model']
     num_weeks = d['num weeks']
-    if model == 'SICRdiscrete4Nwk' or model == 'SICRdiscrete7Nwk':
-        n_blocks = int(np.floor((int(num_weeks)-1)/9)) # calculate n_blocks
-        num_weeks = n_blocks
-    if model == 'SICRdiscrete8Nwk': # reduced block size
-        n_blocks = int(np.floor((int(num_weeks)-1)/5)) # calculate n_blocks
-        num_weeks = n_blocks
-    d['num_params'] = MODEL_PARAMETER_CONSTANTS[model]['cons1'] + MODEL_PARAMETER_CONSTANTS[model]['cons2']*num_weeks
+    if model == 'Discrete1':
+        num_params = num_weeks*5 + 3
+    if model == 'Discrete2':
+        num_params = int(np.floor((int(num_weeks)-1)/9))*5 + 3
+    if model == 'Discrete3':
+        num_params = int(np.floor((int(num_weeks)-1)/27))*5 + 3
+    if model == 'Discrete4':
+        num_params = int(np.floor((int(num_weeks)-1)/27))*3 + int(np.floor((int(num_weeks)-1)/2))*2 + 3
+    d['num_params'] = num_params
     d['aic'] = d['ll_'] + 2*d['num_params']
     return d
 
@@ -218,7 +208,8 @@ def reweighted_stats(args, raw_table_path: str, save: bool = True,
             else:
                 pred_acc_stat = df.loc[(roi, 'mean', 'loo')]
         except:
-            break
+            print(f"Found NaN values in {roi} across all models. Skipping this region.")
+            continue
         # An indexer for this ROI
         chunk = df.index.get_level_values('roi') == roi
         result[chunk] = df[chunk].apply(lambda x: reweighted_stat(x, pred_acc_stat), axis=1)
@@ -262,15 +253,16 @@ def reweighted_stats(args, raw_table_path: str, save: bool = True,
     #   rois not in superregion.
 
     # (super_means, region) = filter_region(super_means, 'United States')
-    regions = ['Brazil', 'Canada', 'United States','Caribbean','Southern Asia',
-               'Middle Africa', 'Northern Europe', 'Southern Europe',
-               'Western Asia', 'South America', 'Polynesia',
-               'Australia and New Zealand', 'Western Europe', 'Eastern Africa',
-               'Western Africa', 'Eastern Europe', 'Central America',
-               'North America', 'South-Eastern Asia', 'Southern Africa',
-               'Eastern Asia', 'Northern Africa', 'Melanesia', 'Micronesia',
-               'Central Asia','Central Europe', 'Americas', 'Asia', 'Africa',
-               'Europe', 'Oceania', 'South America', 'North America', 'Antarctic' ]
+    # regions = ['Brazil', 'Canada', 'United States','Caribbean','Southern Asia',
+    #            'Middle Africa', 'Northern Europe', 'Southern Europe',
+    #            'Western Asia', 'South America', 'Polynesia',
+    #            'Australia and New Zealand', 'Western Europe', 'Eastern Africa',
+    #            'Western Africa', 'Eastern Europe', 'Central America',
+    #            'North America', 'South-Eastern Asia', 'Southern Africa',
+    #            'Eastern Asia', 'Northern Africa', 'Melanesia', 'Micronesia',
+    #            'Central Asia','Central Europe', 'Americas', 'Asia', 'Africa',
+    #            'Europe', 'Oceania', 'South America', 'North America', 'Antarctic' ]
+    regions = ['United States', 'Brazil']
 
     for i in range(len(regions)):
         roi = regions[i]
