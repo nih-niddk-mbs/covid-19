@@ -447,7 +447,7 @@ def get_owid_tests(data_path: str, filter_: Union[dict, bool] = True,
         for i in df_timeseries.columns: # Check if OWID testng data already included
             if 'tests' in i:
                 df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
-        src_roi = src_trim[src_trim['Alpha-3 code'] == roi] # filter delphi rows that match roi
+        src_roi = src_trim[src_trim['Alpha-3 code'] == roi] # filter rows that match roi
 
         df_combined = df_timeseries.merge(src_roi[['cum_tests']], how='left', on='dates2')
         df_combined['new_tests'] = df_combined['cum_tests'].diff()
@@ -458,11 +458,110 @@ def get_owid_tests(data_path: str, filter_: Union[dict, bool] = True,
         df_combined = df_combined.loc[:, ~df_combined.columns.str.contains('^Unnamed')]
         df_combined.to_csv(timeseries_path) # overwrite timeseries CSV
 
-    print("OWID test results missing for: ")
+    print("OWID global test results missing for: ")
     for roi in roi_codes_dict:
         if roi in unavailable_testing_data:
             print(roi_codes_dict[roi], end=" ")
     print("")
+
+def get_owid_global_vaccines(data_path: str, filter_: Union[dict, bool] = True,
+                       fixes: bool = False) -> None:
+    """ Get global vaccines data from Our World In Data
+        https://github.com/owid/covid-19-data
+        Add columns to global csvs in data_path. """
+    url = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv'
+    src = pd.read_csv(url)
+    src_trim = pd.DataFrame(columns=['dates2', 'Alpha-3 code', 'cum_vaccinations', 'daily_vaccinations',
+                                     'cum_people_vaccinated', 'cum_people_fully_vaccinated'])
+    src_trim['dates2'] = src['date'].apply(fix_owid_dates).values # fix dates
+    src_trim['Alpha-3 code'] = src['iso_code'].values
+    src_trim['cum_vaccinations'] = src['total_vaccinations'].values
+    src_trim['daily_vaccinations'] = src['daily_vaccinations'].values
+    src_trim['cum_people_vaccinated'] = src['people_vaccinated'].values
+    src_trim['cum_people_fully_vaccinated'] = src['people_fully_vaccinated'].values
+
+    roi_codes = pd.read_csv(data_path / 'country_iso_codes.csv')
+    roi_codes_dict = pd.Series(roi_codes.Country.values,index=roi_codes['Alpha-3 code']).to_dict()
+
+    # trim down source dataframe
+    src_trim.set_index('dates2',inplace=True, drop=True)
+
+    src_rois = src_trim['Alpha-3 code'].unique()
+    unavailable_testing_data = [] # for appending rois that don't have testing data
+
+    for roi in roi_codes_dict:
+        if roi not in src_rois:
+            unavailable_testing_data.append(roi)
+            continue
+        if roi_codes_dict[roi] in ["US", "Marshall Islands", "Micronesia", "Samoa", "Vanuatu"]: # skipping because no data
+            continue
+        try:
+            timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi_codes_dict[roi])
+            df_timeseries = pd.read_csv(timeseries_path, index_col='dates2')
+        except FileNotFoundError as fnf_error:
+            print(fnf_error, 'Could not add OWID global vaccines data.')
+            pass
+
+        for i in df_timeseries.columns: # Check if OWID testing data already included
+            if 'vaccin' in i:
+                df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
+        src_roi = src_trim[src_trim['Alpha-3 code'] == roi] # filter rows that match roi
+
+        df_combined = df_timeseries.merge(src_roi[['cum_vaccinations', 'daily_vaccinations', 'cum_people_vaccinated',
+                                                               'cum_people_fully_vaccinated']], how='left', on='dates2')
+        cum_vacc_columns = ['vaccinations', 'people_vaccinated', 'people_fully_vaccinated']
+        df = dummy_cumulative_new_counts(roi_codes_dict[roi], df_combined, cum_vacc_columns)
+        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+        df.to_csv(timeseries_path) # overwrite timeseries CSV
+
+
+    print("OWID global vaccine results missing for: ")
+    for roi in roi_codes_dict:
+        if roi in unavailable_testing_data:
+            print(roi_codes_dict[roi], end=" ")
+    print("")
+
+def dummy_cumulative_new_counts(roi, df, columns: list):
+    """ There are cases where cum counts go missing and new counts get missed.
+        New counts spike when cumulative counts go to -1 for missing data and
+        the difference is taken between a new cumulative count and -1.
+        We don't want it to spike, and we don't want to miss new counts before the gap.
+        So create a dummy dataframe with forward filled cumulative counts and
+        perform new cases calculation, then merge those new cases back into dataframe.
+
+        Args:
+            roi (str): Region we are working with; used for print statements.
+            df (pd.DataFrame): DataFrame containing counts but not new counts.
+            columns (list): List of columns (without cum_ prefix) so create new counts for.
+
+        Returns:
+            df_fixed (pd.DataFrame): DataFrame containing cumulative and now new counts. """
+    dfs = []
+    df_tmp = df.copy()
+    df_tmp.reset_index(inplace=True)
+    for col in columns:
+        cum_col = 'cum_' + col
+        dummy_cum_col = 'dummy_' + cum_col
+        new_col = 'new_' + col
+        try:
+            start = df_tmp[df_tmp[cum_col] > 0].index.values[0]
+            df_ffill = df_tmp.iloc[start:]
+            df_ffill.set_index('dates2', drop=True, inplace=True)
+            df_ffill[dummy_cum_col] = df_ffill[cum_col].ffill().astype(int).values
+            df_ffill[new_col] = df_ffill[dummy_cum_col].diff().astype('Int64')
+            # If cumulative counts are missing, set new counts to -1 so they don't become 0.
+            df_ffill.loc[df_ffill[cum_col].isnull(), new_col] = -1
+        except:
+            print(f'No {cum_col} data to add for {roi}.')
+            df_ffill[new_col] = -1
+        df_ffill = df_ffill[~df_ffill.index.duplicated()] # fix duplication issue
+        dfs.append(df_ffill[new_col])
+
+    df_new = pd.concat(dfs, axis=1)
+    df_new = df_new.fillna(-1).astype(int)
+    df_fixed = df.join(df_new)
+    df_fixed = df_fixed.fillna(-1).astype(int)
+    return df_fixed
 
 def get_owid_us_vaccines(data_path: str, filter_: Union[dict, bool] = True,
                        fixes: bool = False) -> None:
@@ -472,17 +571,15 @@ def get_owid_us_vaccines(data_path: str, filter_: Union[dict, bool] = True,
 
     url = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/us_state_vaccinations.csv'
     src = pd.read_csv(url)
-    cols = ['date', 'location', 'total_vaccinations', 'daily_vaccinations', 'people_vaccinated', 'people_fully_vaccinated']
-
     src_trim = pd.DataFrame(columns=['dates2', 'region', 'cum_vaccinations', 'daily_vaccinations',
                                      'people_vaccinated', 'people_fully_vaccinated'])
 
     src_trim['dates2'] = src['date'].apply(fix_owid_dates).values # fix dates
     src_trim['region'] = src['location'].values
-    src_trim['cum_vaccinations'] = src['total_vaccinations'].fillna(-1).astype(int).values
-    src_trim['daily_vaccinations'] = src['daily_vaccinations'].fillna(-1).astype(int).values
-    src_trim['cum_people_vaccinated'] = src['people_vaccinated'].fillna(-1).astype(int).values
-    src_trim['cum_people_fully_vaccinated'] = src['people_fully_vaccinated'].fillna(-1).astype(int).values
+    src_trim['cum_vaccinations'] = src['total_vaccinations'].values
+    src_trim['daily_vaccinations'] = src['daily_vaccinations'].values
+    src_trim['cum_people_vaccinated'] = src['people_vaccinated'].values
+    src_trim['cum_people_fully_vaccinated'] = src['people_fully_vaccinated'].values
     src_trim.set_index('dates2', inplace=True, drop=True)
     src_trim.replace("New York State", "New York", inplace=True) # fix NY name
     src_rois = src_trim['region'].unique()
@@ -504,27 +601,13 @@ def get_owid_us_vaccines(data_path: str, filter_: Union[dict, bool] = True,
 
             df_combined = df_timeseries.merge(src_roi[['cum_vaccinations', 'daily_vaccinations', 'cum_people_vaccinated',
                                                        'cum_people_fully_vaccinated']], how='left', on='dates2')
-            # there are cases where cum counts go missing and new counts get missed:
-            # cum_count - (-1) = cum_count+1 where the new counts spike
-            # we don't want it to spike, and we don't want to miss new counts before the gap
-            # so create dummy dataframe with forward filled cumulative counts column,
-            # perform new cases calculation, then merge those new cases back into dataframe
 
-            df_combined_ffill = df_combined.loc[df_combined['cum_vaccinations'] > 0]
-
-            df_combined_ffill['dummy_cum_vaccinations'] = df_combined_ffill['cum_vaccinations'].ffill().astype(int).values
-            df_combined_ffill['dummy_cum_people_vaccinated'] = df_combined_ffill['cum_people_vaccinated'].ffill().astype(int).values
-            df_combined_ffill['dummy_cum_people_fully_vaccinated'] = df_combined_ffill['cum_people_fully_vaccinated'].ffill().astype(int).values
-
-            df_combined_ffill['new_vaccinations'] = df_combined_ffill['dummy_cum_vaccinations'].diff().astype('Int64')
-            df_combined_ffill['new_people_vaccinated'] = df_combined_ffill['dummy_cum_people_vaccinated'].diff().astype('Int64')
-            df_combined_ffill['new_people_fully_vaccinated'] = df_combined_ffill['dummy_cum_people_fully_vaccinated'].diff().astype('Int64')
-
-            df = df_combined.join(df_combined_ffill[['new_vaccinations', 'new_people_vaccinated', 'new_people_fully_vaccinated']])
-            df = df.fillna(-1)
+            cum_vacc_columns = ['vaccinations', 'people_vaccinated', 'people_fully_vaccinated']
+            df = dummy_cumulative_new_counts(US_STATE_ABBREV[roi], df_combined, cum_vacc_columns)
 
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
             df.to_csv(timeseries_path) # overwrite timeseries CSV
+
 
 def fix_owid_dates(x):
     y = datetime.strptime(x, '%Y-%m-%d')
@@ -552,7 +635,7 @@ def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) 
     # cumulative tests are named 'People_Tested' for first 200 ish days
     # then cumulative tests are named 'Total_Test_Results' after 200 ish days
     dfs = []
-    for i in tqdm(dates, desc=f'Scraping {delta} days of data'):
+    for i in tqdm(dates, desc=f'Scraping {delta} days of data across all states'):
         url = url_template % i
         try:
             df = pd.read_csv(url)
@@ -613,6 +696,8 @@ def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) 
                                         'cum_deaths', 'new_deaths', 'cum_recover',
                                         'new_recover', 'new_uninfected', 'cum_tests',
                                         'new_tests', 'population']].copy()
+
+            df_result_trim = df_result_trim.loc[:, ~df_result_trim.columns.str.contains('^Unnamed')]
             df_result_trim.to_csv(csv_path) # overwrite timeseries CSV
 
         except:

@@ -10,7 +10,7 @@ from pathlib import Path
 parser = argparse.ArgumentParser(description='Get data to use for fitting')
 parser.add_argument('-dp', '--data-path', default='./data',
                     help='Path for storing data')
-parser.add_argument('-s', '--sources', default=['jhu', 'canada', 'brazil', 'owid_tests', 'jhu_us_states_tests', 'owid_us_vaccines'],
+parser.add_argument('-s', '--sources', default=['jhu', 'canada', 'brazil', 'owid_tests', 'jhu_us_states_tests', 'owid_global_vaccines', 'owid_us_vaccines'],
                     nargs='+', help='Data sources to use.')
 parser.add_argument('-fi', '--filter', default=0, type=int,
                     help='Whether or not to filter based on data thresholds')
