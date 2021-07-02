@@ -554,6 +554,7 @@ def dummy_cumulative_new_counts(roi, df, columns: list):
         except:
             print(f'No {cum_col} data to add for {roi}.')
             df_ffill[new_col] = -1
+        df_ffill = df_ffill[~df_ffill.index.duplicated()] # fix duplication issue
         dfs.append(df_ffill[new_col])
 
     df_new = pd.concat(dfs, axis=1)
@@ -634,7 +635,7 @@ def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) 
     # cumulative tests are named 'People_Tested' for first 200 ish days
     # then cumulative tests are named 'Total_Test_Results' after 200 ish days
     dfs = []
-    for i in tqdm(dates, desc=f'Scraping {delta} days of data'):
+    for i in tqdm(dates, desc=f'Scraping {delta} days of data across all states'):
         url = url_template % i
         try:
             df = pd.read_csv(url)
@@ -695,6 +696,8 @@ def get_jhu_us_states_tests(data_path: str, filter_: Union[dict, bool] = False) 
                                         'cum_deaths', 'new_deaths', 'cum_recover',
                                         'new_recover', 'new_uninfected', 'cum_tests',
                                         'new_tests', 'population']].copy()
+
+            df_result_trim = df_result_trim.loc[:, ~df_result_trim.columns.str.contains('^Unnamed')]
             df_result_trim.to_csv(csv_path) # overwrite timeseries CSV
 
         except:
