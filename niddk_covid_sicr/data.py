@@ -475,11 +475,6 @@ def get_owid_global_vaccines(data_path: str, filter_: Union[dict, bool] = True,
                                      'cum_people_vaccinated', 'cum_people_fully_vaccinated'])
     src_trim['dates2'] = src['date'].apply(fix_owid_dates).values # fix dates
     src_trim['Alpha-3 code'] = src['iso_code'].values
-    # src_trim['cum_vaccinations'] = src['total_vaccinations'].fillna(-1).astype(int).values
-    # src_trim['daily_vaccinations'] = src['daily_vaccinations'].fillna(-1).astype(int).values
-    # src_trim['cum_people_vaccinated'] = src['people_vaccinated'].fillna(-1).astype(int).values
-    # src_trim['cum_people_fully_vaccinated'] = src['people_fully_vaccinated'].fillna(-1).astype(int).values
-    # TESTIG ######
     src_trim['cum_vaccinations'] = src['total_vaccinations'].values
     src_trim['daily_vaccinations'] = src['daily_vaccinations'].values
     src_trim['cum_people_vaccinated'] = src['people_vaccinated'].values
@@ -498,7 +493,7 @@ def get_owid_global_vaccines(data_path: str, filter_: Union[dict, bool] = True,
         if roi not in src_rois:
             unavailable_testing_data.append(roi)
             continue
-        if roi_codes_dict[roi] in ["US", "Marshall Islands", "Micronesia", "Samoa", "Vanuatu"]: # skipping because bad data
+        if roi_codes_dict[roi] in ["US", "Marshall Islands", "Micronesia", "Samoa", "Vanuatu"]: # skipping because no data
             continue
         try:
             timeseries_path = data_path / ('covidtimeseries_%s.csv' % roi_codes_dict[roi])
@@ -507,7 +502,7 @@ def get_owid_global_vaccines(data_path: str, filter_: Union[dict, bool] = True,
             print(fnf_error, 'Could not add OWID global vaccines data.')
             pass
 
-        for i in df_timeseries.columns: # Check if OWID testng data already included
+        for i in df_timeseries.columns: # Check if OWID testing data already included
             if 'vaccin' in i:
                 df_timeseries.drop([i], axis=1, inplace=True) # drop so we can add new
         src_roi = src_trim[src_trim['Alpha-3 code'] == roi] # filter rows that match roi
@@ -515,7 +510,6 @@ def get_owid_global_vaccines(data_path: str, filter_: Union[dict, bool] = True,
         df_combined = df_timeseries.merge(src_roi[['cum_vaccinations', 'daily_vaccinations', 'cum_people_vaccinated',
                                                                'cum_people_fully_vaccinated']], how='left', on='dates2')
         cum_vacc_columns = ['vaccinations', 'people_vaccinated', 'people_fully_vaccinated']
-        print(roi_codes_dict[roi])
         df = dummy_cumulative_new_counts(roi_codes_dict[roi], df_combined, cum_vacc_columns)
         df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
         df.to_csv(timeseries_path) # overwrite timeseries CSV
@@ -543,14 +537,12 @@ def dummy_cumulative_new_counts(roi, df, columns: list):
         Returns:
             df_fixed (pd.DataFrame): DataFrame containing cumulative and now new counts. """
     dfs = []
-
+    df_tmp = df.copy()
+    df_tmp.reset_index(inplace=True)
     for col in columns:
-        df_tmp = df.copy()
         cum_col = 'cum_' + col
         dummy_cum_col = 'dummy_' + cum_col
         new_col = 'new_' + col
-
-        df_tmp.reset_index(inplace=True)
         try:
             start = df_tmp[df_tmp[cum_col] > 0].index.values[0]
             df_ffill = df_tmp.iloc[start:]
@@ -562,7 +554,6 @@ def dummy_cumulative_new_counts(roi, df, columns: list):
         except:
             print(f'No {cum_col} data to add for {roi}.')
             df_ffill[new_col] = -1
-
         dfs.append(df_ffill[new_col])
 
     df_new = pd.concat(dfs, axis=1)
