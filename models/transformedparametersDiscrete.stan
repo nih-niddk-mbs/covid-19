@@ -51,12 +51,9 @@ transformed parameters {
     sigmar[i] = sigr[(i-1)/segsigr + 1];
     sigmad[i] = sigd[(i-1)/segsigd + 1];
 
-    dI[i] = I;
-
     I += alpha_wk[i];
     I *= exp(beta_wk[i]*s - sigmac[i] - sigmau);
-
-    dI[i] = I - dI[i];
+    dI[i] = I;
     s *= exp(-beta_wk[i]*I/Nt);
     dC[i] = sigmac[i]*I;
 
