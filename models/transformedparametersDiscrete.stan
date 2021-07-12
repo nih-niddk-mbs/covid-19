@@ -6,6 +6,7 @@ transformed parameters {
   real dC[n_weeks];
   real dR[n_weeks];
   real dD[n_weeks];
+  real dI[n_weeks];
 
   real ir[n_weeks];
   real ar[n_weeks];
@@ -25,7 +26,6 @@ transformed parameters {
   real I0;
   real s;
   real Cd[n_weeks];
-  real dI;
   real Z;
   real Ccum;
   real Dcum;
@@ -51,8 +51,12 @@ transformed parameters {
     sigmar[i] = sigr[(i-1)/segsigr + 1];
     sigmad[i] = sigd[(i-1)/segsigd + 1];
 
+    dI[i] = I;
+
     I += alpha_wk[i];
     I *= exp(beta_wk[i]*s - sigmac[i] - sigmau);
+
+    dI[i] = I - dI[i];
     s *= exp(-beta_wk[i]*I/Nt);
     dC[i] = sigmac[i]*I;
 
