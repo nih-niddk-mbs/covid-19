@@ -12,6 +12,7 @@ transformed parameters {
   real ar[n_weeks];
   real car[n_weeks];
   real ifr[n_weeks];
+  real R0[n_weeks];
   real Rt[n_weeks];
   real phi = 1/(extra_std^2); // likelihood over-dispersion of std
 
@@ -80,8 +81,8 @@ transformed parameters {
     ar[i] = N*ir[i]/S[i];
     car[i] = Ccum/Z;
     ifr[i] = Dcum/Z;
-    Rt[i] = beta_wk[i]*s/(sigmac[i]+sigmau);
-
+    R0[i] = beta_wk[i]/(sigmac[i]+sigmau);
+    Rt[i] = R0[i]*s ;
   }
   }
 }

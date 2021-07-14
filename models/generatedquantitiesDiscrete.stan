@@ -4,7 +4,7 @@ generated quantities {
     int y_proj[n_weeks,n_ostates];
     real llx[n_weeks,n_ostates];
     real ll_ = 0; // log-likelihood for model
-    real R0 = beta[1]/(sigc[1]+sigmau);
+    //real R0 = beta[1]/(sigc[1]+sigmau);
 
     {
 
