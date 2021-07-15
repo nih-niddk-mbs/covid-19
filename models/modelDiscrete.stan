@@ -7,7 +7,7 @@ model {
     sigd ~ exponential(5.);
     sigr ~ exponential(2.);
     sigc ~ exponential(10.);
-    ft ~ beta(5,1);
+    //ft ~ beta(5,1);
     extra_std ~ exponential(1.);
 
     for (i in 1:n_weeks){
