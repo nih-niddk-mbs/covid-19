@@ -31,7 +31,7 @@ model {
         target += 1000000;
       else {
         target += normal_lpdf(car[i] | .1,.4);
-        target += normal_lpdf(ifr[i] | .01, .04);
+      // target += normal_lpdf(ifr[i] | .01, .04);
         target += normal_lpdf(Rt[i] | 1.,4.);
       //  target += normal_lpdf(car[i] | .1,.2);
       //  target += normal_lpdf(ifr[i] | .01, .02);

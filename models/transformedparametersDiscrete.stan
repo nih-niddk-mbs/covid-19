@@ -73,7 +73,8 @@ transformed parameters {
       dD[i] = 0.0001;
 
     Ccum += dC[i];
-    Dcum += dD[i]*(1+ft/sigmac[i]);
+    //Dcum += dD[i]*(1+ft/sigmac[i]);
+    Dcum += dD[i];
 
     S[i] = s*Nt;
     Z = Nt-S[i];
