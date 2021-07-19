@@ -72,7 +72,8 @@ parser.add_argument('-vbe', '--advi-eta', type=float, default=0,
                    help=('Stepsize scaling parameter (ADVI).'))
 parser.add_argument('-vbai', '--advi-adapt-iter', type=int, default=1,
                    help=('Number of iterations for eta adaptation (ADVI).'))
-
+parser.add_argument('-rstan', '--port-to-rstan', type=int, default=0,
+                   help=('Launch Rstan and MCMC with Rstan. Default is 0.'))
 
 args = parser.parse_args()
 
@@ -101,69 +102,85 @@ model_path = Path(args.models_path) / ('%s.stan' % args.model_name)
 model_path = model_path.resolve()
 assert model_path.is_file(), "No such .stan file: %s" % model_path
 
-if not args.advi:
-    control = {'adapt_delta': args.adapt_delta}
-    stanrunmodel = ncs.load_or_compile_stan_model(args.model_name,
-                                                  args.models_path,
-                                                  force_recompile=args.force_recompile)
+# ------------- Step 1: Run Rstan or skip to Pystan
 
-    # Fit Stan
-    fit = stanrunmodel.sampling(data=stan_data, init=init_fun, control=control,
-                                chains=args.n_chains,
-                                chain_id=np.arange(args.n_chains),
-                                warmup=args.n_warmups, iter=args.n_iter,
-                                thin=args.n_thin)
+if args.port_to_rstan:
+    # https://www.kdnuggets.com/2015/10/integrating-python-r-executing-part2.html
+    command ='Rscript'
+    script_path ='runRstan.R'
+    print(args) # NEED TO FIGURE OUT HOW TO PASS ARGS
+    # print(init_fun)
+    cmd = [command, script_path] # + args
+    # print(cmd)
+    x = subprocess.check_output(cmd, universal_newlines=True)
+    exit()
 
-
-    # Uncomment to print fit summary
-    print(fit)
-
-    # Save fit
-    save_dir = Path(args.fits_path)
-    save_dir.mkdir(parents=True, exist_ok=True)
-    if args.fit_format == 0:
-        save_path = save_dir / ("%s_%s.csv" % (args.model_name, args.roi))
-        result = fit.to_dataframe().to_csv(save_path)
-    else:
-        save_path = save_dir / ("%s_%s.pkl" % (args.model_name, args.roi))
-        with open(save_path, "wb") as f:
-            pickle.dump({'model_name': args.model_name,
-                         'model_code': stanrunmodel.model_code, 'fit': fit},
-                        f, protocol=pickle.HIGHEST_PROTOCOL)
-
-    print("Finished %s" % args.roi)
-
+# ------------- Step 2: Run Pystan (and optionally ADVI)
 else:
-    from cmdstanpy.model import CmdStanModel # Testing for ADVI
-    from cmdstanpy.utils import cmdstan_path
-    import cmdstanpy
 
-    cmdstanpy.install_cmdstan()
+    if not args.advi:
+        control = {'adapt_delta': args.adapt_delta}
+        stanrunmodel = ncs.load_or_compile_stan_model(args.model_name,
+                                                      args.models_path,
+                                                      force_recompile=args.force_recompile)
 
-    # instantiate, compile model
-    model_path = Path(args.models_path) / ('%s.stan' % args.model_name)
-    sicr_model = CmdStanModel(stan_file=model_path)
+        # Fit Stan
+        fit = stanrunmodel.sampling(data=stan_data, init=init_fun, control=control,
+                                    chains=args.n_chains,
+                                    chain_id=np.arange(args.n_chains),
+                                    warmup=args.n_warmups, iter=args.n_iter,
+                                    thin=args.n_thin)
 
-    # create output directory for std out files cmdstan produces
-    save_dir = Path(args.fits_path)
-    save_dir.mkdir(parents=True, exist_ok=True)
 
-    output_dir = save_dir / 'std_out'
-    output_dir.mkdir(parents=True, exist_ok=True)
-    # run CmdStan's variational inference method, returns object `CmdStanVB`
+        # Uncomment to print fit summary
+        print(fit)
 
-    sicr_model_vb = sicr_model.variational(data=stan_data,
-                                           algorithm=args.advi_algorithm,
-                                           grad_samples=4000,
-                                           elbo_samples=4000,
-                                           output_samples=4000,
-                                           eta=args.advi_eta,
-                                           adapt_iter=args.advi_adapt_iter,
-                                           output_dir=output_dir)
-    sicr_model_vb.variational_sample.shape
+        # Save fit
+        save_dir = Path(args.fits_path)
+        save_dir.mkdir(parents=True, exist_ok=True)
+        if args.fit_format == 0:
+            save_path = save_dir / ("%s_%s.csv" % (args.model_name, args.roi))
+            result = fit.to_dataframe().to_csv(save_path)
+        else:
+            save_path = save_dir / ("%s_%s.pkl" % (args.model_name, args.roi))
+            with open(save_path, "wb") as f:
+                pickle.dump({'model_name': args.model_name,
+                             'model_code': stanrunmodel.model_code, 'fit': fit},
+                            f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    vb_results = sicr_model_vb.variational_params_dict # only gives means
-    vb_df = pd.DataFrame.from_dict(vb_results, orient="index")
-    print(vb_df)
-    # save_path = save_dir / ("%s_%s_ADVI_means.csv" % (args.model_name, args.roi))
-    # vb_df.to_csv(save_path)
+        print("Finished %s" % args.roi)
+
+    else:
+        from cmdstanpy.model import CmdStanModel # Testing for ADVI
+        from cmdstanpy.utils import cmdstan_path
+        import cmdstanpy
+
+        cmdstanpy.install_cmdstan()
+
+        # instantiate, compile model
+        model_path = Path(args.models_path) / ('%s.stan' % args.model_name)
+        sicr_model = CmdStanModel(stan_file=model_path)
+
+        # create output directory for std out files cmdstan produces
+        save_dir = Path(args.fits_path)
+        save_dir.mkdir(parents=True, exist_ok=True)
+
+        output_dir = save_dir / 'std_out'
+        output_dir.mkdir(parents=True, exist_ok=True)
+        # run CmdStan's variational inference method, returns object `CmdStanVB`
+
+        sicr_model_vb = sicr_model.variational(data=stan_data,
+                                               algorithm=args.advi_algorithm,
+                                               grad_samples=4000,
+                                               elbo_samples=4000,
+                                               output_samples=4000,
+                                               eta=args.advi_eta,
+                                               adapt_iter=args.advi_adapt_iter,
+                                               output_dir=output_dir)
+        sicr_model_vb.variational_sample.shape
+
+        vb_results = sicr_model_vb.variational_params_dict # only gives means
+        vb_df = pd.DataFrame.from_dict(vb_results, orient="index")
+        print(vb_df)
+        # save_path = save_dir / ("%s_%s_ADVI_means.csv" % (args.model_name, args.roi))
+        # vb_df.to_csv(save_path)

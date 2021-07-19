@@ -72,7 +72,7 @@ def get_data(roi: str, data_path: str = 'data') -> pd.DataFrame:
     df.index.name = 'date'
     return df
 
-
+# Write Rstan code for this:
 def load_or_compile_stan_model(model_name: str, models_path: str = './models',
                                force_recompile: bool = False,
                                verbose: bool = False):
